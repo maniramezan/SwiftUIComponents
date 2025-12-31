@@ -1,0 +1,18 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Selected option: %@" : {
+      "comment" : "Accessibility label showing the currently selected value in the menu picker. The %@ is replaced with the selected option text.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selected option: %@"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}
