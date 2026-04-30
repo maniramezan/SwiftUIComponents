@@ -22,10 +22,7 @@ extension String {
     var localizedResource: LocalizedStringResource {
         LocalizedStringResource(
             String.LocalizationValue(self),
-            table: nil,
-            locale: .current,
-            bundle: Bundle.module,
-            comment: nil
+            bundle: .atURL(Bundle.module.bundleURL)
         )
     }
 

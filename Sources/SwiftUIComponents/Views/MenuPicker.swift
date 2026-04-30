@@ -12,6 +12,14 @@ public extension MenuPickerItem where Self: CustomStringConvertible {
     var title: String { description }
 }
 
+/// Errors thrown during `MenuPicker` initialization.
+public enum MenuPickerError: Error {
+    /// The items collection passed to `MenuPicker` was empty.
+    case emptyItems
+    /// The `currentValue` is not present in the provided items collection.
+    case currentValueNotInItems
+}
+
 /// A lightweight dropdown-like picker that keeps the trigger width in sync with the widest option and
 /// works consistently across iOS, macOS, and Mac Catalyst.
 public struct MenuPicker<Item: MenuPickerItem>: View {
@@ -20,40 +28,45 @@ public struct MenuPicker<Item: MenuPickerItem>: View {
 
     fileprivate static var cornerRadius: CGFloat { 12 }
     fileprivate static var triggerBorderOpacity: CGFloat { 0.25 }
+    private static var horizontalPadding: CGFloat { 12 }
+    private static var verticalPadding: CGFloat { 8 }
+    private static var triggerFont: Font { .body.weight(.medium) }
+    private static var widthBuffer: CGFloat { 4 }
+    private static var longListThreshold: Int { 30 }
 
-    // MARK: - Properties
+    // MARK: - Items
 
     private let items: [Item]
     private let longestLabel: String
 
-    @Binding private var currentValue: Item
+    // MARK: - Selection State
 
+    @Binding private var currentValue: Item
     @State private var measuredWidth: CGFloat = 0
     @State private var isListPresented = false
 
-    private let horizontalPadding: CGFloat = 12
-    private let verticalPadding: CGFloat = 8
-    private let triggerFont: Font = .body.weight(.medium)
-    private let widthBuffer: CGFloat = 4
-    private static var longListThreshold: Int { 30 }
+    // MARK: - Callbacks
 
     private let onWidthChange: ((CGFloat) -> Void)?
 
     /// Initializes a `MenuPicker`.
     /// - Parameters:
-    ///   - items: The items to display.
-    ///   - currentValue: The currently selected item.
+    ///   - items: The items to display. Must be non-empty and must contain `currentValue`.
+    ///   - currentValue: The currently selected item. Must exist in `items`.
     ///   - onWidthChange: Optional callback that receives the measured width so parents can react (e.g., switch layouts).
+    /// - Throws: `MenuPickerError.emptyItems` if `items` is empty.
+    ///           `MenuPickerError.currentValueNotInItems` if `currentValue` is not found in `items`.
     public init(
         items: some RandomAccessCollection<Item>,
         currentValue: Binding<Item>,
         onWidthChange: ((CGFloat) -> Void)? = nil
-    ) {
-        precondition(!items.isEmpty, "MenuPicker requires at least one item.")
-        precondition(
-            items.contains(where: { $0.id == currentValue.wrappedValue.id }),
-            "currentValue must exist in items.",
-        )
+    ) throws {
+        guard !items.isEmpty else {
+            throw MenuPickerError.emptyItems
+        }
+        guard items.contains(where: { $0.id == currentValue.wrappedValue.id }) else {
+            throw MenuPickerError.currentValueNotInItems
+        }
         self.items = Array(items)
         self._currentValue = currentValue
         self.longestLabel = Self.longestLabel(in: Array(items))
@@ -70,21 +83,21 @@ public struct MenuPicker<Item: MenuPickerItem>: View {
                     currentValue: $currentValue,
                     title: currentValue.title,
                     width: requiredWidth,
-                    horizontalPadding: horizontalPadding,
-                    verticalPadding: verticalPadding,
-                    triggerFont: triggerFont,
+                    horizontalPadding: Self.horizontalPadding,
+                    verticalPadding: Self.verticalPadding,
+                    triggerFont: Self.triggerFont,
                     isPresented: $isListPresented
                 )
                 .frame(width: requiredWidth, alignment: .center)
                 .layoutPriority(1)
-                .accessibilityLabel("Selected option: %@".localized(with: currentValue.title))
+                .accessibilityLabel(Text("Selected option: \(currentValue.title)"))
             } else {
                 UIKitMenuPicker(
                     items: items,
                     currentValue: $currentValue,
                     longestLabel: longestLabel,
-                    horizontalPadding: horizontalPadding,
-                    verticalPadding: verticalPadding,
+                    horizontalPadding: Self.horizontalPadding,
+                    verticalPadding: Self.verticalPadding,
                     triggerFont: triggerUIFont,
                     width: requiredWidth,
                     onSelection: { newValue in
@@ -93,7 +106,7 @@ public struct MenuPicker<Item: MenuPickerItem>: View {
                 )
                 .frame(width: requiredWidth, alignment: .center)
                 .layoutPriority(1)
-                .accessibilityLabel("Selected option: %@".localized(with: currentValue.title))
+                .accessibilityLabel(Text("Selected option: \(currentValue.title)"))
             }
         #elseif canImport(AppKit)
             let requiredWidth = measuredWidth > 0 ? measuredWidth : measureWidth(for: triggerNSFont)
@@ -102,8 +115,8 @@ public struct MenuPicker<Item: MenuPickerItem>: View {
                 items: items,
                 currentValue: $currentValue,
                 longestLabel: longestLabel,
-                horizontalPadding: horizontalPadding,
-                verticalPadding: verticalPadding,
+                horizontalPadding: Self.horizontalPadding,
+                verticalPadding: Self.verticalPadding,
                 triggerFont: triggerNSFont,
                 width: requiredWidth,
                 onSelection: { newValue in
@@ -117,28 +130,18 @@ public struct MenuPicker<Item: MenuPickerItem>: View {
                 }
             }
             .layoutPriority(1)
-            .accessibilityLabel("Selected option: %@".localized(with: currentValue.title))
+            .accessibilityLabel(Text("Selected option: \(currentValue.title)"))
         #else
-            // Use ID-based selection to ensure Picker properly tracks selection
-            let selectedID = Binding<Item.ID>(
-                get: { currentValue.id },
-                set: { newID in
-                    if let newItem = items.first(where: { $0.id == newID }) {
-                        currentValue = newItem
-                    }
-                }
-            )
-
             Picker(selection: selectedID) {
                 ForEach(items) { item in
                     Text(item.title)
-                        .font(triggerFont)
+                        .font(Self.triggerFont)
                         .tag(item.id)
                 }
             } label: {
                 ZStack(alignment: .leading) {
                     Text(longestLabel)
-                        .font(triggerFont)
+                        .font(Self.triggerFont)
                         .background(
                             GeometryReader { proxy in
                                 Color.clear
@@ -147,7 +150,7 @@ public struct MenuPicker<Item: MenuPickerItem>: View {
                         )
                         .hidden()
                     Text(currentValue.title)
-                        .font(triggerFont)
+                        .font(Self.triggerFont)
                 }
                 .frame(minWidth: measuredWidth, alignment: .leading)
                 .onPreferenceChange(LongestLabelWidthKey.self) { width in
@@ -158,18 +161,34 @@ public struct MenuPicker<Item: MenuPickerItem>: View {
             .menuIndicator(.hidden)
             .frame(minWidth: measuredWidth, alignment: .leading)
             .layoutPriority(1)
-            .accessibilityLabel("Selected option: %@".localized(with: currentValue.title))
+            .accessibilityLabel(Text("Selected option: \(currentValue.title)"))
         #endif
     }
 
 }
 
-#Preview {
-    @Previewable @State var currentValue = 9
-    MenuPicker(items: 9...17, currentValue: $currentValue)
-        .padding()
-        .background(Color.pink)
+// MARK: - Preview
+
+#if DEBUG
+private struct PreviewItem: MenuPickerItem {
+    let id: Int
+    let title: String
 }
+
+#Preview {
+    @Previewable @State var currentValue = PreviewItem(id: 9, title: "AAA 9")
+    let items = (9...17).map { i -> PreviewItem in
+        let length = (i % 8) + 3
+        let prefix = String(repeating: "A", count: length)
+        return PreviewItem(id: i, title: "\(prefix) \(i)")
+    }
+    if let picker = try? MenuPicker(items: items, currentValue: $currentValue) {
+        picker
+            .padding()
+            .background(Color.pink)
+    }
+}
+#endif
 
 #if canImport(UIKit)
     import UIKit
@@ -275,6 +294,7 @@ public struct MenuPicker<Item: MenuPickerItem>: View {
                     .frame(width: width, alignment: .center)
             }
             .buttonStyle(.plain)
+            .accessibilityHint(Text("Opens a picker to change the selected value"))
             .sheet(isPresented: $isPresented) {
                 Picker("", selection: $currentValue) {
                     ForEach(items) { item in
@@ -363,21 +383,6 @@ public struct MenuPicker<Item: MenuPickerItem>: View {
 
 #endif
 
-extension Int: @retroactive Identifiable {
-    /// Identifies the integer value for `Identifiable` conformance.
-    public var id: Int { self }
-}
-
-/// Provides sample `MenuPickerItem` behavior for integer values.
-extension Int: MenuPickerItem {
-    /// A generated title used for preview and sample items.
-    public var title: String {
-        let length = (self % 8) + 3  // Varies from 3 to 10 characters
-        let prefix = String(repeating: "A", count: length)
-        return "\(prefix) \(self)"
-    }
-}
-
 // MARK: - State Helpers
 
 private extension MenuPicker {
@@ -388,23 +393,33 @@ private extension MenuPicker {
             onWidthChange?(width)
         }
     }
+
+    /// A binding over `Item.ID` used by the fallback SwiftUI `Picker`.
+    var selectedID: Binding<Item.ID> {
+        Binding(
+            get: { currentValue.id },
+            set: { newID in
+                if let newItem = items.first(where: { $0.id == newID }) {
+                    currentValue = newItem
+                }
+            }
+        )
+    }
 }
 
 // MARK: - Platform Fonts
 
 #if canImport(UIKit)
     private extension MenuPicker {
+        /// Returns a Dynamic Type–aware medium-weight body font.
         var triggerUIFont: UIFont {
-            let base = UIFont.preferredFont(forTextStyle: .body)
-            let descriptor = base.fontDescriptor.addingAttributes([
-                .traits: [UIFontDescriptor.TraitKey.weight: UIFont.Weight.medium]
-            ])
-            return UIFont(descriptor: descriptor, size: base.pointSize)
+            let base = UIFont.systemFont(ofSize: UIFont.labelFontSize, weight: .medium)
+            return UIFontMetrics(forTextStyle: .body).scaledFont(for: base)
         }
 
         func measureWidth(for font: UIFont) -> CGFloat {
             let textWidth = (longestLabel as NSString).size(withAttributes: [.font: font]).width
-            return textWidth + (horizontalPadding * 2) + widthBuffer
+            return textWidth + (Self.horizontalPadding * 2) + Self.widthBuffer
         }
     }
 #elseif canImport(AppKit)
@@ -415,7 +430,7 @@ private extension MenuPicker {
 
         func measureWidth(for font: NSFont) -> CGFloat {
             let textWidth = (longestLabel as NSString).size(withAttributes: [.font: font]).width
-            return textWidth + (horizontalPadding * 2) + widthBuffer
+            return textWidth + (Self.horizontalPadding * 2) + Self.widthBuffer
         }
     }
 #endif
