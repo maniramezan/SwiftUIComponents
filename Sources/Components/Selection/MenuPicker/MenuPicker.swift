@@ -1,3 +1,4 @@
+import DesignSystem
 import SwiftUI
 
 /// A value that can be displayed by `MenuPicker`.
@@ -18,12 +19,7 @@ public struct MenuPicker<Item: MenuPickerItem>: View {
 
     // MARK: - Styling Constants
 
-    fileprivate static var cornerRadius: CGFloat { 12 }
     fileprivate static var triggerBorderOpacity: CGFloat { 0.25 }
-    private static var horizontalPadding: CGFloat { 12 }
-    private static var verticalPadding: CGFloat { 8 }
-    private static var triggerFont: Font { .body.weight(.medium) }
-    private static var widthBuffer: CGFloat { 4 }
     private static var longListThreshold: Int { 30 }
 
     // MARK: - Items
@@ -36,6 +32,7 @@ public struct MenuPicker<Item: MenuPickerItem>: View {
     @Binding private var currentValue: Item
     @State private var measuredWidth: CGFloat = 0
     @State private var isListPresented = false
+    @Environment(\.designTheme) private var theme
 
     // MARK: - Callbacks
 
@@ -66,16 +63,16 @@ public struct MenuPicker<Item: MenuPickerItem>: View {
     /// The SwiftUI body for the menu picker.
     public var body: some View {
         #if canImport(UIKit)
-            let requiredWidth = measuredWidth > 0 ? measuredWidth : measureWidth(for: triggerUIFont)
+            let requiredWidth = measuredWidth > 0 ? measuredWidth : measureWidth(for: theme.typography.controlUIFont)
             if items.count > Self.longListThreshold {
                 WheelMenuPicker(
                     items: items,
                     currentValue: $currentValue,
                     title: currentValue.title,
                     width: requiredWidth,
-                    horizontalPadding: Self.horizontalPadding,
-                    verticalPadding: Self.verticalPadding,
-                    triggerFont: Self.triggerFont,
+                    horizontalPadding: theme.spacing.oneAndHalfUnits,
+                    verticalPadding: theme.spacing.oneUnit,
+                    triggerFont: theme.typography.control,
                     isPresented: $isListPresented
                 )
                 .frame(width: requiredWidth, alignment: .center)
@@ -86,9 +83,10 @@ public struct MenuPicker<Item: MenuPickerItem>: View {
                     items: items,
                     currentValue: $currentValue,
                     longestLabel: longestLabel,
-                    horizontalPadding: Self.horizontalPadding,
-                    verticalPadding: Self.verticalPadding,
-                    triggerFont: triggerUIFont,
+                    horizontalPadding: theme.spacing.oneAndHalfUnits,
+                    verticalPadding: theme.spacing.oneUnit,
+                    triggerFont: theme.typography.controlUIFont,
+                    foregroundColor: theme.colors.textPrimary,
                     width: requiredWidth,
                     onSelection: { newValue in
                         currentValue = newValue
@@ -99,15 +97,15 @@ public struct MenuPicker<Item: MenuPickerItem>: View {
                 .accessibilityLabel(Text(Strings.MenuPicker.selectedOption(currentValue.title)))
             }
         #elseif canImport(AppKit)
-            let requiredWidth = measuredWidth > 0 ? measuredWidth : measureWidth(for: triggerNSFont)
+            let requiredWidth = measuredWidth > 0 ? measuredWidth : measureWidth(for: theme.typography.controlNSFont)
 
             AppKitMenuPicker(
                 items: items,
                 currentValue: $currentValue,
                 longestLabel: longestLabel,
-                horizontalPadding: Self.horizontalPadding,
-                verticalPadding: Self.verticalPadding,
-                triggerFont: triggerNSFont,
+                horizontalPadding: theme.spacing.oneAndHalfUnits,
+                verticalPadding: theme.spacing.oneUnit,
+                triggerFont: theme.typography.controlNSFont,
                 width: requiredWidth,
                 onSelection: { newValue in
                     currentValue = newValue
@@ -125,13 +123,13 @@ public struct MenuPicker<Item: MenuPickerItem>: View {
             Picker(selection: selectedID) {
                 ForEach(items) { item in
                     Text(item.title)
-                        .font(Self.triggerFont)
+                        .font(theme.typography.control)
                         .tag(item.id)
                 }
             } label: {
                 ZStack(alignment: .leading) {
                     Text(longestLabel)
-                        .font(Self.triggerFont)
+                        .font(theme.typography.control)
                         .background(
                             GeometryReader { proxy in
                                 Color.clear
@@ -140,7 +138,7 @@ public struct MenuPicker<Item: MenuPickerItem>: View {
                         )
                         .hidden()
                     Text(currentValue.title)
-                        .font(Self.triggerFont)
+                        .font(theme.typography.control)
                 }
                 .frame(minWidth: measuredWidth, alignment: .leading)
                 .onPreferenceChange(LongestLabelWidthKey.self) { width in
@@ -178,6 +176,7 @@ public struct MenuPicker<Item: MenuPickerItem>: View {
         let horizontalPadding: CGFloat
         let verticalPadding: CGFloat
         let triggerFont: UIFont
+        let foregroundColor: Color
         let width: CGFloat
         let onSelection: (Item) -> Void
 
@@ -214,7 +213,7 @@ public struct MenuPicker<Item: MenuPickerItem>: View {
                 bottom: verticalPadding,
                 trailing: horizontalPadding
             )
-            configuration.baseForegroundColor = UIColor.label
+            configuration.baseForegroundColor = UIColor(foregroundColor)
             let font = triggerFont
             configuration.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { incoming in
                 var outgoing = incoming
@@ -398,30 +397,20 @@ private extension MenuPicker {
     }
 }
 
-// MARK: - Platform Fonts
+// MARK: - Platform Measurement
 
 #if canImport(UIKit)
     private extension MenuPicker {
-        /// Returns a Dynamic Type–aware medium-weight body font.
-        var triggerUIFont: UIFont {
-            let base = UIFont.systemFont(ofSize: UIFont.labelFontSize, weight: .medium)
-            return UIFontMetrics(forTextStyle: .body).scaledFont(for: base)
-        }
-
         func measureWidth(for font: UIFont) -> CGFloat {
             let textWidth = (longestLabel as NSString).size(withAttributes: [.font: font]).width
-            return textWidth + (Self.horizontalPadding * 2) + Self.widthBuffer
+            return textWidth + (theme.spacing.oneAndHalfUnits * 2) + theme.spacing.halfUnit
         }
     }
 #elseif canImport(AppKit)
     private extension MenuPicker {
-        var triggerNSFont: NSFont {
-            NSFont.systemFont(ofSize: NSFont.systemFontSize, weight: .medium)
-        }
-
         func measureWidth(for font: NSFont) -> CGFloat {
             let textWidth = (longestLabel as NSString).size(withAttributes: [.font: font]).width
-            return textWidth + (Self.horizontalPadding * 2) + Self.widthBuffer
+            return textWidth + (theme.spacing.oneAndHalfUnits * 2) + theme.spacing.halfUnit
         }
     }
 #endif

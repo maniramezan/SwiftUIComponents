@@ -7,21 +7,27 @@ let package = Package(
     name: "SwiftUIComponents",
     platforms: [.macOS(.v15), .iOS(.v18), .macCatalyst(.v18)],
     products: [
-        // Products define the executables and libraries a package produces, making them visible to other packages.
         .library(
-            name: "SwiftUIComponents",
-            targets: ["SwiftUIComponents"]),
+            name: "DesignSystem",
+            targets: ["DesignSystem"]
+        ),
+        .library(
+            name: "Components",
+            targets: ["Components"]
+        ),
     ],
     targets: [
-        // Targets are the basic building blocks of a package, defining a module or a test suite.
-        // Targets can depend on other targets in this package and products from dependencies.
         .target(
-            name: "SwiftUIComponents",
+            name: "DesignSystem"
+        ),
+        .target(
+            name: "Components",
+            dependencies: ["DesignSystem"],
             resources: [.process("Resources")]
         ),
         .testTarget(
             name: "SwiftUIComponentsTests",
-            dependencies: ["SwiftUIComponents"],
+            dependencies: ["Components", "DesignSystem"],
         ),
     ],
     swiftLanguageModes: [.v6]

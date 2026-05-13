@@ -7,7 +7,8 @@ enum Strings {
             LocalizedStringResource(
                 "Selected option: \(title)",
                 bundle: .atURL(Bundle.module.bundleURL),
-                comment: "Accessibility label showing the currently selected value in the menu picker. The interpolated value is replaced with the selected option text."
+                comment:
+                    "Accessibility label showing the currently selected value in the menu picker. The interpolated value is replaced with the selected option text."
             )
         }
 
