@@ -1,6 +1,6 @@
 import SwiftUI
 import Testing
-@testable import SwiftUIComponents
+@testable import Components
 
 // MARK: - Shared fixture
 
@@ -10,7 +10,7 @@ struct MenuPickerTestItem: MenuPickerItem {
 }
 
 private func makeItems(_ count: Int, startingAt start: Int = 1) -> [MenuPickerTestItem] {
-    (start ..< start + count).map { MenuPickerTestItem(id: $0, title: "Option \($0)") }
+    (start..<start + count).map { MenuPickerTestItem(id: $0, title: "Option \($0)") }
 }
 
 // MARK: - longestLabel
