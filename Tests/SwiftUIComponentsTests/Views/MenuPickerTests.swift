@@ -51,32 +51,7 @@ func initSucceedsWithValidCurrentValue() throws {
     let items = makeItems(5)
     var selected = items[2]
     let binding = Binding(get: { selected }, set: { selected = $0 })
-    #expect(throws: Never.self) {
-        _ = try MenuPicker(items: items, currentValue: binding)
-    }
-}
-
-// MARK: - init — error paths
-
-@Test("init throws emptyItems when items collection is empty")
-@MainActor
-func initThrowsOnEmptyItems() throws {
-    var selected = MenuPickerTestItem(id: 1, title: "Ghost")
-    let binding = Binding(get: { selected }, set: { selected = $0 })
-    #expect(throws: MenuPickerError.emptyItems) {
-        _ = try MenuPicker(items: [] as [MenuPickerTestItem], currentValue: binding)
-    }
-}
-
-@Test("init throws currentValueNotInItems when currentValue is absent from items")
-@MainActor
-func initThrowsWhenCurrentValueMissing() throws {
-    let items = makeItems(3)
-    var selected = MenuPickerTestItem(id: 999, title: "Not in list")
-    let binding = Binding(get: { selected }, set: { selected = $0 })
-    #expect(throws: MenuPickerError.currentValueNotInItems) {
-        _ = try MenuPicker(items: items, currentValue: binding)
-    }
+    _ = MenuPicker(items: items, currentValue: binding)
 }
 
 // MARK: - Long-list threshold
@@ -88,9 +63,7 @@ func initAcceptsThresholdCountItems() throws {
     let items = makeItems(30)
     var selected = items[0]
     let binding = Binding(get: { selected }, set: { selected = $0 })
-    #expect(throws: Never.self) {
-        _ = try MenuPicker(items: items, currentValue: binding)
-    }
+    _ = MenuPicker(items: items, currentValue: binding)
 }
 
 @Test("init accepts more than longListThreshold items")
@@ -99,7 +72,12 @@ func initAcceptsLongList() throws {
     let items = makeItems(31)
     var selected = items[0]
     let binding = Binding(get: { selected }, set: { selected = $0 })
-    #expect(throws: Never.self) {
-        _ = try MenuPicker(items: items, currentValue: binding)
-    }
+    _ = MenuPicker(items: items, currentValue: binding)
+}
+
+@Test("Int conforms to MenuPickerItem for convenient picker usage")
+func intConformsToMenuPickerItem() {
+    let value = 9
+    #expect(value.id == 9)
+    #expect(value.title == "AAAA 9")
 }

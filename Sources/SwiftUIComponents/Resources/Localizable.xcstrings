@@ -1,6 +1,18 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Opens a picker to change the selected value" : {
+      "comment" : "Accessibility hint describing that activating the menu picker opens a selection interface.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens a picker to change the selected value"
+          }
+        }
+      }
+    },
     "Selected option: %@" : {
       "comment" : "Accessibility label showing the currently selected value in the menu picker. The %@ is replaced with the selected option text.",
       "extractionState" : "manual",
