@@ -12,14 +12,6 @@ public extension MenuPickerItem where Self: CustomStringConvertible {
     var title: String { description }
 }
 
-/// Errors thrown during `MenuPicker` initialization.
-public enum MenuPickerError: Error {
-    /// The items collection passed to `MenuPicker` was empty.
-    case emptyItems
-    /// The `currentValue` is not present in the provided items collection.
-    case currentValueNotInItems
-}
-
 /// A lightweight dropdown-like picker that keeps the trigger width in sync with the widest option and
 /// works consistently across iOS, macOS, and Mac Catalyst.
 public struct MenuPicker<Item: MenuPickerItem>: View {
@@ -54,22 +46,20 @@ public struct MenuPicker<Item: MenuPickerItem>: View {
     ///   - items: The items to display. Must be non-empty and must contain `currentValue`.
     ///   - currentValue: The currently selected item. Must exist in `items`.
     ///   - onWidthChange: Optional callback that receives the measured width so parents can react (e.g., switch layouts).
-    /// - Throws: `MenuPickerError.emptyItems` if `items` is empty.
-    ///           `MenuPickerError.currentValueNotInItems` if `currentValue` is not found in `items`.
     public init(
         items: some RandomAccessCollection<Item>,
         currentValue: Binding<Item>,
         onWidthChange: ((CGFloat) -> Void)? = nil
-    ) throws {
-        guard !items.isEmpty else {
-            throw MenuPickerError.emptyItems
-        }
-        guard items.contains(where: { $0.id == currentValue.wrappedValue.id }) else {
-            throw MenuPickerError.currentValueNotInItems
-        }
-        self.items = Array(items)
+    ) {
+        let items = Array(items)
+        precondition(!items.isEmpty, "MenuPicker requires at least one item.")
+        precondition(
+            items.contains(where: { $0.id == currentValue.wrappedValue.id }),
+            "currentValue must exist in items."
+        )
+        self.items = items
         self._currentValue = currentValue
-        self.longestLabel = Self.longestLabel(in: Array(items))
+        self.longestLabel = Self.longestLabel(in: items)
         self.onWidthChange = onWidthChange
     }
 
@@ -90,7 +80,7 @@ public struct MenuPicker<Item: MenuPickerItem>: View {
                 )
                 .frame(width: requiredWidth, alignment: .center)
                 .layoutPriority(1)
-                .accessibilityLabel(Text("Selected option: \(currentValue.title)"))
+                .accessibilityLabel(Text(Strings.MenuPicker.selectedOption(currentValue.title)))
             } else {
                 UIKitMenuPicker(
                     items: items,
@@ -106,7 +96,7 @@ public struct MenuPicker<Item: MenuPickerItem>: View {
                 )
                 .frame(width: requiredWidth, alignment: .center)
                 .layoutPriority(1)
-                .accessibilityLabel(Text("Selected option: \(currentValue.title)"))
+                .accessibilityLabel(Text(Strings.MenuPicker.selectedOption(currentValue.title)))
             }
         #elseif canImport(AppKit)
             let requiredWidth = measuredWidth > 0 ? measuredWidth : measureWidth(for: triggerNSFont)
@@ -130,7 +120,7 @@ public struct MenuPicker<Item: MenuPickerItem>: View {
                 }
             }
             .layoutPriority(1)
-            .accessibilityLabel(Text("Selected option: \(currentValue.title)"))
+            .accessibilityLabel(Text(Strings.MenuPicker.selectedOption(currentValue.title)))
         #else
             Picker(selection: selectedID) {
                 ForEach(items) { item in
@@ -161,7 +151,7 @@ public struct MenuPicker<Item: MenuPickerItem>: View {
             .menuIndicator(.hidden)
             .frame(minWidth: measuredWidth, alignment: .leading)
             .layoutPriority(1)
-            .accessibilityLabel(Text("Selected option: \(currentValue.title)"))
+            .accessibilityLabel(Text(Strings.MenuPicker.selectedOption(currentValue.title)))
         #endif
     }
 
@@ -169,26 +159,12 @@ public struct MenuPicker<Item: MenuPickerItem>: View {
 
 // MARK: - Preview
 
-#if DEBUG
-private struct PreviewItem: MenuPickerItem {
-    let id: Int
-    let title: String
-}
-
 #Preview {
-    @Previewable @State var currentValue = PreviewItem(id: 9, title: "AAA 9")
-    let items = (9...17).map { i -> PreviewItem in
-        let length = (i % 8) + 3
-        let prefix = String(repeating: "A", count: length)
-        return PreviewItem(id: i, title: "\(prefix) \(i)")
-    }
-    if let picker = try? MenuPicker(items: items, currentValue: $currentValue) {
-        picker
-            .padding()
-            .background(Color.pink)
-    }
+    @Previewable @State var currentValue = 9
+    MenuPicker(items: 9...17, currentValue: $currentValue)
+        .padding()
+        .background(Color.pink)
 }
-#endif
 
 #if canImport(UIKit)
     import UIKit
@@ -294,7 +270,7 @@ private struct PreviewItem: MenuPickerItem {
                     .frame(width: width, alignment: .center)
             }
             .buttonStyle(.plain)
-            .accessibilityHint(Text("Opens a picker to change the selected value"))
+            .accessibilityHint(Text(Strings.MenuPicker.changeSelectionHint))
             .sheet(isPresented: $isPresented) {
                 Picker("", selection: $currentValue) {
                     ForEach(items) { item in
@@ -382,6 +358,21 @@ private struct PreviewItem: MenuPickerItem {
     }
 
 #endif
+
+extension Int: @retroactive Identifiable {
+    /// Identifies the integer value for `Identifiable` conformance.
+    public var id: Int { self }
+}
+
+/// Provides sample `MenuPickerItem` behavior for integer values.
+extension Int: MenuPickerItem {
+    /// A generated title used for preview and sample items.
+    public var title: String {
+        let length = (self % 8) + 3
+        let prefix = String(repeating: "A", count: length)
+        return "\(prefix) \(self)"
+    }
+}
 
 // MARK: - State Helpers
 
