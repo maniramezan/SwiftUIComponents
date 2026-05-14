@@ -40,6 +40,11 @@ jobs:
       - name: Run validation script
         run: ./Scripts/validate.sh
 
+      - name: Copy snapshot baselines into DocC Resources
+        run: |
+          chmod +x Scripts/copy-snapshots-to-docc.sh
+          ./Scripts/copy-snapshots-to-docc.sh
+
       - name: Validate DocC (DesignSystem)
         run: |
           swift package generate-documentation \
