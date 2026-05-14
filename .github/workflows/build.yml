@@ -43,6 +43,18 @@ jobs:
       - name: Run validation script
         run: ./Scripts/validate.sh
 
+      - name: Validate DocC (DesignSystem)
+        run: |
+          swift package generate-documentation \
+            --target DesignSystem \
+            --warnings-as-errors
+
+      - name: Validate DocC (Components)
+        run: |
+          swift package generate-documentation \
+            --target Components \
+            --warnings-as-errors
+
       - name: Save SwiftPM cache
         if: ${{ always() }}
         uses: actions/cache/save@v5
