@@ -2,6 +2,8 @@ import DesignSystem
 import SwiftUI
 
 /// Themed loading indicator with optional message.
+///
+/// ![Loading spinner with message](designLoading)
 public struct DesignLoadingView: View {
     private let message: String?
     @Environment(\.designTheme) private var theme

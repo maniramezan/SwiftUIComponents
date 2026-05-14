@@ -2,6 +2,8 @@ import DesignSystem
 import SwiftUI
 
 /// Themed empty state for list and content placeholders.
+///
+/// ![Empty state with icon, title, message, and action button](designEmptyState)
 public struct DesignEmptyStateView<Action: View>: View {
     private let title: String
     private let message: String?

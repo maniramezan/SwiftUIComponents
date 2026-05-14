@@ -2,6 +2,8 @@ import DesignSystem
 import SwiftUI
 
 /// Applies typography and foreground color from the active design theme.
+///
+/// ![All text style roles](designTextStyles)
 public struct DesignTextStyle: ViewModifier {
     private let role: DesignTextRole
     @Environment(\.designTheme) private var theme

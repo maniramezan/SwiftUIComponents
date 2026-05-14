@@ -2,6 +2,8 @@ import DesignSystem
 import SwiftUI
 
 /// Generic themed container for composing shared component layouts.
+///
+/// ![Card, elevated, and outlined containers](designContainers)
 public struct DesignContainer<Content: View>: View {
     private let style: DesignContainerStyle
     @ViewBuilder private let content: Content

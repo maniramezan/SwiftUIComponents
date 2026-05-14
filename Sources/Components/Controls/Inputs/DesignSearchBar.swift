@@ -2,6 +2,8 @@ import DesignSystem
 import SwiftUI
 
 /// Reusable themed search field with optional focus binding.
+///
+/// ![A search bar with placeholder text](designSearchBar)
 public struct DesignSearchBar: View {
     @Binding private var text: String
     @Binding private var externalFocus: Bool
