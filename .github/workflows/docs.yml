@@ -1,0 +1,116 @@
+name: Documentation
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: docs-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-docs:
+    name: Build Documentation
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Select Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Restore SwiftPM cache
+        id: restore-swiftpm-cache
+        uses: actions/cache/restore@v5
+        with:
+          path: |
+            .build
+            ~/Library/Caches/org.swift.swiftpm
+            ~/Library/org.swift.swiftpm
+          key: ${{ runner.os }}-docs-${{ hashFiles('Package.swift') }}
+          restore-keys: |
+            ${{ runner.os }}-docs-
+
+      - name: Build DesignSystem documentation
+        run: |
+          swift package generate-documentation \
+            --target DesignSystem \
+            --warnings-as-errors \
+            --transform-for-static-hosting \
+            --hosting-base-path SwiftUIComponents \
+            --output-path .docs-output/designsystem
+
+      - name: Build Components documentation
+        run: |
+          swift package generate-documentation \
+            --target Components \
+            --warnings-as-errors \
+            --transform-for-static-hosting \
+            --hosting-base-path SwiftUIComponents \
+            --output-path .docs-output/components
+
+      - name: Save SwiftPM cache
+        if: always()
+        uses: actions/cache/save@v5
+        with:
+          path: |
+            .build
+            ~/Library/Caches/org.swift.swiftpm
+            ~/Library/org.swift.swiftpm
+          key: ${{ steps.restore-swiftpm-cache.outputs.cache-primary-key || format('{0}-docs-{1}', runner.os, hashFiles('Package.swift')) }}
+
+      # --- Publish only on pushes to main ---
+      - name: Prepare combined site
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: |
+          mkdir -p .docs-site
+          cp -R .docs-output/designsystem/ .docs-site/
+          # Merge components output into the same site (shared renderer assets)
+          cp -R .docs-output/components/data/documentation/components .docs-site/data/documentation/
+          cp -R .docs-output/components/documentation/components .docs-site/documentation/
+
+          # Root redirect
+          cat > .docs-site/index.html <<'EOF'
+          <!doctype html>
+          <html>
+            <head>
+              <meta charset="utf-8">
+              <meta http-equiv="refresh" content="0; url=documentation/designsystem">
+              <link rel="canonical" href="documentation/designsystem">
+              <title>SwiftUIComponents Documentation</title>
+            </head>
+            <body>
+              <p>Redirecting to <a href="documentation/designsystem">DesignSystem documentation</a>…</p>
+            </body>
+          </html>
+          EOF
+
+      - name: Upload Pages artifact
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .docs-site
+
+  deploy-docs:
+    name: Deploy Documentation
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: build-docs
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
