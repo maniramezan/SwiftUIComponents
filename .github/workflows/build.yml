@@ -1,4 +1,4 @@
-name: Build
+name: CI
 
 on:
   pull_request:
@@ -10,15 +10,29 @@ jobs:
   validate:
     name: Format, Build, and Test
     runs-on: macos-15
+    env:
+      SWIFTPM_CACHE_KEY: ${{ runner.os }}-xcode-${{ hashFiles('Package.swift', '.swift-format', 'Scripts/validate.sh') }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v6
 
       - name: Select Xcode
-        uses: maxim-lobanov/setup-xcode@v1.7.0
+        uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: latest-stable
+
+      - name: Restore SwiftPM cache
+        id: restore-swiftpm-cache
+        uses: actions/cache/restore@v5
+        with:
+          path: |
+            .build
+            ~/Library/Caches/org.swift.swiftpm
+            ~/Library/org.swift.swiftpm
+          key: ${{ env.SWIFTPM_CACHE_KEY }}
+          restore-keys: |
+            ${{ runner.os }}-xcode-
 
       - name: Show Swift version
         run: swift --version
@@ -28,3 +42,13 @@ jobs:
 
       - name: Run validation script
         run: ./Scripts/validate.sh
+
+      - name: Save SwiftPM cache
+        if: ${{ always() }}
+        uses: actions/cache/save@v5
+        with:
+          path: |
+            .build
+            ~/Library/Caches/org.swift.swiftpm
+            ~/Library/org.swift.swiftpm
+          key: ${{ steps.restore-swiftpm-cache.outputs.cache-primary-key || env.SWIFTPM_CACHE_KEY }}
