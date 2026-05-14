@@ -44,7 +44,7 @@ jobs:
       - name: Build DesignSystem documentation
         run: |
           mkdir -p .docs-output
-          swift package generate-documentation \
+          swift package --disable-sandbox generate-documentation \
             --target DesignSystem \
             --warnings-as-errors \
             --transform-for-static-hosting \
@@ -53,7 +53,7 @@ jobs:
 
       - name: Build Components documentation
         run: |
-          swift package generate-documentation \
+          swift package --disable-sandbox generate-documentation \
             --target Components \
             --warnings-as-errors \
             --transform-for-static-hosting \
