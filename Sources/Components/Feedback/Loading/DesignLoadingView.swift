@@ -25,3 +25,8 @@ public struct DesignLoadingView: View {
         .accessibilityElement(children: .combine)
     }
 }
+
+#Preview("Design Loading") {
+    DesignLoadingView("Loading components")
+        .padding()
+}

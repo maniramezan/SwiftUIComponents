@@ -47,3 +47,14 @@ public struct DesignEmptyStateView<Action: View>: View {
         .accessibilityElement(children: .combine)
     }
 }
+
+#Preview("Design Empty State") {
+    DesignEmptyStateView(
+        title: "No Components",
+        message: "Create your first reusable component to get started.",
+        systemImage: "shippingbox"
+    ) {
+        DesignButton("Create Component") {}
+    }
+    .padding()
+}

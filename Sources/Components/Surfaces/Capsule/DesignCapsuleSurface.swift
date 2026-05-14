@@ -19,3 +19,17 @@ public struct DesignCapsuleSurface: ViewModifier {
             .foregroundStyle(isSelected ? theme.colors.onPrimary : theme.colors.textPrimary)
     }
 }
+
+#Preview("Design Capsule Surface") {
+    HStack(spacing: 8) {
+        Text("Default")
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+            .designCapsuleSurface()
+        Text("Selected")
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+            .designCapsuleSurface(isSelected: true)
+    }
+    .padding()
+}

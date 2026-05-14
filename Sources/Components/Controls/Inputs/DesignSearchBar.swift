@@ -62,3 +62,10 @@ public struct DesignSearchBar: View {
         internalFocus = externalFocus
     }
 }
+
+#Preview("Design Search Bar") {
+    @Previewable @State var query = ""
+
+    DesignSearchBar(text: $query, placeholder: "Search components")
+        .padding()
+}

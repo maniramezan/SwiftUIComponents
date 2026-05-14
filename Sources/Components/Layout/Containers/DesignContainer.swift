@@ -59,3 +59,18 @@ public struct DesignContainer<Content: View>: View {
         .black.opacity(0.08)
     }
 }
+
+#Preview("Design Containers") {
+    VStack(spacing: 12) {
+        DesignContainer(style: .card) {
+            Text("Card container")
+        }
+        DesignContainer(style: .elevated) {
+            Text("Elevated container")
+        }
+        DesignContainer(style: .outlined) {
+            Text("Outlined container")
+        }
+    }
+    .padding()
+}
