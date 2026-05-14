@@ -43,6 +43,7 @@ jobs:
 
       - name: Build DesignSystem documentation
         run: |
+          mkdir -p .docs-output/designsystem
           swift package generate-documentation \
             --target DesignSystem \
             --warnings-as-errors \
@@ -52,6 +53,7 @@ jobs:
 
       - name: Build Components documentation
         run: |
+          mkdir -p .docs-output/components
           swift package generate-documentation \
             --target Components \
             --warnings-as-errors \
