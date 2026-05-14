@@ -10,9 +10,6 @@ jobs:
   validate:
     name: Format, Build, and Test
     runs-on: macos-15
-    env:
-      SWIFTPM_CACHE_KEY: ${{ runner.os }}-xcode-${{ hashFiles('Package.swift', '.swift-format', 'Scripts/validate.sh') }}
-
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -30,9 +27,9 @@ jobs:
             .build
             ~/Library/Caches/org.swift.swiftpm
             ~/Library/org.swift.swiftpm
-          key: ${{ env.SWIFTPM_CACHE_KEY }}
+          key: swiftpm-${{ hashFiles('Package.swift', '.swift-format', 'Scripts/validate.sh') }}
           restore-keys: |
-            ${{ runner.os }}-xcode-
+            swiftpm-
 
       - name: Show Swift version
         run: swift --version
@@ -63,4 +60,4 @@ jobs:
             .build
             ~/Library/Caches/org.swift.swiftpm
             ~/Library/org.swift.swiftpm
-          key: ${{ steps.restore-swiftpm-cache.outputs.cache-primary-key || env.SWIFTPM_CACHE_KEY }}
+          key: swiftpm-${{ hashFiles('Package.swift', '.swift-format', 'Scripts/validate.sh') }}
