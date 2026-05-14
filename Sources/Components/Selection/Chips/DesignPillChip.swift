@@ -2,6 +2,8 @@ import DesignSystem
 import SwiftUI
 
 /// Selectable pill chip for filters and tag lists.
+///
+/// ![Pill chips with selected and unselected states](designPillChips)
 public struct DesignPillChip: View {
     private let title: String
     private let isSelected: Bool

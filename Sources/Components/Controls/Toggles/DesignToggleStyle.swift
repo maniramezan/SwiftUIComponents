@@ -2,6 +2,8 @@ import DesignSystem
 import SwiftUI
 
 /// Toggle style that uses the active design theme for colors and sizing.
+///
+/// ![Toggle in on and off states](designToggle)
 public struct DesignToggleStyle: ToggleStyle {
     @Environment(\.isEnabled) private var isEnabled
     @Environment(\.designTheme) private var theme

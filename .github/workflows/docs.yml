@@ -41,6 +41,11 @@ jobs:
           restore-keys: |
             docs-
 
+      - name: Copy snapshot baselines into DocC Resources
+        run: |
+          chmod +x Scripts/copy-snapshots-to-docc.sh
+          ./Scripts/copy-snapshots-to-docc.sh
+
       - name: Build DesignSystem documentation
         run: |
           mkdir -p .docs-output

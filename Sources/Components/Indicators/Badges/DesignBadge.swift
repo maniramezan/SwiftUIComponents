@@ -2,6 +2,8 @@ import DesignSystem
 import SwiftUI
 
 /// Compact text badge styled from the active design theme.
+///
+/// ![Standard and prominent badges](designBadges)
 public struct DesignBadge: View {
     private let text: String
     private let isProminent: Bool

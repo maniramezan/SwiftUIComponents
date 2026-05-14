@@ -2,6 +2,8 @@ import DesignSystem
 import SwiftUI
 
 /// Reusable button that follows the active design theme.
+///
+/// ![Buttons in all roles](designButtons)
 public struct DesignButton<Label: View>: View {
     private let role: DesignButtonRole
     private let isLoading: Bool

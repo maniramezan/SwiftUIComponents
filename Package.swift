@@ -18,6 +18,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/swiftlang/swift-docc-plugin", from: "1.4.3"),
+        .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", from: "1.19.2"),
     ],
     targets: [
         .target(
@@ -30,7 +31,15 @@ let package = Package(
         ),
         .testTarget(
             name: "SwiftUIComponentsTests",
-            dependencies: ["Components", "DesignSystem"],
+            dependencies: [
+                "Components",
+                "DesignSystem",
+                .product(name: "SnapshotTesting", package: "swift-snapshot-testing"),
+            ]
+        ),
+        .executableTarget(
+            name: "ComponentShowcase",
+            dependencies: ["Components", "DesignSystem"]
         ),
     ],
     swiftLanguageModes: [.v6]
