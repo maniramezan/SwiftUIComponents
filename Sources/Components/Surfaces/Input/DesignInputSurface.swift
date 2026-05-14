@@ -20,3 +20,10 @@ public struct DesignInputSurface: ViewModifier {
             }
     }
 }
+
+#Preview("Design Input Surface") {
+    Text("Input surface")
+        .padding()
+        .designInputSurface()
+        .padding()
+}

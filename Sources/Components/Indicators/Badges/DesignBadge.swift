@@ -25,3 +25,11 @@ public struct DesignBadge: View {
             .accessibilityElement(children: .combine)
     }
 }
+
+#Preview("Design Badges") {
+    HStack(spacing: 8) {
+        DesignBadge("Beta")
+        DesignBadge("New", isProminent: true)
+    }
+    .padding()
+}

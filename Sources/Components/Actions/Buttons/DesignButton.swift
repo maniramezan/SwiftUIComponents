@@ -49,3 +49,14 @@ public extension DesignButton where Label == Text {
         }
     }
 }
+
+#Preview("Design Buttons") {
+    VStack(spacing: 12) {
+        DesignButton("Primary") {}
+        DesignButton("Secondary", role: .secondary) {}
+        DesignButton("Tertiary", role: .tertiary) {}
+        DesignButton("Delete", role: .destructive) {}
+        DesignButton("Loading", isLoading: true) {}
+    }
+    .padding()
+}

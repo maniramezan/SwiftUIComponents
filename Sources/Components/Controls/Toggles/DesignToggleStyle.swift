@@ -40,3 +40,11 @@ public struct DesignToggleStyle: ToggleStyle {
             }
     }
 }
+
+#Preview("Design Toggle") {
+    @Previewable @State var isEnabled = true
+
+    Toggle("Enable notifications", isOn: $isEnabled)
+        .toggleStyle(DesignToggleStyle())
+        .padding()
+}

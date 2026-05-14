@@ -52,3 +52,15 @@ public extension View {
         modifier(DesignTextStyle(role))
     }
 }
+
+#Preview("Design Text Styles") {
+    VStack(alignment: .leading, spacing: 8) {
+        Text("Title").designTextStyle(.title)
+        Text("Headline").designTextStyle(.headline)
+        Text("Body text").designTextStyle(.body)
+        Text("Secondary text").designTextStyle(.secondary)
+        Text("Caption text").designTextStyle(.caption)
+        Text("Error text").designTextStyle(.error)
+    }
+    .padding()
+}

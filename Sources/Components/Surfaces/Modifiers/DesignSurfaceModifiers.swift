@@ -17,3 +17,12 @@ public extension View {
         modifier(DesignInputSurface())
     }
 }
+
+#Preview("Design Surface Modifiers") {
+    VStack(spacing: 12) {
+        Text("Card").padding().designCardSurface()
+        Text("Capsule").padding(.horizontal, 16).padding(.vertical, 8).designCapsuleSurface()
+        Text("Input").padding().designInputSurface()
+    }
+    .padding()
+}

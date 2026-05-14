@@ -27,3 +27,12 @@ public struct DesignPillChip: View {
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }
+
+#Preview("Design Pill Chips") {
+    HStack(spacing: 8) {
+        DesignPillChip("All", isSelected: true) {}
+        DesignPillChip("Recent", isSelected: false) {}
+        DesignPillChip("Favorites", isSelected: false) {}
+    }
+    .padding()
+}
