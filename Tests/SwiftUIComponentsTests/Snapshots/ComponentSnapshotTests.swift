@@ -40,7 +40,14 @@ extension Tag {
 /// git add Tests/SwiftUIComponentsTests/Snapshots/__Snapshots__
 /// git add Sources/Components/Components.docc/Resources
 /// ```
-@Suite("Component Snapshots", .tags(.localOnly), .enabled(if: ProcessInfo.processInfo.environment["CI"] == nil, "Skipped in CI — snapshot rendering is environment-sensitive"))
+@Suite(
+    "Component Snapshots",
+    .tags(.localOnly),
+    .enabled(
+        if: ProcessInfo.processInfo.environment["CI"] == nil,
+        "Skipped in CI — snapshot rendering is environment-sensitive"
+    )
+)
 struct ComponentSnapshotTests {
 
     // MARK: - Buttons
