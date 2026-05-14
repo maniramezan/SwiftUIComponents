@@ -1,3 +1,4 @@
+import Foundation
 import SnapshotTesting
 import SwiftUI
 import Testing
@@ -11,16 +12,35 @@ import Testing
     import AppKit
 #endif
 
-/// Snapshot tests for all visual components.
+/// Tag for snapshot tests that should only run locally (not in CI).
 ///
-/// On the first run, set the `SNAPSHOT_TESTING_RECORD` environment variable
-/// to generate baseline images. After that, subsequent runs compare against
-/// the recorded baselines.
+/// Snapshot rendering is environment-sensitive — font metrics and antialiasing
+/// differ across macOS/Xcode versions, making pixel comparison unreliable in CI.
+/// These tests exist to **generate** DocC images locally, not for regression.
+extension Tag {
+    @Tag static var localOnly: Self
+}
+
+/// Snapshot tests for generating DocC documentation images.
 ///
-/// A helper script (`Scripts/copy-snapshots-to-docc.sh`) copies the reference
-/// images into `Sources/Components/Components.docc/Resources/` for use in
-/// documentation.
-@Suite("Component Snapshots")
+/// These tests are **local-only** — they generate baseline images for use in
+/// DocC documentation but are skipped in CI because pixel rendering varies
+/// across environments.
+///
+/// ## Workflow
+///
+/// ```bash
+/// # Generate or update baseline images:
+/// SNAPSHOT_TESTING_RECORD=1 swift test --filter ComponentSnapshot
+///
+/// # Copy into DocC Resources:
+/// ./Scripts/copy-snapshots-to-docc.sh
+///
+/// # Commit the baselines:
+/// git add Tests/SwiftUIComponentsTests/Snapshots/__Snapshots__
+/// git add Sources/Components/Components.docc/Resources
+/// ```
+@Suite("Component Snapshots", .tags(.localOnly), .enabled(if: ProcessInfo.processInfo.environment["CI"] == nil, "Skipped in CI — snapshot rendering is environment-sensitive"))
 struct ComponentSnapshotTests {
 
     // MARK: - Buttons
@@ -195,10 +215,7 @@ struct ComponentSnapshotTests {
 
 extension ComponentSnapshotTests {
 
-    /// Asserts a snapshot of the given SwiftUI view at the specified size.
-    ///
-    /// Uses perceptual precision of 90% to tolerate font rendering
-    /// differences across macOS/Xcode versions (local vs CI).
+    /// Renders the view and compares against the stored baseline.
     @MainActor
     private func assertComponentSnapshot<V: View>(
         _ view: V,
@@ -210,11 +227,7 @@ extension ComponentSnapshotTests {
         #if canImport(UIKit)
             assertSnapshot(
                 of: view,
-                as: .image(
-                    precision: 0.85,
-                    perceptualPrecision: 0.90,
-                    layout: .fixed(width: size.width, height: size.height)
-                ),
+                as: .image(layout: .fixed(width: size.width, height: size.height)),
                 file: file,
                 testName: function,
                 line: line
@@ -224,7 +237,7 @@ extension ComponentSnapshotTests {
             hostingView.view.frame = CGRect(origin: .zero, size: size)
             assertSnapshot(
                 of: hostingView.view,
-                as: .image(precision: 0.85, perceptualPrecision: 0.90, size: size),
+                as: .image(size: size),
                 file: file,
                 testName: function,
                 line: line
