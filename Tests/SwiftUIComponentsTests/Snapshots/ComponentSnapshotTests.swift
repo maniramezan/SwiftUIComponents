@@ -207,6 +207,52 @@ struct ComponentSnapshotTests {
         assertComponentSnapshot(view, size: CGSize(width: 320, height: 300))
     }
 
+    // MARK: - Error Feedback
+
+    @Test
+    @MainActor func designErrorBanner() {
+        let view = DesignErrorBanner("Something went wrong. Please try again.")
+            .padding()
+            .frame(width: 320)
+
+        assertComponentSnapshot(view, size: CGSize(width: 320, height: 80))
+    }
+
+    @Test
+    @MainActor func designErrorSection() {
+        let view = Form {
+            DesignErrorSection(message: "Could not load data. Check your connection.")
+        }
+        .frame(width: 320)
+
+        assertComponentSnapshot(view, size: CGSize(width: 320, height: 120))
+    }
+
+    // MARK: - Adaptive Surfaces
+
+    @Test
+    @MainActor func designAdaptiveSurface() {
+        let view = VStack(spacing: 16) {
+            Text("Default")
+                .padding()
+                .designAdaptiveSurface()
+            Text("With Tint")
+                .padding()
+                .designAdaptiveSurface(tint: .blue.opacity(0.2))
+            Text("Selected")
+                .padding()
+                .designSelectableCardSurface(isSelected: true)
+            Text("Unselected")
+                .padding()
+                .designSelectableCardSurface(isSelected: false)
+        }
+        .padding()
+        .frame(width: 320)
+        .background(Color.teal.opacity(0.3))
+
+        assertComponentSnapshot(view, size: CGSize(width: 320, height: 280))
+    }
+
     // MARK: - Loading
 
     @Test

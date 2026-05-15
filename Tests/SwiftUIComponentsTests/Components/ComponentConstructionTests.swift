@@ -21,4 +21,20 @@ func themedComponentsAreConstructible() {
     _ = Text("Error")
         .designTextStyle(.error)
         .designCardSurface()
+    _ = DesignErrorBanner("Something failed.")
+    _ = DesignErrorSection(message: "Could not load.")
+    _ = DesignErrorSection(title: "Network Error", message: "Offline.")
+    _ = Text("Adaptive").designAdaptiveSurface()
+    _ = Text("Adaptive Tinted").designAdaptiveSurface(tint: .blue.opacity(0.2))
+    _ = Text("Selectable").designSelectableCardSurface(isSelected: false)
+    _ = Text("Selectable On").designSelectableCardSurface(isSelected: true)
+    _ = Button("Action") {}.designAdaptiveButtonStyle()
+    _ = Button("Prominent") {}.designAdaptiveButtonStyle(prominent: true)
+    _ = NavigationStack {
+        Text("Content")
+            .toolbar {
+                DesignDismissToolbarButton {}
+                DesignConfirmToolbarButton(accessibilityLabel: "Save") {}
+            }
+    }
 }

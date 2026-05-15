@@ -1,6 +1,30 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Close" : {
+      "comment" : "Accessibility label for the dismiss/close button in sheets and modal presentations.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close"
+          }
+        }
+      }
+    },
+    "Error" : {
+      "comment" : "Default section header title for error sections.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Error"
+          }
+        }
+      }
+    },
     "Opens a picker to change the selected value" : {
       "comment" : "Accessibility hint describing that activating the menu picker opens a selection interface.",
       "extractionState" : "manual",
