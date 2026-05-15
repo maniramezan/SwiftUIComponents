@@ -53,6 +53,10 @@ struct ContentView: View {
 }
 ```
 
+## AI-Assisted Integration
+
+When using Claude Code or another AI assistant to build with SwiftUIComponents, add a project-level CLAUDE.md so the AI understands the library's API surface. A ready-made snippet — covering imports, theme setup, all components, common patterns, and anti-patterns — is available in [`docs/ai-integration.md`](docs/ai-integration.md).
+
 ## Build & Test
 
 ```bash
