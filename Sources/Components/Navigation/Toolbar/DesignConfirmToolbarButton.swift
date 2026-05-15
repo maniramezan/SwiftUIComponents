@@ -30,21 +30,21 @@ public struct DesignConfirmToolbarButton: ToolbarContent {
 
     public var body: some ToolbarContent {
         #if canImport(UIKit)
-        ToolbarItem(placement: .topBarTrailing) {
-            Button(action: action) {
-                Image(systemName: systemImage)
+            ToolbarItem(placement: .topBarTrailing) {
+                Button(action: action) {
+                    Image(systemName: systemImage)
+                }
+                .disabled(isDisabled)
+                .accessibilityLabel(accessibilityLabel)
             }
-            .disabled(isDisabled)
-            .accessibilityLabel(accessibilityLabel)
-        }
         #else
-        ToolbarItem(placement: .confirmationAction) {
-            Button(action: action) {
-                Image(systemName: systemImage)
+            ToolbarItem(placement: .confirmationAction) {
+                Button(action: action) {
+                    Image(systemName: systemImage)
+                }
+                .disabled(isDisabled)
+                .accessibilityLabel(accessibilityLabel)
             }
-            .disabled(isDisabled)
-            .accessibilityLabel(accessibilityLabel)
-        }
         #endif
     }
 }

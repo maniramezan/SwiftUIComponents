@@ -13,19 +13,19 @@ public struct DesignDismissToolbarButton: ToolbarContent {
 
     public var body: some ToolbarContent {
         #if canImport(UIKit)
-        ToolbarItem(placement: .topBarLeading) {
-            Button(action: action) {
-                Image(systemName: "xmark")
+            ToolbarItem(placement: .topBarLeading) {
+                Button(action: action) {
+                    Image(systemName: "xmark")
+                }
+                .accessibilityLabel(String(localized: Strings.Toolbar.close))
             }
-            .accessibilityLabel(String(localized: Strings.Toolbar.close))
-        }
         #else
-        ToolbarItem(placement: .cancellationAction) {
-            Button(action: action) {
-                Image(systemName: "xmark")
+            ToolbarItem(placement: .cancellationAction) {
+                Button(action: action) {
+                    Image(systemName: "xmark")
+                }
+                .accessibilityLabel(String(localized: Strings.Toolbar.close))
             }
-            .accessibilityLabel(String(localized: Strings.Toolbar.close))
-        }
         #endif
     }
 }
