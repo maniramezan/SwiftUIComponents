@@ -34,4 +34,33 @@ enum Strings {
             comment: "Accessibility hint describing that activating the menu picker opens a selection interface."
         )
     }
+
+    enum Pagination {
+        static let indicatorLabel = LocalizedStringResource(
+            "Page indicator",
+            bundle: .atURL(Bundle.module.bundleURL),
+            comment: "Accessibility label for the page-position indicator of a paged view."
+        )
+
+        static func pageOfTotal(_ index: Int, _ total: Int, _ title: String) -> LocalizedStringResource {
+            LocalizedStringResource(
+                "Page \(index) of \(total), \(title)",
+                bundle: .atURL(Bundle.module.bundleURL),
+                comment:
+                    "Accessibility value announced for the page indicator. Interpolations are the 1-based page number, the total page count, and the title of the current page."
+            )
+        }
+
+        static let nextPageAction = LocalizedStringResource(
+            "Next page",
+            bundle: .atURL(Bundle.module.bundleURL),
+            comment: "Accessibility action label for advancing the paged view to the next page."
+        )
+
+        static let previousPageAction = LocalizedStringResource(
+            "Previous page",
+            bundle: .atURL(Bundle.module.bundleURL),
+            comment: "Accessibility action label for moving the paged view to the previous page."
+        )
+    }
 }

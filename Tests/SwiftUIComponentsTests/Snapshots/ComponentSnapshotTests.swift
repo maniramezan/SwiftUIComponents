@@ -253,6 +253,36 @@ struct ComponentSnapshotTests {
         assertComponentSnapshot(view, size: CGSize(width: 320, height: 280))
     }
 
+    // MARK: - Navigation
+
+    @Test
+    @MainActor func designPagedView() {
+        struct SnapshotPage: Identifiable {
+            let id: Int
+            let title: String
+            let symbol: String
+        }
+        let pages: [SnapshotPage] = [
+            .init(id: 0, title: "Best of 2025", symbol: "sparkles"),
+            .init(id: 1, title: "Spotlight: Health", symbol: "heart.fill"),
+            .init(id: 2, title: "Travel Companions", symbol: "airplane"),
+        ]
+        let view = DesignPagedView(pages, selection: .constant(0), title: \SnapshotPage.title) { page in
+            VStack(spacing: 8) {
+                Image(systemName: page.symbol)
+                    .font(.system(size: 40, weight: .semibold))
+                Text(page.title)
+                    .designTextStyle(.body)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .designCardSurface()
+            .padding(.horizontal, 8)
+        }
+        .frame(width: 390)
+
+        assertComponentSnapshot(view, size: CGSize(width: 390, height: 280))
+    }
+
     // MARK: - Loading
 
     @Test
