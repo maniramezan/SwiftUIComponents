@@ -53,6 +53,13 @@ open Package.swift   # Opens in Xcode — select the ComponentShowcase scheme an
 - ``DesignContainer``
 - ``DesignContainerStyle``
 
+### Navigation
+
+- ``DesignPagedView``
+- ``DesignPaginationIndicatorStyle``
+- ``DesignPaginationPeekDirection``
+- ``DesignPaginationStyle``
+
 ### Feedback
 
 - ``DesignEmptyStateView``

@@ -30,6 +30,7 @@ struct ShowcaseView: View {
                     showcaseSection("Text Styles") { TextStyleShowcase() }
                     showcaseSection("Surfaces") { SurfaceShowcase() }
                     showcaseSection("Containers") { ContainerShowcase() }
+                    showcaseSection("Paged View") { PagedViewShowcase() }
                     showcaseSection("Empty State") { EmptyStateShowcase() }
                     showcaseSection("Loading") { LoadingShowcase() }
                 }
@@ -174,5 +175,96 @@ private struct EmptyStateShowcase: View {
 private struct LoadingShowcase: View {
     var body: some View {
         DesignLoadingView("Loading components…")
+    }
+}
+
+private struct PagedViewShowcase: View {
+    private struct ShowcasePage: Identifiable, Hashable {
+        let id: Int
+        let title: String
+        let summary: String
+        let symbol: String
+    }
+
+    private static let allPages: [ShowcasePage] = [
+        .init(id: 0, title: "Best of 2025", summary: "Editors' picks from across the year.", symbol: "sparkles"),
+        .init(id: 1, title: "Spotlight: Health", summary: "Apps to help you move, eat, sleep, and breathe.", symbol: "heart.fill"),
+        .init(id: 2, title: "Travel Companions", summary: "Plan, book, and remember every trip.", symbol: "airplane"),
+        .init(id: 3, title: "Quiet Tools", summary: "Beautifully focused single-purpose apps.", symbol: "moon.stars.fill"),
+    ]
+
+    @State private var selection: Int = 0
+    @State private var indicatorStyle: DesignPaginationIndicatorStyle = .dots
+    @State private var peekDirection: DesignPaginationPeekDirection = .bidirectional
+    @State private var isRTL: Bool = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            controlsRow
+
+            DesignPagedView(
+                Self.allPages,
+                selection: $selection,
+                title: \ShowcasePage.title,
+                indicatorStyle: indicatorStyle
+            ) { page in
+                pageBody(page)
+            }
+            .designPaginationStyle(.init(peekDirection: peekDirection))
+            .frame(height: 260)
+            .environment(\.layoutDirection, isRTL ? .rightToLeft : .leftToRight)
+        }
+    }
+
+    private var controlsRow: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 8) {
+                ForEach([DesignPaginationIndicatorStyle.dots, .bar, .hidden], id: \.self) { style in
+                    DesignPillChip(label(for: style), isSelected: indicatorStyle == style) {
+                        indicatorStyle = style
+                    }
+                }
+            }
+            HStack(spacing: 8) {
+                ForEach(DesignPaginationPeekDirection.allCases, id: \.self) { direction in
+                    DesignPillChip(label(for: direction), isSelected: peekDirection == direction) {
+                        peekDirection = direction
+                    }
+                }
+            }
+            Toggle("Right-to-Left", isOn: $isRTL)
+                .toggleStyle(DesignToggleStyle())
+        }
+    }
+
+    @ViewBuilder
+    private func pageBody(_ page: ShowcasePage) -> some View {
+        VStack(spacing: 12) {
+            Image(systemName: page.symbol)
+                .font(.system(size: 56, weight: .semibold))
+            Text(page.summary)
+                .designTextStyle(.body)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding()
+        .designCardSurface()
+        .padding(.horizontal, 8)
+    }
+
+    private func label(for style: DesignPaginationIndicatorStyle) -> String {
+        switch style {
+        case .dots: return "Dots"
+        case .bar: return "Bar"
+        case .hidden: return "Hidden"
+        }
+    }
+
+    private func label(for direction: DesignPaginationPeekDirection) -> String {
+        switch direction {
+        case .bidirectional: return "Both"
+        case .unidirectional: return "Next only"
+        case .none: return "No peek"
+        }
     }
 }

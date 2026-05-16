@@ -37,4 +37,18 @@ func themedComponentsAreConstructible() {
                 DesignConfirmToolbarButton(accessibilityLabel: "Save") {}
             }
     }
+
+    let pages: [ConstructionPage] = [
+        ConstructionPage(id: 0, title: "First"),
+        ConstructionPage(id: 1, title: "Second"),
+    ]
+    let pageSelection: Binding<Int> = .constant(0)
+    _ = DesignPagedView(pages, selection: pageSelection, title: \ConstructionPage.title) { page in
+        Text(page.title)
+    }
+}
+
+private struct ConstructionPage: Identifiable {
+    let id: Int
+    let title: String
 }
