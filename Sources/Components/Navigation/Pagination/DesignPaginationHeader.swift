@@ -54,6 +54,7 @@ struct DesignPaginationHeader: View {
                             .font(resolved.titleFont)
                             .foregroundStyle(titleColor(for: index))
                             .opacity(titleOpacity(for: index))
+                            .animation(.easeInOut(duration: 0.2), value: activeIndex)
                             .lineLimit(1)
                             .minimumScaleFactor(0.85)
                             .frame(width: metrics.slotWidth, alignment: .leading)
@@ -114,12 +115,10 @@ struct DesignPaginationHeader: View {
 
     private func titleOpacity(for index: Int) -> Double {
         if index == activeIndex { return 1.0 }
-        guard effectiveDirection == .unidirectional else { return 0.6 }
-        // Fade out titles that have scrolled past to the left.
-        // `behind` is 0 at the transition point and grows to 1 when fully off-screen.
-        let behind = effectiveProgress - CGFloat(index)
-        guard behind > 0 else { return 0.6 }
-        return Double(max(0, 1 - behind)) * 0.6
+        // In next-only mode, previous titles must be fully invisible.
+        // The opacity change is animated via .animation(value: activeIndex) on the Text.
+        if effectiveDirection == .unidirectional && index < activeIndex { return 0.0 }
+        return 0.6
     }
 }
 
