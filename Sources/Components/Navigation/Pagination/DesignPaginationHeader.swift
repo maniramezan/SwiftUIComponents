@@ -113,7 +113,13 @@ struct DesignPaginationHeader: View {
     }
 
     private func titleOpacity(for index: Int) -> Double {
-        index == activeIndex ? 1.0 : 0.6
+        if index == activeIndex { return 1.0 }
+        guard effectiveDirection == .unidirectional else { return 0.6 }
+        // Fade out titles that have scrolled past to the left.
+        // `behind` is 0 at the transition point and grows to 1 when fully off-screen.
+        let behind = effectiveProgress - CGFloat(index)
+        guard behind > 0 else { return 0.6 }
+        return Double(max(0, 1 - behind)) * 0.6
     }
 }
 
