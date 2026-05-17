@@ -304,7 +304,7 @@ extension DesignPagedView {
             adjacentTitleColor: override.adjacentTitleColor ?? theme.colors.textTertiary,
             background: override.background,
             indicatorActiveColor: override.indicatorActiveColor ?? theme.colors.primary,
-            indicatorInactiveColor: override.indicatorInactiveColor ?? theme.colors.containerSecondary,
+            indicatorInactiveColor: override.indicatorInactiveColor ?? theme.colors.disabled,
             peekDirection: override.peekDirection,
             peekWidth: override.peekWidth ?? theme.spacing.fiveUnits,
             headerSpacing: override.headerSpacing ?? theme.spacing.twoUnits,

@@ -123,7 +123,7 @@ private let _indicatorPreviewStyle = ResolvedPaginationStyle(
     adjacentTitleColor: .secondary,
     background: nil,
     indicatorActiveColor: .blue,
-    indicatorInactiveColor: Color(white: 0.85),
+    indicatorInactiveColor: Color.secondary.opacity(0.5),
     peekDirection: .bidirectional,
     peekWidth: 40,
     headerSpacing: 16,
