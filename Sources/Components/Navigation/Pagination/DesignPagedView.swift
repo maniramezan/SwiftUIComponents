@@ -173,14 +173,7 @@ where Data: RandomAccessCollection,
             }
             .scrollTargetLayout()
         }
-        .scrollTargetBehavior(
-            PaginationScrollBehavior(
-                pageWidth: viewportWidth,
-                currentPage: activeIndex,
-                pageCount: pages.count,
-                forwardOnly: styleOverride.peekDirection == .unidirectional
-            )
-        )
+        .scrollTargetBehavior(.paging)
         .scrollPosition(id: scrollPositionBinding)
         .onScrollGeometryChange(for: CGFloat.self) { geometry in
             geometry.contentOffset.x
@@ -188,9 +181,10 @@ where Data: RandomAccessCollection,
             scrollOffsetX = newValue
         }
         .accessibilityScrollAction { edge in
+            let forwardOnly = styleOverride.peekDirection == .unidirectional
             let delta: Int
             switch edge {
-            case .leading, .top: delta = -1
+            case .leading, .top: delta = forwardOnly ? 0 : -1
             case .trailing, .bottom: delta = +1
             @unknown default: delta = +1
             }
@@ -214,18 +208,29 @@ where Data: RandomAccessCollection,
     }
 
     /// Bridges the `ID?` shape required by `scrollPosition(id:)` to the
-    /// non-optional `Binding<ID>` API.
+    /// non-optional `Binding<ID>` API. In unidirectional mode, backward
+    /// scroll-position updates from the paging snap are silently dropped so
+    /// the scroll view immediately corrects itself back to the current page.
     private var scrollPositionBinding: Binding<ID?> {
         Binding(
             get: { selection },
             set: { newValue in
-                if let newValue { selection = newValue }
+                guard let newValue else { return }
+                if styleOverride.peekDirection == .unidirectional {
+                    let current = pages.firstIndex(where: { $0[keyPath: idKeyPath] == selection }) ?? 0
+                    let proposed = pages.firstIndex(where: { $0[keyPath: idKeyPath] == newValue }) ?? 0
+                    guard proposed >= current else { return }
+                }
+                selection = newValue
             }
         )
     }
 
     private func jump(to index: Int, reduceMotion: Bool) {
         guard pages.indices.contains(index) else { return }
+        if styleOverride.peekDirection == .unidirectional {
+            guard index >= activeIndex else { return }
+        }
         let newID = pages[index][keyPath: idKeyPath]
         let animation: Animation =
             reduceMotion ? .easeInOut(duration: 0.15) : theme.motion.standardAnimation
@@ -409,28 +414,6 @@ enum DesignPaginationMath {
         if reduceMotion && usesCrossfade { return 0 }
         if direction == .none { return 0 }
         return max(0, configured)
-    }
-}
-
-// MARK: - Scroll behavior
-
-/// Custom paging `ScrollTargetBehavior` that snaps to page boundaries and,
-/// when `forwardOnly` is `true`, prevents snapping to any page earlier than
-/// the currently-active one (enforcing the unidirectional / next-only UX).
-private struct PaginationScrollBehavior: ScrollTargetBehavior {
-
-    let pageWidth: CGFloat
-    let currentPage: Int
-    let pageCount: Int
-    let forwardOnly: Bool
-
-    func updateTarget(_ target: inout ScrollTarget, context: TargetContext) {
-        guard pageWidth > 0 else { return }
-        let rawPage = target.rect.minX / pageWidth
-        let snappedPage = Int(rawPage.rounded())
-        let minPage = forwardOnly ? currentPage : 0
-        let clampedPage = max(minPage, min(max(0, pageCount - 1), snappedPage))
-        target.rect.origin.x = CGFloat(clampedPage) * pageWidth
     }
 }
 
