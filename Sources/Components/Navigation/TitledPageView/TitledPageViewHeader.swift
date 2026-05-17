@@ -1,7 +1,7 @@
 import DesignSystem
 import SwiftUI
 
-/// Internal title strip drawn above the page content of `DesignPagedView`.
+/// Internal title strip drawn above the page content of `DesignTitledPageView`.
 ///
 /// Renders a horizontal row of page titles offset in lockstep with the
 /// underlying scroll view's content offset, optionally revealing partial
@@ -9,7 +9,7 @@ import SwiftUI
 ///
 /// This view is **internal**; consumers customize its appearance through
 /// ``DesignPaginationStyle`` and the active ``DesignTheme``.
-struct DesignPaginationHeader: View {
+struct TitledPageViewHeader: View {
 
     /// Resolved (theme-merged) configuration used to draw the strip.
     let resolved: ResolvedPaginationStyle
@@ -38,7 +38,7 @@ struct DesignPaginationHeader: View {
 
     var body: some View {
         let effectiveGap: CGFloat = effectiveDirection == .none ? 0 : resolved.titleGap
-        let metrics = DesignPaginationMetrics(
+        let metrics = TitledPageViewMetrics(
             viewportWidth: viewportWidth,
             peek: effectivePeek,
             gap: effectiveGap,
@@ -68,7 +68,7 @@ struct DesignPaginationHeader: View {
                 }
                 .padding(.leading, metrics.leadingPadding)
                 .offset(
-                    x: DesignPaginationMath.headerOffset(
+                    x: TitledPageViewMath.headerOffset(
                         progress: effectiveProgress,
                         stride: metrics.slotStride,
                         layoutSign: layoutSign
@@ -89,7 +89,7 @@ struct DesignPaginationHeader: View {
     /// enabled, so the strip cross-fades between titles rather than
     /// parallax-sliding them.
     private var effectivePeek: CGFloat {
-        DesignPaginationMath.effectivePeek(
+        TitledPageViewMath.effectivePeek(
             configured: resolved.peekWidth,
             direction: resolved.peekDirection,
             reduceMotion: reduceMotion,
@@ -128,115 +128,57 @@ struct DesignPaginationHeader: View {
     }
 }
 
-// MARK: - Metrics
-
-/// Pre-computed widths derived from the viewport size and resolved style.
-struct DesignPaginationMetrics: Equatable, Sendable {
-
-    /// Width of a single title slot inside the HStack.
-    let slotWidth: CGFloat
-
-    /// Distance between adjacent slot leading edges (slot width plus the gap).
-    let slotStride: CGFloat
-
-    /// Leading padding applied to the HStack so slot 0 lands in the right
-    /// place at `progress == 0` for the selected peek direction.
-    let leadingPadding: CGFloat
-
-    init(viewportWidth: CGFloat, peek: CGFloat, gap: CGFloat, direction: DesignPaginationPeekDirection) {
-        self.slotWidth = DesignPaginationMath.slotWidth(
-            viewportWidth: viewportWidth,
-            peek: peek,
-            gap: gap,
-            direction: direction
-        )
-        self.slotStride = DesignPaginationMath.slotStride(
-            viewportWidth: viewportWidth,
-            peek: peek,
-            gap: gap,
-            direction: direction
-        )
-        self.leadingPadding = DesignPaginationMath.headerLeadingPadding(
-            peek: peek,
-            gap: gap,
-            direction: direction
-        )
-    }
-}
-
 // MARK: - Previews
 
-private let _headerPreviewStyle = ResolvedPaginationStyle(
-    titleFont: .title2.bold(),
-    titleColor: .primary,
-    adjacentTitleColor: .secondary,
-    background: nil,
-    indicatorActiveColor: .blue,
-    indicatorInactiveColor: Color.secondary.opacity(0.5),
-    peekDirection: .bidirectional,
-    peekWidth: 40,
-    headerSpacing: 16,
-    titleGap: 16,
-    reduceMotionUsesCrossfade: true
-)
+@MainActor
+private func headerPreviewStyle(theme: any DesignTheme) -> ResolvedPaginationStyle {
+    ResolvedPaginationStyle(
+        titleFont: theme.typography.title2,
+        titleColor: theme.colors.textPrimary,
+        adjacentTitleColor: theme.colors.textSecondary,
+        background: nil,
+        indicatorActiveColor: theme.colors.primary,
+        indicatorInactiveColor: theme.colors.disabled,
+        peekDirection: .bidirectional,
+        peekWidth: theme.spacing.fiveUnits,
+        headerSpacing: theme.spacing.twoUnits,
+        titleGap: theme.spacing.twoUnits,
+        reduceMotionUsesCrossfade: true
+    )
+}
 
 private let _headerPreviewTitles = ["Best of 2025", "Spotlight: Health", "Travel Companions"]
 
 #Preview("Snapped to first page") {
-    DesignPaginationHeader(
-        resolved: _headerPreviewStyle,
-        titles: _headerPreviewTitles,
-        progress: 0,
-        activeIndex: 0,
-        viewportWidth: 360,
-        layoutSign: 1,
-        reduceMotion: false,
-        onJump: { _ in }
-    )
-    .frame(width: 360)
-    .padding(.vertical)
+    DesignPreviewContent { theme in
+        TitledPageViewHeader(
+            resolved: headerPreviewStyle(theme: theme),
+            titles: _headerPreviewTitles,
+            progress: 0,
+            activeIndex: 0,
+            viewportWidth: 360,
+            layoutSign: 1,
+            reduceMotion: false,
+            onJump: { _ in }
+        )
+        .frame(width: 360)
+        .padding(.vertical, theme.spacing.twoUnits)
+    }
 }
 
 #Preview("Mid-swipe between pages 1 and 2") {
-    DesignPaginationHeader(
-        resolved: _headerPreviewStyle,
-        titles: _headerPreviewTitles,
-        progress: 1.4,
-        activeIndex: 1,
-        viewportWidth: 360,
-        layoutSign: 1,
-        reduceMotion: false,
-        onJump: { _ in }
-    )
-    .frame(width: 360)
-    .padding(.vertical)
-}
-
-// MARK: - Resolved style snapshot
-
-/// Plain (non-optional) style values produced by merging
-/// ``DesignPaginationStyle`` overrides with the active ``DesignTheme``.
-///
-/// Held by ``DesignPaginationHeader`` and ``DesignPaginationIndicator`` so
-/// they don't need to re-resolve theme tokens at every layout pass.
-struct ResolvedPaginationStyle: Equatable {
-    let titleFont: Font
-    let titleColor: Color
-    let adjacentTitleColor: Color
-    let background: AnyShapeStyle?
-    let indicatorActiveColor: Color
-    let indicatorInactiveColor: Color
-    let peekDirection: DesignPaginationPeekDirection
-    let peekWidth: CGFloat
-    let headerSpacing: CGFloat
-    let titleGap: CGFloat
-    let reduceMotionUsesCrossfade: Bool
-
-    static func == (lhs: ResolvedPaginationStyle, rhs: ResolvedPaginationStyle) -> Bool {
-        lhs.peekDirection == rhs.peekDirection
-            && lhs.peekWidth == rhs.peekWidth
-            && lhs.headerSpacing == rhs.headerSpacing
-            && lhs.titleGap == rhs.titleGap
-            && lhs.reduceMotionUsesCrossfade == rhs.reduceMotionUsesCrossfade
+    DesignPreviewContent { theme in
+        TitledPageViewHeader(
+            resolved: headerPreviewStyle(theme: theme),
+            titles: _headerPreviewTitles,
+            progress: 1.4,
+            activeIndex: 1,
+            viewportWidth: 360,
+            layoutSign: 1,
+            reduceMotion: false,
+            onJump: { _ in }
+        )
+        .frame(width: 360)
+        .padding(.vertical, theme.spacing.twoUnits)
     }
 }

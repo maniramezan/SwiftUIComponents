@@ -1,6 +1,6 @@
 import Foundation
 
-/// Visual treatment for the page-position indicator drawn by ``DesignPagedView``.
+/// Visual treatment for the page-position indicator drawn by ``DesignTitledPageView``.
 public enum DesignPaginationIndicatorStyle: Sendable, Hashable, CaseIterable {
 
     /// A row of small filled circles — the active page is drawn with the

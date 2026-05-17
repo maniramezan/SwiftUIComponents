@@ -22,8 +22,10 @@ public struct DesignInputSurface: ViewModifier {
 }
 
 #Preview("Design Input Surface") {
-    Text("Input surface")
-        .padding()
-        .designInputSurface()
-        .padding()
+    DesignPreviewContent { theme in
+        Text("Input surface")
+            .padding(theme.spacing.twoUnits)
+            .designInputSurface()
+            .padding(theme.spacing.twoUnits)
+    }
 }

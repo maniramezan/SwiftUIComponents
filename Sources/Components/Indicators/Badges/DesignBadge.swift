@@ -29,9 +29,11 @@ public struct DesignBadge: View {
 }
 
 #Preview("Design Badges") {
-    HStack(spacing: 8) {
-        DesignBadge("Beta")
-        DesignBadge("New", isProminent: true)
+    DesignPreviewContent { theme in
+        HStack(spacing: theme.spacing.oneUnit) {
+            DesignBadge("Beta")
+            DesignBadge("New", isProminent: true)
+        }
+        .padding(theme.spacing.twoUnits)
     }
-    .padding()
 }

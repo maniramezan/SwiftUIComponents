@@ -56,14 +56,16 @@ public extension View {
 }
 
 #Preview("Selectable Card Surface") {
-    HStack(spacing: 12) {
-        Text("Unselected")
-            .padding()
-            .designSelectableCardSurface(isSelected: false)
-        Text("Selected")
-            .padding()
-            .designSelectableCardSurface(isSelected: true)
+    DesignPreviewContent { theme in
+        HStack(spacing: theme.spacing.oneAndHalfUnits) {
+            Text("Unselected")
+                .padding(theme.spacing.twoUnits)
+                .designSelectableCardSurface(isSelected: false)
+            Text("Selected")
+                .padding(theme.spacing.twoUnits)
+                .designSelectableCardSurface(isSelected: true)
+        }
+        .padding(theme.spacing.twoUnits)
+        .background(Color.teal.gradient)
     }
-    .padding()
-    .background(Color.teal.gradient)
 }

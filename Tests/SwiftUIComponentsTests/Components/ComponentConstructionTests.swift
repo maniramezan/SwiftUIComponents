@@ -43,7 +43,7 @@ func themedComponentsAreConstructible() {
         ConstructionPage(id: 1, title: "Second"),
     ]
     let pageSelection: Binding<Int> = .constant(0)
-    _ = DesignPagedView(pages, selection: pageSelection, title: \ConstructionPage.title) { page in
+    _ = DesignTitledPageView(pages, selection: pageSelection, title: \ConstructionPage.title) { page in
         Text(page.title)
     }
 }

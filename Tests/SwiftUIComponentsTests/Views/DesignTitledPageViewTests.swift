@@ -19,7 +19,7 @@ private func makePages(_ count: Int) -> [PagedFixturePage] {
 
 @Test("progress is zero when viewport width is zero")
 func progressIsZeroForUnmeasuredViewport() {
-    let result = DesignPagedView<[PagedFixturePage], Int, EmptyView>.progress(
+    let result = DesignTitledPageView<[PagedFixturePage], Int, EmptyView>.progress(
         contentOffsetX: 250,
         viewportWidth: 0
     )
@@ -28,7 +28,7 @@ func progressIsZeroForUnmeasuredViewport() {
 
 @Test("progress equals offset divided by viewport width")
 func progressDividesOffsetByViewport() {
-    let result = DesignPagedView<[PagedFixturePage], Int, EmptyView>.progress(
+    let result = DesignTitledPageView<[PagedFixturePage], Int, EmptyView>.progress(
         contentOffsetX: 400,
         viewportWidth: 200
     )
@@ -39,7 +39,7 @@ func progressDividesOffsetByViewport() {
 
 @Test("stepIndex returns starting index when count is zero")
 func stepIndexHandlesEmptyCollection() {
-    let result = DesignPagedView<[PagedFixturePage], Int, EmptyView>.stepIndex(
+    let result = DesignTitledPageView<[PagedFixturePage], Int, EmptyView>.stepIndex(
         by: 3,
         from: 0,
         count: 0
@@ -49,7 +49,7 @@ func stepIndexHandlesEmptyCollection() {
 
 @Test("stepIndex clamps to upper bound")
 func stepIndexClampsAtUpperBound() {
-    let result = DesignPagedView<[PagedFixturePage], Int, EmptyView>.stepIndex(
+    let result = DesignTitledPageView<[PagedFixturePage], Int, EmptyView>.stepIndex(
         by: +5,
         from: 4,
         count: 5
@@ -59,7 +59,7 @@ func stepIndexClampsAtUpperBound() {
 
 @Test("stepIndex clamps to lower bound")
 func stepIndexClampsAtLowerBound() {
-    let result = DesignPagedView<[PagedFixturePage], Int, EmptyView>.stepIndex(
+    let result = DesignTitledPageView<[PagedFixturePage], Int, EmptyView>.stepIndex(
         by: -5,
         from: 0,
         count: 5
@@ -69,10 +69,57 @@ func stepIndexClampsAtLowerBound() {
 
 @Test("stepIndex advances by signed delta")
 func stepIndexAdvancesBySignedDelta() {
-    let plus = DesignPagedView<[PagedFixturePage], Int, EmptyView>.stepIndex(by: +1, from: 1, count: 5)
-    let minus = DesignPagedView<[PagedFixturePage], Int, EmptyView>.stepIndex(by: -1, from: 1, count: 5)
+    let plus = DesignTitledPageView<[PagedFixturePage], Int, EmptyView>.stepIndex(by: +1, from: 1, count: 5)
+    let minus = DesignTitledPageView<[PagedFixturePage], Int, EmptyView>.stepIndex(by: -1, from: 1, count: 5)
     #expect(plus == 2)
     #expect(minus == 0)
+}
+
+// MARK: - accessibilityStep
+
+@Test("accessibilityStep maps horizontal edges in left-to-right layout")
+func accessibilityStepMapsHorizontalEdgesInLTR() {
+    let leading = DesignTitledPageView<[PagedFixturePage], Int, EmptyView>.accessibilityStep(
+        for: .leading,
+        layoutDirection: .leftToRight
+    )
+    let trailing = DesignTitledPageView<[PagedFixturePage], Int, EmptyView>.accessibilityStep(
+        for: .trailing,
+        layoutDirection: .leftToRight
+    )
+
+    #expect(leading == -1)
+    #expect(trailing == +1)
+}
+
+@Test("accessibilityStep flips horizontal edges in right-to-left layout")
+func accessibilityStepMapsHorizontalEdgesInRTL() {
+    let leading = DesignTitledPageView<[PagedFixturePage], Int, EmptyView>.accessibilityStep(
+        for: .leading,
+        layoutDirection: .rightToLeft
+    )
+    let trailing = DesignTitledPageView<[PagedFixturePage], Int, EmptyView>.accessibilityStep(
+        for: .trailing,
+        layoutDirection: .rightToLeft
+    )
+
+    #expect(leading == +1)
+    #expect(trailing == -1)
+}
+
+@Test("accessibilityStep keeps vertical fallback stable")
+func accessibilityStepMapsVerticalEdges() {
+    let top = DesignTitledPageView<[PagedFixturePage], Int, EmptyView>.accessibilityStep(
+        for: .top,
+        layoutDirection: .leftToRight
+    )
+    let bottom = DesignTitledPageView<[PagedFixturePage], Int, EmptyView>.accessibilityStep(
+        for: .bottom,
+        layoutDirection: .rightToLeft
+    )
+
+    #expect(top == -1)
+    #expect(bottom == +1)
 }
 
 // MARK: - shouldShowIndicator
@@ -80,13 +127,13 @@ func stepIndexAdvancesBySignedDelta() {
 @Test("shouldShowIndicator is false for the hidden style regardless of count")
 func shouldShowIndicatorHiddenAlwaysFalse() {
     #expect(
-        DesignPagedView<[PagedFixturePage], Int, EmptyView>.shouldShowIndicator(
+        DesignTitledPageView<[PagedFixturePage], Int, EmptyView>.shouldShowIndicator(
             count: 5,
             style: .hidden
         ) == false
     )
     #expect(
-        DesignPagedView<[PagedFixturePage], Int, EmptyView>.shouldShowIndicator(
+        DesignTitledPageView<[PagedFixturePage], Int, EmptyView>.shouldShowIndicator(
             count: 0,
             style: .hidden
         ) == false
@@ -96,13 +143,13 @@ func shouldShowIndicatorHiddenAlwaysFalse() {
 @Test("shouldShowIndicator is false when there is only a single page")
 func shouldShowIndicatorHidesForSinglePage() {
     #expect(
-        DesignPagedView<[PagedFixturePage], Int, EmptyView>.shouldShowIndicator(
+        DesignTitledPageView<[PagedFixturePage], Int, EmptyView>.shouldShowIndicator(
             count: 1,
             style: .dots
         ) == false
     )
     #expect(
-        DesignPagedView<[PagedFixturePage], Int, EmptyView>.shouldShowIndicator(
+        DesignTitledPageView<[PagedFixturePage], Int, EmptyView>.shouldShowIndicator(
             count: 1,
             style: .bar
         ) == false
@@ -112,26 +159,26 @@ func shouldShowIndicatorHidesForSinglePage() {
 @Test("shouldShowIndicator is true for multiple pages with a visible style")
 func shouldShowIndicatorShowsForMultiplePages() {
     #expect(
-        DesignPagedView<[PagedFixturePage], Int, EmptyView>.shouldShowIndicator(
+        DesignTitledPageView<[PagedFixturePage], Int, EmptyView>.shouldShowIndicator(
             count: 4,
             style: .dots
         ) == true
     )
     #expect(
-        DesignPagedView<[PagedFixturePage], Int, EmptyView>.shouldShowIndicator(
+        DesignTitledPageView<[PagedFixturePage], Int, EmptyView>.shouldShowIndicator(
             count: 4,
             style: .bar
         ) == true
     )
 }
 
-// MARK: - DesignPaginationMath.slotWidth / slotStride / leadingPadding
+// MARK: - TitledPageViewMath.slotWidth / slotStride / leadingPadding
 
 @Test("Bidirectional layout leaves room for two peeks and two gaps")
 func bidirectionalSlotWidthAndStride() {
-    let width = DesignPaginationMath.slotWidth(viewportWidth: 400, peek: 40, gap: 16, direction: .bidirectional)
-    let stride = DesignPaginationMath.slotStride(viewportWidth: 400, peek: 40, gap: 16, direction: .bidirectional)
-    let padding = DesignPaginationMath.headerLeadingPadding(peek: 40, gap: 16, direction: .bidirectional)
+    let width = TitledPageViewMath.slotWidth(viewportWidth: 400, peek: 40, gap: 16, direction: .bidirectional)
+    let stride = TitledPageViewMath.slotStride(viewportWidth: 400, peek: 40, gap: 16, direction: .bidirectional)
+    let padding = TitledPageViewMath.headerLeadingPadding(peek: 40, gap: 16, direction: .bidirectional)
     // 400 − 2×40 − 2×16 = 288
     #expect(width == 288)
     // 288 + 16 = 304
@@ -142,9 +189,9 @@ func bidirectionalSlotWidthAndStride() {
 
 @Test("Unidirectional layout reserves a single peek plus gap on the trailing edge")
 func unidirectionalSlotWidthAndStride() {
-    let width = DesignPaginationMath.slotWidth(viewportWidth: 400, peek: 40, gap: 16, direction: .unidirectional)
-    let stride = DesignPaginationMath.slotStride(viewportWidth: 400, peek: 40, gap: 16, direction: .unidirectional)
-    let padding = DesignPaginationMath.headerLeadingPadding(peek: 40, gap: 16, direction: .unidirectional)
+    let width = TitledPageViewMath.slotWidth(viewportWidth: 400, peek: 40, gap: 16, direction: .unidirectional)
+    let stride = TitledPageViewMath.slotStride(viewportWidth: 400, peek: 40, gap: 16, direction: .unidirectional)
+    let padding = TitledPageViewMath.headerLeadingPadding(peek: 40, gap: 16, direction: .unidirectional)
     // 400 − 40 − 16 = 344
     #expect(width == 344)
     // 344 + 16 = 360
@@ -155,9 +202,9 @@ func unidirectionalSlotWidthAndStride() {
 
 @Test("None peek mode fills the viewport with each slot and uses no gap")
 func noneSlotWidthAndStride() {
-    let width = DesignPaginationMath.slotWidth(viewportWidth: 400, peek: 0, gap: 0, direction: .none)
-    let stride = DesignPaginationMath.slotStride(viewportWidth: 400, peek: 0, gap: 0, direction: .none)
-    let padding = DesignPaginationMath.headerLeadingPadding(peek: 0, gap: 0, direction: .none)
+    let width = TitledPageViewMath.slotWidth(viewportWidth: 400, peek: 0, gap: 0, direction: .none)
+    let stride = TitledPageViewMath.slotStride(viewportWidth: 400, peek: 0, gap: 0, direction: .none)
+    let padding = TitledPageViewMath.headerLeadingPadding(peek: 0, gap: 0, direction: .none)
     #expect(width == 400)
     #expect(stride == 400)
     #expect(padding == 0)
@@ -165,54 +212,54 @@ func noneSlotWidthAndStride() {
 
 @Test("slotWidth clamps to zero when the viewport is too small for the peek and gap")
 func slotWidthClampsToZeroForTinyViewport() {
-    let width = DesignPaginationMath.slotWidth(viewportWidth: 50, peek: 40, gap: 16, direction: .bidirectional)
+    let width = TitledPageViewMath.slotWidth(viewportWidth: 50, peek: 40, gap: 16, direction: .bidirectional)
     #expect(width == 0)
 }
 
-// MARK: - DesignPaginationMath.headerOffset
+// MARK: - TitledPageViewMath.headerOffset
 
 @Test("Header offset is zero at progress zero for every peek mode")
 func headerOffsetZeroAtZeroProgress() {
     for direction in DesignPaginationPeekDirection.allCases {
-        let stride = DesignPaginationMath.slotStride(viewportWidth: 400, peek: 40, gap: 16, direction: direction)
-        let offset = DesignPaginationMath.headerOffset(progress: 0, stride: stride, layoutSign: 1)
+        let stride = TitledPageViewMath.slotStride(viewportWidth: 400, peek: 40, gap: 16, direction: direction)
+        let offset = TitledPageViewMath.headerOffset(progress: 0, stride: stride, layoutSign: 1)
         #expect(offset == 0, "expected 0 offset at progress=0 for \(direction)")
     }
 }
 
 @Test("Bidirectional header offset at progress one equals negative stride in LTR")
 func bidirectionalFullProgressInLTR() {
-    let stride = DesignPaginationMath.slotStride(viewportWidth: 400, peek: 40, gap: 16, direction: .bidirectional)
-    let offset = DesignPaginationMath.headerOffset(progress: 1, stride: stride, layoutSign: 1)
+    let stride = TitledPageViewMath.slotStride(viewportWidth: 400, peek: 40, gap: 16, direction: .bidirectional)
+    let offset = TitledPageViewMath.headerOffset(progress: 1, stride: stride, layoutSign: 1)
     #expect(offset == -304)
 }
 
 @Test("Unidirectional header offset at progress one equals negative stride in LTR")
 func unidirectionalFullProgressInLTR() {
-    let stride = DesignPaginationMath.slotStride(viewportWidth: 400, peek: 40, gap: 16, direction: .unidirectional)
-    let offset = DesignPaginationMath.headerOffset(progress: 1, stride: stride, layoutSign: 1)
+    let stride = TitledPageViewMath.slotStride(viewportWidth: 400, peek: 40, gap: 16, direction: .unidirectional)
+    let offset = TitledPageViewMath.headerOffset(progress: 1, stride: stride, layoutSign: 1)
     #expect(offset == -360)
 }
 
 @Test("None header offset at progress one equals negative viewport width")
 func noneFullProgressInLTR() {
-    let stride = DesignPaginationMath.slotStride(viewportWidth: 400, peek: 0, gap: 0, direction: .none)
-    let offset = DesignPaginationMath.headerOffset(progress: 1, stride: stride, layoutSign: 1)
+    let stride = TitledPageViewMath.slotStride(viewportWidth: 400, peek: 0, gap: 0, direction: .none)
+    let offset = TitledPageViewMath.headerOffset(progress: 1, stride: stride, layoutSign: 1)
     #expect(offset == -400)
 }
 
 @Test("RTL flips the sign of the header offset")
 func rtlFlipsHeaderOffset() {
-    let stride = DesignPaginationMath.slotStride(viewportWidth: 400, peek: 40, gap: 16, direction: .bidirectional)
-    let ltr = DesignPaginationMath.headerOffset(progress: 1, stride: stride, layoutSign: 1)
-    let rtl = DesignPaginationMath.headerOffset(progress: 1, stride: stride, layoutSign: -1)
+    let stride = TitledPageViewMath.slotStride(viewportWidth: 400, peek: 40, gap: 16, direction: .bidirectional)
+    let ltr = TitledPageViewMath.headerOffset(progress: 1, stride: stride, layoutSign: 1)
+    let rtl = TitledPageViewMath.headerOffset(progress: 1, stride: stride, layoutSign: -1)
     #expect(ltr == -304)
     #expect(rtl == 304)
 }
 
 @Test("Header offset is linear in progress")
 func headerOffsetLinearInProgress() {
-    let stride = DesignPaginationMath.slotStride(viewportWidth: 400, peek: 40, gap: 16, direction: .bidirectional)
+    let stride = TitledPageViewMath.slotStride(viewportWidth: 400, peek: 40, gap: 16, direction: .bidirectional)
     let offsets: [(CGFloat, CGFloat)] = [
         (0.0, 0),
         (0.25, -76),
@@ -221,16 +268,16 @@ func headerOffsetLinearInProgress() {
         (1.0, -304),
     ]
     for (progress, expected) in offsets {
-        let value = DesignPaginationMath.headerOffset(progress: progress, stride: stride, layoutSign: 1)
+        let value = TitledPageViewMath.headerOffset(progress: progress, stride: stride, layoutSign: 1)
         #expect(abs(value - expected) < 0.0001, "progress=\(progress) → \(value), expected \(expected)")
     }
 }
 
-// MARK: - DesignPaginationMath.effectivePeek
+// MARK: - TitledPageViewMath.effectivePeek
 
 @Test("Effective peek collapses to zero under Reduce Motion when crossfade is enabled")
 func effectivePeekCollapsesUnderReduceMotion() {
-    let value = DesignPaginationMath.effectivePeek(
+    let value = TitledPageViewMath.effectivePeek(
         configured: 40,
         direction: .bidirectional,
         reduceMotion: true,
@@ -241,7 +288,7 @@ func effectivePeekCollapsesUnderReduceMotion() {
 
 @Test("Effective peek is preserved when Reduce Motion is off")
 func effectivePeekPreservedWithoutReduceMotion() {
-    let value = DesignPaginationMath.effectivePeek(
+    let value = TitledPageViewMath.effectivePeek(
         configured: 40,
         direction: .bidirectional,
         reduceMotion: false,
@@ -252,7 +299,7 @@ func effectivePeekPreservedWithoutReduceMotion() {
 
 @Test("Effective peek respects the .none direction regardless of configuration")
 func effectivePeekIsZeroForNoneDirection() {
-    let value = DesignPaginationMath.effectivePeek(
+    let value = TitledPageViewMath.effectivePeek(
         configured: 40,
         direction: .none,
         reduceMotion: false,
@@ -263,7 +310,7 @@ func effectivePeekIsZeroForNoneDirection() {
 
 @Test("Effective peek preserves configured value under Reduce Motion when crossfade is opted out")
 func effectivePeekHonorsCrossfadeOptOut() {
-    let value = DesignPaginationMath.effectivePeek(
+    let value = TitledPageViewMath.effectivePeek(
         configured: 40,
         direction: .bidirectional,
         reduceMotion: true,
@@ -278,11 +325,11 @@ func effectivePeekHonorsCrossfadeOptOut() {
 @MainActor
 func resolveStyleFallsBackToTheme() {
     let theme = DefaultDesignTheme()
-    let resolved = DesignPagedView<[PagedFixturePage], Int, EmptyView>.resolveStyle(
+    let resolved = DesignTitledPageView<[PagedFixturePage], Int, EmptyView>.resolveStyle(
         override: DesignPaginationStyle(),
         theme: theme
     )
-    #expect(resolved.peekDirection == .unidirectional)
+    #expect(resolved.peekDirection == .bidirectional)
     #expect(resolved.peekWidth == theme.spacing.fiveUnits)
     #expect(resolved.headerSpacing == theme.spacing.twoUnits)
     #expect(resolved.titleGap == theme.spacing.twoUnits)
@@ -300,7 +347,7 @@ func resolveStylePrefersOverrides() {
     override.titleGap = 5
     override.reduceMotionUsesCrossfade = false
 
-    let resolved = DesignPagedView<[PagedFixturePage], Int, EmptyView>.resolveStyle(
+    let resolved = DesignTitledPageView<[PagedFixturePage], Int, EmptyView>.resolveStyle(
         override: override,
         theme: theme
     )
@@ -313,13 +360,13 @@ func resolveStylePrefersOverrides() {
 
 // MARK: - API construction smoke tests
 
-@Test("DesignPagedView is constructible with a KeyPath-based id")
+@Test("DesignTitledPageView is constructible with a KeyPath-based id")
 @MainActor
 func designPagedViewConstructibleWithKeyPathID() {
     let pages = makePages(3)
     var selected = pages[0].id
     let binding = Binding(get: { selected }, set: { selected = $0 })
-    _ = DesignPagedView(
+    _ = DesignTitledPageView(
         pages,
         selection: binding,
         id: \PagedFixturePage.id,
@@ -330,13 +377,13 @@ func designPagedViewConstructibleWithKeyPathID() {
     }
 }
 
-@Test("DesignPagedView Identifiable convenience initializer compiles and runs")
+@Test("DesignTitledPageView Identifiable convenience initializer compiles and runs")
 @MainActor
 func designPagedViewConstructibleWithIdentifiableConvenience() {
     let pages = makePages(4)
     var selected = pages[1].id
     let binding = Binding(get: { selected }, set: { selected = $0 })
-    _ = DesignPagedView(
+    _ = DesignTitledPageView(
         pages,
         selection: binding,
         title: \PagedFixturePage.title
@@ -345,16 +392,16 @@ func designPagedViewConstructibleWithIdentifiableConvenience() {
     }
 }
 
-@Test("DesignPagedView accepts the bar and hidden indicator styles")
+@Test("DesignTitledPageView accepts the bar and hidden indicator styles")
 @MainActor
 func designPagedViewAcceptsAllIndicatorStyles() {
     let pages = makePages(2)
     var selected = pages[0].id
     let binding = Binding(get: { selected }, set: { selected = $0 })
-    _ = DesignPagedView(pages, selection: binding, title: \PagedFixturePage.title, indicatorStyle: .bar) { p in
+    _ = DesignTitledPageView(pages, selection: binding, title: \PagedFixturePage.title, indicatorStyle: .bar) { p in
         Text(p.title)
     }
-    _ = DesignPagedView(pages, selection: binding, title: \PagedFixturePage.title, indicatorStyle: .hidden) { p in
+    _ = DesignTitledPageView(pages, selection: binding, title: \PagedFixturePage.title, indicatorStyle: .hidden) { p in
         Text(p.title)
     }
 }

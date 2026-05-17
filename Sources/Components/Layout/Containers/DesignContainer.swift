@@ -63,16 +63,18 @@ public struct DesignContainer<Content: View>: View {
 }
 
 #Preview("Design Containers") {
-    VStack(spacing: 12) {
-        DesignContainer(style: .card) {
-            Text("Card container")
+    DesignPreviewContent { theme in
+        VStack(spacing: theme.spacing.oneAndHalfUnits) {
+            DesignContainer(style: .card) {
+                Text("Card container")
+            }
+            DesignContainer(style: .elevated) {
+                Text("Elevated container")
+            }
+            DesignContainer(style: .outlined) {
+                Text("Outlined container")
+            }
         }
-        DesignContainer(style: .elevated) {
-            Text("Elevated container")
-        }
-        DesignContainer(style: .outlined) {
-            Text("Outlined container")
-        }
+        .padding(theme.spacing.twoUnits)
     }
-    .padding()
 }

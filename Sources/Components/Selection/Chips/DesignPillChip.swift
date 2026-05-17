@@ -31,10 +31,12 @@ public struct DesignPillChip: View {
 }
 
 #Preview("Design Pill Chips") {
-    HStack(spacing: 8) {
-        DesignPillChip("All", isSelected: true) {}
-        DesignPillChip("Recent", isSelected: false) {}
-        DesignPillChip("Favorites", isSelected: false) {}
+    DesignPreviewContent { theme in
+        HStack(spacing: theme.spacing.oneUnit) {
+            DesignPillChip("All", isSelected: true) {}
+            DesignPillChip("Recent", isSelected: false) {}
+            DesignPillChip("Favorites", isSelected: false) {}
+        }
+        .padding(theme.spacing.twoUnits)
     }
-    .padding()
 }

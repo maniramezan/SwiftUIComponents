@@ -159,9 +159,11 @@ public struct MenuPicker<Item: MenuPickerItem>: View {
 
 #Preview {
     @Previewable @State var currentValue = 9
-    MenuPicker(items: 9...17, currentValue: $currentValue)
-        .padding()
-        .background(Color.pink)
+    DesignPreviewContent { theme in
+        MenuPicker(items: 9...17, currentValue: $currentValue)
+            .padding(theme.spacing.twoUnits)
+            .background(Color.pink)
+    }
 }
 
 #if canImport(UIKit)

@@ -26,6 +26,8 @@ public struct DesignErrorBanner: View {
 }
 
 #Preview("Design Error Banner") {
-    DesignErrorBanner("Something went wrong. Please try again.")
-        .padding()
+    DesignPreviewContent { theme in
+        DesignErrorBanner("Something went wrong. Please try again.")
+            .padding(theme.spacing.twoUnits)
+    }
 }

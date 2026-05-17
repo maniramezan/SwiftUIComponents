@@ -51,12 +51,14 @@ public struct DesignEmptyStateView<Action: View>: View {
 }
 
 #Preview("Design Empty State") {
-    DesignEmptyStateView(
-        title: "No Components",
-        message: "Create your first reusable component to get started.",
-        systemImage: "shippingbox"
-    ) {
-        DesignButton("Create Component") {}
+    DesignPreviewContent { theme in
+        DesignEmptyStateView(
+            title: "No Components",
+            message: "Create your first reusable component to get started.",
+            systemImage: "shippingbox"
+        ) {
+            DesignButton("Create Component") {}
+        }
+        .padding(theme.spacing.twoUnits)
     }
-    .padding()
 }

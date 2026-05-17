@@ -19,10 +19,19 @@ public extension View {
 }
 
 #Preview("Design Surface Modifiers") {
-    VStack(spacing: 12) {
-        Text("Card").padding().designCardSurface()
-        Text("Capsule").padding(.horizontal, 16).padding(.vertical, 8).designCapsuleSurface()
-        Text("Input").padding().designInputSurface()
+    DesignPreviewContent { theme in
+        VStack(spacing: theme.spacing.oneAndHalfUnits) {
+            Text("Card")
+                .padding(theme.spacing.twoUnits)
+                .designCardSurface()
+            Text("Capsule")
+                .padding(.horizontal, theme.spacing.twoUnits)
+                .padding(.vertical, theme.spacing.oneUnit)
+                .designCapsuleSurface()
+            Text("Input")
+                .padding(theme.spacing.twoUnits)
+                .designInputSurface()
+        }
+        .padding(theme.spacing.twoUnits)
     }
-    .padding()
 }

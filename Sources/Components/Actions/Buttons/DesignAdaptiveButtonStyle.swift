@@ -28,12 +28,14 @@ public extension View {
 }
 
 #Preview("Adaptive Button Style") {
-    VStack(spacing: 12) {
-        Button("Default") {}
-            .designAdaptiveButtonStyle()
-        Button("Prominent") {}
-            .designAdaptiveButtonStyle(prominent: true)
+    DesignPreviewContent { theme in
+        VStack(spacing: theme.spacing.oneAndHalfUnits) {
+            Button("Default") {}
+                .designAdaptiveButtonStyle()
+            Button("Prominent") {}
+                .designAdaptiveButtonStyle(prominent: true)
+        }
+        .padding(theme.spacing.twoUnits)
+        .background(Color.teal.gradient)
     }
-    .padding()
-    .background(Color.teal.gradient)
 }

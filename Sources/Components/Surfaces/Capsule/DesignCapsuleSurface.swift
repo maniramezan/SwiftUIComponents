@@ -21,15 +21,17 @@ public struct DesignCapsuleSurface: ViewModifier {
 }
 
 #Preview("Design Capsule Surface") {
-    HStack(spacing: 8) {
-        Text("Default")
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
-            .designCapsuleSurface()
-        Text("Selected")
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
-            .designCapsuleSurface(isSelected: true)
+    DesignPreviewContent { theme in
+        HStack(spacing: theme.spacing.oneUnit) {
+            Text("Default")
+                .padding(.horizontal, theme.spacing.twoUnits)
+                .padding(.vertical, theme.spacing.oneUnit)
+                .designCapsuleSurface()
+            Text("Selected")
+                .padding(.horizontal, theme.spacing.twoUnits)
+                .padding(.vertical, theme.spacing.oneUnit)
+                .designCapsuleSurface(isSelected: true)
+        }
+        .padding(theme.spacing.twoUnits)
     }
-    .padding()
 }
