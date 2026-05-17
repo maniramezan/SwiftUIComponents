@@ -111,7 +111,8 @@ where Data: RandomAccessCollection,
                     activeIndex: activeIdx,
                     viewportWidth: viewportWidth,
                     layoutSign: layoutDirection == .rightToLeft ? -1 : 1,
-                    reduceMotion: reduceMotion
+                    reduceMotion: reduceMotion,
+                    onJump: { idx in jump(to: idx, reduceMotion: reduceMotion) }
                 )
             } else if let only = titles.first {
                 Text(only)
@@ -172,7 +173,14 @@ where Data: RandomAccessCollection,
             }
             .scrollTargetLayout()
         }
-        .scrollTargetBehavior(.paging)
+        .scrollTargetBehavior(
+            PaginationScrollBehavior(
+                pageWidth: viewportWidth,
+                currentPage: activeIndex,
+                pageCount: pages.count,
+                forwardOnly: styleOverride.peekDirection == .unidirectional
+            )
+        )
         .scrollPosition(id: scrollPositionBinding)
         .onScrollGeometryChange(for: CGFloat.self) { geometry in
             geometry.contentOffset.x
@@ -401,6 +409,28 @@ enum DesignPaginationMath {
         if reduceMotion && usesCrossfade { return 0 }
         if direction == .none { return 0 }
         return max(0, configured)
+    }
+}
+
+// MARK: - Scroll behavior
+
+/// Custom paging `ScrollTargetBehavior` that snaps to page boundaries and,
+/// when `forwardOnly` is `true`, prevents snapping to any page earlier than
+/// the currently-active one (enforcing the unidirectional / next-only UX).
+private struct PaginationScrollBehavior: ScrollTargetBehavior {
+
+    let pageWidth: CGFloat
+    let currentPage: Int
+    let pageCount: Int
+    let forwardOnly: Bool
+
+    func updateTarget(_ target: inout ScrollTarget, context: TargetContext) {
+        guard pageWidth > 0 else { return }
+        let rawPage = target.rect.minX / pageWidth
+        let snappedPage = Int(rawPage.rounded())
+        let minPage = forwardOnly ? currentPage : 0
+        let clampedPage = max(minPage, min(max(0, pageCount - 1), snappedPage))
+        target.rect.origin.x = CGFloat(clampedPage) * pageWidth
     }
 }
 
