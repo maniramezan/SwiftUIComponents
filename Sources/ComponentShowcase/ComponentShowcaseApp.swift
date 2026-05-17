@@ -195,7 +195,7 @@ private struct PagedViewShowcase: View {
 
     @State private var selection: Int = 0
     @State private var indicatorStyle: DesignPaginationIndicatorStyle = .dots
-    @State private var peekDirection: DesignPaginationPeekDirection = .bidirectional
+    @State private var peekDirection: DesignPaginationPeekDirection = .unidirectional
     @State private var isRTL: Bool = false
 
     var body: some View {

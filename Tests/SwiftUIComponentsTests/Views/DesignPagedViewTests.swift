@@ -282,7 +282,7 @@ func resolveStyleFallsBackToTheme() {
         override: DesignPaginationStyle(),
         theme: theme
     )
-    #expect(resolved.peekDirection == .bidirectional)
+    #expect(resolved.peekDirection == .unidirectional)
     #expect(resolved.peekWidth == theme.spacing.fiveUnits)
     #expect(resolved.headerSpacing == theme.spacing.twoUnits)
     #expect(resolved.titleGap == theme.spacing.twoUnits)
