@@ -4,35 +4,35 @@ A platform-agnostic design token layer providing spacing, radius, stroke, motion
 
 ## Overview
 
-`DesignSystem` defines protocols and default implementations for every visual token a UI component might need. Inject a custom ``DesignTheme`` via the SwiftUI environment to rebrand the entire component library without changing component source code.
+`DesignSystem` defines protocols and default implementations for every visual token a UI component might need. Inject a custom ``Theme`` via the SwiftUI environment to rebrand the entire component library without changing component source code.
 
 ## Topics
 
 ### Theme
 
-- ``DesignTheme``
-- ``DefaultDesignTheme``
+- ``Theme``
+- ``DefaultTheme``
 
 ### Colors
 
-- ``DesignColorTheme``
-- ``DefaultDesignColors``
+- ``ColorTheme``
+- ``DefaultColors``
 
 ### Typography
 
-- ``DesignTypography``
-- ``DefaultDesignTypography``
+- ``Typography``
+- ``DefaultTypography``
 
 ### Layout
 
-- ``DesignSpacing``
-- ``DefaultDesignSpacing``
-- ``DesignRadius``
-- ``DefaultDesignRadius``
-- ``DesignStroke``
-- ``DefaultDesignStroke``
+- ``Spacing``
+- ``DefaultSpacing``
+- ``Radius``
+- ``DefaultRadius``
+- ``Stroke``
+- ``DefaultStroke``
 
 ### Motion
 
-- ``DesignMotion``
-- ``DefaultDesignMotion``
+- ``Motion``
+- ``DefaultMotion``

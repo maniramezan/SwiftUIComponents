@@ -55,11 +55,11 @@ struct ComponentSnapshotTests {
     @Test
     @MainActor func designButtons() {
         let view = VStack(spacing: 12) {
-            DesignButton("Primary") {}
-            DesignButton("Secondary", role: .secondary) {}
-            DesignButton("Tertiary", role: .tertiary) {}
-            DesignButton("Delete", role: .destructive) {}
-            DesignButton("Loading", isLoading: true) {}
+            ThemeButton("Primary") {}
+            ThemeButton("Secondary", role: .secondary) {}
+            ThemeButton("Tertiary", role: .tertiary) {}
+            ThemeButton("Delete", role: .destructive) {}
+            ThemeButton("Loading", isLoading: true) {}
         }
         .padding()
         .frame(width: 320)
@@ -71,7 +71,7 @@ struct ComponentSnapshotTests {
 
     @Test
     @MainActor func designSearchBar() {
-        let view = DesignSearchBar(text: .constant(""), placeholder: "Search components")
+        let view = SearchBar(text: .constant(""), placeholder: "Search components")
             .padding()
             .frame(width: 320)
 
@@ -84,9 +84,9 @@ struct ComponentSnapshotTests {
     @MainActor func designToggle() {
         let view = VStack(spacing: 12) {
             Toggle("Enabled", isOn: .constant(true))
-                .toggleStyle(DesignToggleStyle())
+                .toggleStyle(ThemeToggleStyle())
             Toggle("Disabled", isOn: .constant(false))
-                .toggleStyle(DesignToggleStyle())
+                .toggleStyle(ThemeToggleStyle())
         }
         .padding()
         .frame(width: 320)
@@ -99,8 +99,8 @@ struct ComponentSnapshotTests {
     @Test
     @MainActor func designBadges() {
         let view = HStack(spacing: 8) {
-            DesignBadge("Beta")
-            DesignBadge("New", isProminent: true)
+            Badge("Beta")
+            Badge("New", isProminent: true)
         }
         .padding()
 
@@ -112,9 +112,9 @@ struct ComponentSnapshotTests {
     @Test
     @MainActor func designPillChips() {
         let view = HStack(spacing: 8) {
-            DesignPillChip("All", isSelected: true) {}
-            DesignPillChip("Active", isSelected: false) {}
-            DesignPillChip("Archived", isSelected: false) {}
+            PillChip("All", isSelected: true) {}
+            PillChip("Active", isSelected: false) {}
+            PillChip("Archived", isSelected: false) {}
         }
         .padding()
 
@@ -182,9 +182,9 @@ struct ComponentSnapshotTests {
     @Test
     @MainActor func designContainers() {
         let view = VStack(spacing: 12) {
-            DesignContainer(style: .card) { Text("Card container") }
-            DesignContainer(style: .elevated) { Text("Elevated container") }
-            DesignContainer(style: .outlined) { Text("Outlined container") }
+            Container(style: .card) { Text("Card container") }
+            Container(style: .elevated) { Text("Elevated container") }
+            Container(style: .outlined) { Text("Outlined container") }
         }
         .padding()
 
@@ -195,12 +195,12 @@ struct ComponentSnapshotTests {
 
     @Test
     @MainActor func designEmptyState() {
-        let view = DesignEmptyStateView(
+        let view = EmptyStateView(
             title: "No Components",
             message: "Create your first reusable component to get started.",
             systemImage: "shippingbox"
         ) {
-            DesignButton("Create Component") {}
+            ThemeButton("Create Component") {}
         }
         .padding()
 
@@ -211,7 +211,7 @@ struct ComponentSnapshotTests {
 
     @Test
     @MainActor func designErrorBanner() {
-        let view = DesignErrorBanner("Something went wrong. Please try again.")
+        let view = ErrorBanner("Something went wrong. Please try again.")
             .padding()
             .frame(width: 320)
 
@@ -221,7 +221,7 @@ struct ComponentSnapshotTests {
     @Test
     @MainActor func designErrorSection() {
         let view = Form {
-            DesignErrorSection(message: "Could not load data. Check your connection.")
+            ErrorSection(message: "Could not load data. Check your connection.")
         }
         .frame(width: 320)
 
@@ -267,7 +267,7 @@ struct ComponentSnapshotTests {
             .init(id: 1, title: "Spotlight: Health", symbol: "heart.fill"),
             .init(id: 2, title: "Travel Companions", symbol: "airplane"),
         ]
-        let view = DesignTitledPageView(pages, selection: .constant(0), title: \SnapshotPage.title) { page in
+        let view = TitledPageView(pages, selection: .constant(0), title: \SnapshotPage.title) { page in
             VStack(spacing: 8) {
                 Image(systemName: page.symbol)
                     .font(.system(size: 40, weight: .semibold))
@@ -287,7 +287,7 @@ struct ComponentSnapshotTests {
 
     @Test
     @MainActor func designLoading() {
-        let view = DesignLoadingView("Loading components…")
+        let view = LoadingView("Loading components…")
             .padding()
 
         assertComponentSnapshot(view, size: CGSize(width: 320, height: 120))

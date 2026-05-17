@@ -5,25 +5,25 @@ import Testing
 @Test("Themed components are constructible")
 @MainActor
 func themedComponentsAreConstructible() {
-    _ = DesignButton("Continue") {}
+    _ = ThemeButton("Continue") {}
     _ = Button("Continue") {}
-        .buttonStyle(DesignButtonStyle(role: .secondary))
+        .buttonStyle(ThemeButtonStyle(role: .secondary))
     _ = Toggle("Enabled", isOn: .constant(true))
-        .toggleStyle(DesignToggleStyle())
-    _ = DesignContainer {
+        .toggleStyle(ThemeToggleStyle())
+    _ = Container {
         Text("Content")
     }
-    _ = DesignBadge("Beta")
-    _ = DesignPillChip("All", isSelected: true) {}
-    _ = DesignSearchBar(text: .constant(""))
-    _ = DesignLoadingView("Loading")
-    _ = DesignEmptyStateView(title: "No Items", message: "Try again", systemImage: "tray")
+    _ = Badge("Beta")
+    _ = PillChip("All", isSelected: true) {}
+    _ = SearchBar(text: .constant(""))
+    _ = LoadingView("Loading")
+    _ = EmptyStateView(title: "No Items", message: "Try again", systemImage: "tray")
     _ = Text("Error")
         .designTextStyle(.error)
         .designCardSurface()
-    _ = DesignErrorBanner("Something failed.")
-    _ = DesignErrorSection(message: "Could not load.")
-    _ = DesignErrorSection(title: "Network Error", message: "Offline.")
+    _ = ErrorBanner("Something failed.")
+    _ = ErrorSection(message: "Could not load.")
+    _ = ErrorSection(title: "Network Error", message: "Offline.")
     _ = Text("Adaptive").designAdaptiveSurface()
     _ = Text("Adaptive Tinted").designAdaptiveSurface(tint: .blue.opacity(0.2))
     _ = Text("Selectable").designSelectableCardSurface(isSelected: false)
@@ -33,8 +33,8 @@ func themedComponentsAreConstructible() {
     _ = NavigationStack {
         Text("Content")
             .toolbar {
-                DesignDismissToolbarButton {}
-                DesignConfirmToolbarButton(accessibilityLabel: "Save") {}
+                DismissToolbarButton {}
+                ConfirmToolbarButton(accessibilityLabel: "Save") {}
             }
     }
 
@@ -43,7 +43,7 @@ func themedComponentsAreConstructible() {
         ConstructionPage(id: 1, title: "Second"),
     ]
     let pageSelection: Binding<Int> = .constant(0)
-    _ = DesignTitledPageView(pages, selection: pageSelection, title: \ConstructionPage.title) { page in
+    _ = TitledPageView(pages, selection: pageSelection, title: \ConstructionPage.title) { page in
         Text(page.title)
     }
 }

@@ -61,11 +61,11 @@ private struct ButtonShowcase: View {
 
     var body: some View {
         VStack(spacing: theme.spacing.oneUnit) {
-            DesignButton("Primary") { isLoading.toggle() }
-            DesignButton("Secondary", role: .secondary) {}
-            DesignButton("Tertiary", role: .tertiary) {}
-            DesignButton("Destructive", role: .destructive) {}
-            DesignButton("Loading", isLoading: isLoading) {}
+            ThemeButton("Primary") { isLoading.toggle() }
+            ThemeButton("Secondary", role: .secondary) {}
+            ThemeButton("Tertiary", role: .tertiary) {}
+            ThemeButton("Destructive", role: .destructive) {}
+            ThemeButton("Loading", isLoading: isLoading) {}
         }
     }
 }
@@ -74,7 +74,7 @@ private struct SearchBarShowcase: View {
     @Binding var text: String
 
     var body: some View {
-        DesignSearchBar(text: $text, placeholder: "Search components…")
+        SearchBar(text: $text, placeholder: "Search components…")
     }
 }
 
@@ -83,7 +83,7 @@ private struct ToggleShowcase: View {
 
     var body: some View {
         Toggle("Enable notifications", isOn: $isOn)
-            .toggleStyle(DesignToggleStyle())
+            .toggleStyle(ThemeToggleStyle())
     }
 }
 
@@ -92,9 +92,9 @@ private struct BadgeShowcase: View {
 
     var body: some View {
         HStack(spacing: theme.spacing.oneUnit) {
-            DesignBadge("Beta")
-            DesignBadge("New", isProminent: true)
-            DesignBadge("v2.0")
+            Badge("Beta")
+            Badge("New", isProminent: true)
+            Badge("v2.0")
         }
     }
 }
@@ -107,7 +107,7 @@ private struct PillChipShowcase: View {
     var body: some View {
         HStack(spacing: theme.spacing.oneUnit) {
             ForEach(options, id: \.self) { option in
-                DesignPillChip(option, isSelected: selected == option) {
+                PillChip(option, isSelected: selected == option) {
                     selected = option
                 }
             }
@@ -164,28 +164,28 @@ private struct ContainerShowcase: View {
 
     var body: some View {
         VStack(spacing: theme.spacing.oneAndHalfUnits) {
-            DesignContainer(style: .card) { Text("Card container").frame(maxWidth: .infinity) }
-            DesignContainer(style: .elevated) { Text("Elevated container").frame(maxWidth: .infinity) }
-            DesignContainer(style: .outlined) { Text("Outlined container").frame(maxWidth: .infinity) }
+            Container(style: .card) { Text("Card container").frame(maxWidth: .infinity) }
+            Container(style: .elevated) { Text("Elevated container").frame(maxWidth: .infinity) }
+            Container(style: .outlined) { Text("Outlined container").frame(maxWidth: .infinity) }
         }
     }
 }
 
 private struct EmptyStateShowcase: View {
     var body: some View {
-        DesignEmptyStateView(
+        EmptyStateView(
             title: "No Results",
             message: "Try adjusting your search or filters.",
             systemImage: "magnifyingglass"
         ) {
-            DesignButton("Reset Filters", role: .secondary) {}
+            ThemeButton("Reset Filters", role: .secondary) {}
         }
     }
 }
 
 private struct LoadingShowcase: View {
     var body: some View {
-        DesignLoadingView("Loading components…")
+        LoadingView("Loading components…")
     }
 }
 
@@ -208,8 +208,8 @@ private struct PagedViewShowcase: View {
     ]
 
     @State private var selection: Int = 0
-    @State private var indicatorStyle: DesignPaginationIndicatorStyle = .dots
-    @State private var peekDirection: DesignPaginationPeekDirection = .unidirectional
+    @State private var indicatorStyle: PaginationIndicatorStyle = .dots
+    @State private var peekDirection: PaginationPeekDirection = .unidirectional
     @State private var isRTL: Bool = false
     @Environment(\.designTheme) private var theme
 
@@ -217,7 +217,7 @@ private struct PagedViewShowcase: View {
         VStack(alignment: .leading, spacing: theme.spacing.oneAndHalfUnits) {
             controlsRow
 
-            DesignTitledPageView(
+            TitledPageView(
                 Self.allPages,
                 selection: $selection,
                 title: \ShowcasePage.title,
@@ -234,21 +234,21 @@ private struct PagedViewShowcase: View {
     private var controlsRow: some View {
         VStack(alignment: .leading, spacing: theme.spacing.oneUnit) {
             HStack(spacing: theme.spacing.oneUnit) {
-                ForEach([DesignPaginationIndicatorStyle.dots, .bar, .hidden], id: \.self) { style in
-                    DesignPillChip(label(for: style), isSelected: indicatorStyle == style) {
+                ForEach([PaginationIndicatorStyle.dots, .bar, .hidden], id: \.self) { style in
+                    PillChip(label(for: style), isSelected: indicatorStyle == style) {
                         indicatorStyle = style
                     }
                 }
             }
             HStack(spacing: theme.spacing.oneUnit) {
-                ForEach(DesignPaginationPeekDirection.allCases, id: \.self) { direction in
-                    DesignPillChip(label(for: direction), isSelected: peekDirection == direction) {
+                ForEach(PaginationPeekDirection.allCases, id: \.self) { direction in
+                    PillChip(label(for: direction), isSelected: peekDirection == direction) {
                         peekDirection = direction
                     }
                 }
             }
             Toggle("Right-to-Left", isOn: $isRTL)
-                .toggleStyle(DesignToggleStyle())
+                .toggleStyle(ThemeToggleStyle())
         }
     }
 
@@ -267,7 +267,7 @@ private struct PagedViewShowcase: View {
         .padding(.horizontal, theme.spacing.oneUnit)
     }
 
-    private func label(for style: DesignPaginationIndicatorStyle) -> String {
+    private func label(for style: PaginationIndicatorStyle) -> String {
         switch style {
         case .dots: return "Dots"
         case .bar: return "Bar"
@@ -275,7 +275,7 @@ private struct PagedViewShowcase: View {
         }
     }
 
-    private func label(for direction: DesignPaginationPeekDirection) -> String {
+    private func label(for direction: PaginationPeekDirection) -> String {
         switch direction {
         case .bidirectional: return "Both"
         case .unidirectional: return "Next only"
