@@ -21,6 +21,7 @@ open Package.swift   # Opens in Xcode — select the ComponentShowcase scheme an
 - ``ThemeButton``
 - ``ThemeButtonRole``
 - ``ThemeButtonStyle``
+- ``CompactActionButton``
 
 ### Controls
 
@@ -67,3 +68,12 @@ open Package.swift   # Opens in Xcode — select the ComponentShowcase scheme an
 - ``EmptyStateView``
 - ``LoadingView``
 - ``GhostLoadingBlock``
+- ``ChatBubble``
+- ``ChatBubbleView``
+- ``ChatMessageRole``
+- ``TypingDotsView``
+- ``TypingIndicatorBubbleView``
+
+### Parsing
+
+- ``StructuredMessageParser``

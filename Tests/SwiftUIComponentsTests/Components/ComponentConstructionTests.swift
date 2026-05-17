@@ -46,6 +46,14 @@ func themedComponentsAreConstructible() {
     _ = GhostLoadingBlock(width: 120, height: 48, cornerRadius: 12)
     _ = SectionHeader(title: "Recent")
     _ = SectionHeader(title: "Vocabulary", actionLabel: "See All") {}
+    _ = ChatBubbleView(role: .user, content: "Hello")
+    _ = ChatBubbleView(role: .assistant, content: "**Hi** there")
+    _ = ChatBubbleView(role: .assistant, content: "", isTyping: true)
+    _ = ChatBubble(role: .system) { Text("System") }
+    _ = TypingDotsView()
+    _ = TypingIndicatorBubbleView()
+    _ = CompactActionButton(title: "Grammar", icon: "book") {}
+    _ = CompactActionButton(title: "Translate", icon: "globe", isDisabled: true) {}
 
     let pages: [ConstructionPage] = [
         ConstructionPage(id: 0, title: "First"),
