@@ -68,11 +68,16 @@ open Package.swift   # Opens in Xcode — select the ComponentShowcase scheme an
 - ``EmptyStateView``
 - ``LoadingView``
 - ``GhostLoadingBlock``
+- ``AsyncContentView``
 - ``ChatBubble``
 - ``ChatBubbleView``
 - ``ChatMessageRole``
 - ``TypingDotsView``
 - ``TypingIndicatorBubbleView``
+
+### Media
+
+- ``CachedAsyncImage``
 
 ### Parsing
 

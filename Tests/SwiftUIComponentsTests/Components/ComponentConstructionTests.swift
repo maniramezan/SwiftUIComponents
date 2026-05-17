@@ -1,4 +1,6 @@
 import Components
+import DesignSystem
+import Foundation
 import SwiftUI
 import Testing
 
@@ -55,6 +57,20 @@ func themedComponentsAreConstructible() {
     _ = CompactActionButton(title: "Grammar", icon: "book") {}
     _ = CompactActionButton(title: "Translate", icon: "globe", isDisabled: true) {}
 
+    _ = CachedAsyncImage(url: URL(string: "https://example.com/a.png"), cache: StubCache()) {
+        image in
+        image
+    } placeholder: {
+        Color.gray
+    }
+    _ = AsyncContentView(state: LoadingState<String, StubFailure>.idle) { value in
+        Text(value)
+    } loadingContent: {
+        LoadingView()
+    } errorContent: { failure in
+        Text(failure.message)
+    }
+
     let pages: [ConstructionPage] = [
         ConstructionPage(id: 0, title: "First"),
         ConstructionPage(id: 1, title: "Second"),
@@ -68,4 +84,13 @@ func themedComponentsAreConstructible() {
 private struct ConstructionPage: Identifiable {
     let id: Int
     let title: String
+}
+
+private struct StubFailure: Error, Equatable, Sendable {
+    let message: String
+}
+
+private struct StubCache: ImageCacheStore {
+    func imageData(for url: URL) async throws -> Data { Data() }
+    func removeValue(for url: URL) async throws {}
 }
