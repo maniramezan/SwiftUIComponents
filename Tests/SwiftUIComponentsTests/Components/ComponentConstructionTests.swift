@@ -38,6 +38,15 @@ func themedComponentsAreConstructible() {
             }
     }
 
+    _ = FlowLayout(spacing: 8, lineSpacing: 8) {
+        Text("A")
+        Text("B")
+    }
+    _ = GhostLoadingBlock(height: 16)
+    _ = GhostLoadingBlock(width: 120, height: 48, cornerRadius: 12)
+    _ = SectionHeader(title: "Recent")
+    _ = SectionHeader(title: "Vocabulary", actionLabel: "See All") {}
+
     let pages: [ConstructionPage] = [
         ConstructionPage(id: 0, title: "First"),
         ConstructionPage(id: 1, title: "Second"),

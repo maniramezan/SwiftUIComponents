@@ -52,6 +52,8 @@ open Package.swift   # Opens in Xcode — select the ComponentShowcase scheme an
 
 - ``Container``
 - ``ContainerStyle``
+- ``FlowLayout``
+- ``SectionHeader``
 
 ### Navigation
 
@@ -64,3 +66,4 @@ open Package.swift   # Opens in Xcode — select the ComponentShowcase scheme an
 
 - ``EmptyStateView``
 - ``LoadingView``
+- ``GhostLoadingBlock``
