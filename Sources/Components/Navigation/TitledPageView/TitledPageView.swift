@@ -106,11 +106,12 @@ where
         let titles = pages.map { $0[keyPath: titleKeyPath] }
         let activeIdx = activeIndex
         let rawProgress = Self.progress(contentOffsetX: scrollOffsetX, viewportWidth: viewportWidth)
-        let progress: CGFloat = if styleOverride.peekDirection == .unidirectional {
-            rawProgress + CGFloat(unidirectionalBaseIndex)
-        } else {
-            rawProgress
-        }
+        let progress: CGFloat =
+            if styleOverride.peekDirection == .unidirectional {
+                rawProgress + CGFloat(unidirectionalBaseIndex)
+            } else {
+                rawProgress
+            }
 
         VStack(spacing: resolved.headerSpacing) {
             if pages.count > 1 {
@@ -204,9 +205,9 @@ where
         }
         .onScrollPhaseChange { _, newPhase in
             if styleOverride.peekDirection == .unidirectional,
-               newPhase == .idle,
-               let idx = pages.firstIndex(where: { $0[keyPath: idKeyPath] == selection }),
-               idx > unidirectionalBaseIndex
+                newPhase == .idle,
+                let idx = pages.firstIndex(where: { $0[keyPath: idKeyPath] == selection }),
+                idx > unidirectionalBaseIndex
             {
                 unidirectionalBaseIndex = idx
                 // Reset offset since the content shifted.
@@ -307,4 +308,3 @@ struct TitledPageViewViewportWidthKey: PreferenceKey {
 }
 
 // MARK: - Backward compatibility
-

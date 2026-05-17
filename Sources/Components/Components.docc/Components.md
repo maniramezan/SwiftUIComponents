@@ -4,7 +4,7 @@ Themeable, cross-platform SwiftUI views and modifiers built on top of `DesignSys
 
 ## Overview
 
-`Components` provides production-ready UI building blocks — buttons, inputs, badges, cards, and layout containers — that automatically adapt to whatever ``Theme`` is injected through the environment.
+`Components` provides production-ready UI building blocks — buttons, inputs, badges, cards, and layout containers — that automatically adapt to whatever `Theme` is injected through the environment.
 
 ### Interactive Showcase
 
