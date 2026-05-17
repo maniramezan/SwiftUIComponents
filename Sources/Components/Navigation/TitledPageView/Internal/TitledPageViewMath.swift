@@ -77,4 +77,3 @@ enum TitledPageViewMath {
         return max(0, configured)
     }
 }
-
