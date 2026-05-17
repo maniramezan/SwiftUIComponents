@@ -48,3 +48,24 @@ public struct DesignConfirmToolbarButton: ToolbarContent {
         #endif
     }
 }
+
+#Preview("Confirm toolbar button") {
+    NavigationStack {
+        Text("Content")
+            .navigationTitle("Edit")
+            .toolbar {
+                DesignDismissToolbarButton {}
+                DesignConfirmToolbarButton(accessibilityLabel: "Save") {}
+            }
+    }
+}
+
+#Preview("Disabled confirm button") {
+    NavigationStack {
+        Text("No changes made")
+            .navigationTitle("Edit")
+            .toolbar {
+                DesignConfirmToolbarButton(accessibilityLabel: "Save", isDisabled: true) {}
+            }
+    }
+}

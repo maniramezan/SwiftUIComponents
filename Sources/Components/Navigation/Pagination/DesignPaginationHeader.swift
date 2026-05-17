@@ -153,6 +153,52 @@ struct DesignPaginationMetrics: Equatable, Sendable {
     }
 }
 
+// MARK: - Previews
+
+private let _headerPreviewStyle = ResolvedPaginationStyle(
+    titleFont: .title2.bold(),
+    titleColor: .primary,
+    adjacentTitleColor: .secondary,
+    background: nil,
+    indicatorActiveColor: .blue,
+    indicatorInactiveColor: Color(white: 0.85),
+    peekDirection: .bidirectional,
+    peekWidth: 40,
+    headerSpacing: 16,
+    titleGap: 16,
+    reduceMotionUsesCrossfade: true
+)
+
+private let _headerPreviewTitles = ["Best of 2025", "Spotlight: Health", "Travel Companions"]
+
+#Preview("Snapped to first page") {
+    DesignPaginationHeader(
+        resolved: _headerPreviewStyle,
+        titles: _headerPreviewTitles,
+        progress: 0,
+        activeIndex: 0,
+        viewportWidth: 360,
+        layoutSign: 1,
+        reduceMotion: false
+    )
+    .frame(width: 360)
+    .padding(.vertical)
+}
+
+#Preview("Mid-swipe between pages 1 and 2") {
+    DesignPaginationHeader(
+        resolved: _headerPreviewStyle,
+        titles: _headerPreviewTitles,
+        progress: 1.4,
+        activeIndex: 1,
+        viewportWidth: 360,
+        layoutSign: 1,
+        reduceMotion: false
+    )
+    .frame(width: 360)
+    .padding(.vertical)
+}
+
 // MARK: - Resolved style snapshot
 
 /// Plain (non-optional) style values produced by merging

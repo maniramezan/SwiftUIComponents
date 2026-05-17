@@ -114,3 +114,49 @@ struct DesignPaginationIndicator: View {
     private var barThickness: CGFloat { 3 }
     private var minimumThumbWidth: CGFloat { 24 }
 }
+
+// MARK: - Previews
+
+private let _indicatorPreviewStyle = ResolvedPaginationStyle(
+    titleFont: .title2,
+    titleColor: .primary,
+    adjacentTitleColor: .secondary,
+    background: nil,
+    indicatorActiveColor: .blue,
+    indicatorInactiveColor: Color(white: 0.85),
+    peekDirection: .bidirectional,
+    peekWidth: 40,
+    headerSpacing: 16,
+    titleGap: 16,
+    reduceMotionUsesCrossfade: true
+)
+
+#Preview("Dots") {
+    DesignPaginationIndicator(
+        resolved: _indicatorPreviewStyle,
+        style: .dots,
+        count: 4,
+        activeIndex: 1,
+        progress: 1,
+        currentTitle: "Spotlight: Health",
+        onJump: { _ in },
+        onAdjustableStep: { _ in },
+        minimumHitTarget: 44
+    )
+    .padding()
+}
+
+#Preview("Bar") {
+    DesignPaginationIndicator(
+        resolved: _indicatorPreviewStyle,
+        style: .bar,
+        count: 4,
+        activeIndex: 1,
+        progress: 1,
+        currentTitle: "Spotlight: Health",
+        onJump: { _ in },
+        onAdjustableStep: { _ in },
+        minimumHitTarget: 44
+    )
+    .padding(.horizontal)
+}
