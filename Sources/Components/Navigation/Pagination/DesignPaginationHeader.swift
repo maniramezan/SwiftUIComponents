@@ -33,6 +33,9 @@ struct DesignPaginationHeader: View {
     /// Whether the system Reduce Motion preference is currently on.
     let reduceMotion: Bool
 
+    /// Called when the user taps a non-active title to navigate to that page.
+    let onJump: (Int) -> Void
+
     var body: some View {
         let effectiveGap: CGFloat = effectiveDirection == .none ? 0 : resolved.titleGap
         let metrics = DesignPaginationMetrics(
@@ -58,6 +61,9 @@ struct DesignPaginationHeader: View {
                             .lineLimit(1)
                             .minimumScaleFactor(0.85)
                             .frame(width: metrics.slotWidth, alignment: .leading)
+                            .contentShape(Rectangle())
+                            .onTapGesture { onJump(index) }
+                            .allowsHitTesting(index != activeIndex && titleOpacity(for: index) > 0)
                     }
                 }
                 .padding(.leading, metrics.leadingPadding)
@@ -184,7 +190,8 @@ private let _headerPreviewTitles = ["Best of 2025", "Spotlight: Health", "Travel
         activeIndex: 0,
         viewportWidth: 360,
         layoutSign: 1,
-        reduceMotion: false
+        reduceMotion: false,
+        onJump: { _ in }
     )
     .frame(width: 360)
     .padding(.vertical)
@@ -198,7 +205,8 @@ private let _headerPreviewTitles = ["Best of 2025", "Spotlight: Health", "Travel
         activeIndex: 1,
         viewportWidth: 360,
         layoutSign: 1,
-        reduceMotion: false
+        reduceMotion: false,
+        onJump: { _ in }
     )
     .frame(width: 360)
     .padding(.vertical)
