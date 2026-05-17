@@ -22,7 +22,7 @@ public struct DesignPaginationStyle: Sendable {
     /// Tint of the active dot or bar thumb. `nil` → `theme.colors.primary`.
     public var indicatorActiveColor: Color?
 
-    /// Tint of inactive dots or the bar track. `nil` → `theme.colors.containerSecondary`.
+    /// Tint of inactive dots or the bar track. `nil` → `theme.colors.disabled`.
     public var indicatorInactiveColor: Color?
 
     /// How much of the adjacent pages' titles to reveal in the header strip.
