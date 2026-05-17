@@ -1,11 +1,11 @@
 import DesignSystem
 import SwiftUI
 
-/// Internal indicator drawn below the page content of `DesignPagedView`.
+/// Internal indicator drawn below the page content of `DesignTitledPageView`.
 ///
 /// Renders one of ``DesignPaginationIndicatorStyle``'s visual treatments and
 /// exposes a single AX-adjustable element to assistive technologies.
-struct DesignPaginationIndicator: View {
+struct TitledPageViewIndicator: View {
 
     /// Snapshot of the merged theme + style overrides.
     let resolved: ResolvedPaginationStyle
@@ -117,46 +117,53 @@ struct DesignPaginationIndicator: View {
 
 // MARK: - Previews
 
-private let _indicatorPreviewStyle = ResolvedPaginationStyle(
-    titleFont: .title2,
-    titleColor: .primary,
-    adjacentTitleColor: .secondary,
-    background: nil,
-    indicatorActiveColor: .blue,
-    indicatorInactiveColor: Color.secondary.opacity(0.5),
-    peekDirection: .bidirectional,
-    peekWidth: 40,
-    headerSpacing: 16,
-    titleGap: 16,
-    reduceMotionUsesCrossfade: true
-)
+@MainActor
+private func indicatorPreviewStyle(theme: any DesignTheme) -> ResolvedPaginationStyle {
+    ResolvedPaginationStyle(
+        titleFont: theme.typography.title2,
+        titleColor: theme.colors.textPrimary,
+        adjacentTitleColor: theme.colors.textSecondary,
+        background: nil,
+        indicatorActiveColor: theme.colors.primary,
+        indicatorInactiveColor: theme.colors.disabled,
+        peekDirection: .bidirectional,
+        peekWidth: theme.spacing.fiveUnits,
+        headerSpacing: theme.spacing.twoUnits,
+        titleGap: theme.spacing.twoUnits,
+        reduceMotionUsesCrossfade: true
+    )
+}
 
 #Preview("Dots") {
-    DesignPaginationIndicator(
-        resolved: _indicatorPreviewStyle,
-        style: .dots,
-        count: 4,
-        activeIndex: 1,
-        progress: 1,
-        currentTitle: "Spotlight: Health",
-        onJump: { _ in },
-        onAdjustableStep: { _ in },
-        minimumHitTarget: 44
-    )
-    .padding()
+    DesignPreviewContent { theme in
+        TitledPageViewIndicator(
+            resolved: indicatorPreviewStyle(theme: theme),
+            style: .dots,
+            count: 4,
+            activeIndex: 1,
+            progress: 1,
+            currentTitle: "Spotlight: Health",
+            onJump: { _ in },
+            onAdjustableStep: { _ in },
+            minimumHitTarget: theme.motion.minimumHitTarget
+        )
+        .padding(theme.spacing.twoUnits)
+    }
 }
 
 #Preview("Bar") {
-    DesignPaginationIndicator(
-        resolved: _indicatorPreviewStyle,
-        style: .bar,
-        count: 4,
-        activeIndex: 1,
-        progress: 1,
-        currentTitle: "Spotlight: Health",
-        onJump: { _ in },
-        onAdjustableStep: { _ in },
-        minimumHitTarget: 44
-    )
-    .padding(.horizontal)
+    DesignPreviewContent { theme in
+        TitledPageViewIndicator(
+            resolved: indicatorPreviewStyle(theme: theme),
+            style: .bar,
+            count: 4,
+            activeIndex: 1,
+            progress: 1,
+            currentTitle: "Spotlight: Health",
+            onJump: { _ in },
+            onAdjustableStep: { _ in },
+            minimumHitTarget: theme.motion.minimumHitTarget
+        )
+        .padding(.horizontal, theme.spacing.twoUnits)
+    }
 }

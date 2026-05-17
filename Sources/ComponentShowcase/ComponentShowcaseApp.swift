@@ -17,11 +17,12 @@ struct ShowcaseView: View {
     @State private var searchText = ""
     @State private var toggleValue = true
     @State private var selectedChip = "All"
+    @Environment(\.designTheme) private var theme
 
     var body: some View {
         NavigationStack {
             ScrollView {
-                LazyVStack(alignment: .leading, spacing: 24) {
+                LazyVStack(alignment: .leading, spacing: theme.spacing.threeUnits) {
                     showcaseSection("Buttons") { ButtonShowcase() }
                     showcaseSection("Search Bar") { SearchBarShowcase(text: $searchText) }
                     showcaseSection("Toggle") { ToggleShowcase(isOn: $toggleValue) }
@@ -34,7 +35,7 @@ struct ShowcaseView: View {
                     showcaseSection("Empty State") { EmptyStateShowcase() }
                     showcaseSection("Loading") { LoadingShowcase() }
                 }
-                .padding()
+                .padding(theme.spacing.twoUnits)
             }
             .navigationTitle("Component Showcase")
         }
@@ -44,7 +45,7 @@ struct ShowcaseView: View {
         _ title: String,
         @ViewBuilder content: () -> Content
     ) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: theme.spacing.oneAndHalfUnits) {
             Text(title)
                 .designTextStyle(.headline)
             content()
@@ -56,9 +57,10 @@ struct ShowcaseView: View {
 
 private struct ButtonShowcase: View {
     @State private var isLoading = false
+    @Environment(\.designTheme) private var theme
 
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: theme.spacing.oneUnit) {
             DesignButton("Primary") { isLoading.toggle() }
             DesignButton("Secondary", role: .secondary) {}
             DesignButton("Tertiary", role: .tertiary) {}
@@ -86,8 +88,10 @@ private struct ToggleShowcase: View {
 }
 
 private struct BadgeShowcase: View {
+    @Environment(\.designTheme) private var theme
+
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: theme.spacing.oneUnit) {
             DesignBadge("Beta")
             DesignBadge("New", isProminent: true)
             DesignBadge("v2.0")
@@ -98,9 +102,10 @@ private struct BadgeShowcase: View {
 private struct PillChipShowcase: View {
     @Binding var selected: String
     private let options = ["All", "Recent", "Favorites", "Archived"]
+    @Environment(\.designTheme) private var theme
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: theme.spacing.oneUnit) {
             ForEach(options, id: \.self) { option in
                 DesignPillChip(option, isSelected: selected == option) {
                     selected = option
@@ -111,8 +116,10 @@ private struct PillChipShowcase: View {
 }
 
 private struct TextStyleShowcase: View {
+    @Environment(\.designTheme) private var theme
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: theme.spacing.halfUnit) {
             Text("Title text").designTextStyle(.title)
             Text("Headline text").designTextStyle(.headline)
             Text("Body text").designTextStyle(.body)
@@ -124,26 +131,28 @@ private struct TextStyleShowcase: View {
 }
 
 private struct SurfaceShowcase: View {
+    @Environment(\.designTheme) private var theme
+
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: theme.spacing.oneAndHalfUnits) {
             Text("Card Surface")
-                .padding()
+                .padding(theme.spacing.twoUnits)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .designCardSurface()
 
-            HStack(spacing: 12) {
+            HStack(spacing: theme.spacing.oneAndHalfUnits) {
                 Text("Capsule")
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
+                    .padding(.horizontal, theme.spacing.oneAndHalfUnits)
+                    .padding(.vertical, theme.spacing.oneUnit)
                     .designCapsuleSurface()
                 Text("Selected")
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
+                    .padding(.horizontal, theme.spacing.oneAndHalfUnits)
+                    .padding(.vertical, theme.spacing.oneUnit)
                     .designCapsuleSurface(isSelected: true)
             }
 
             Text("Input Surface")
-                .padding()
+                .padding(theme.spacing.twoUnits)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .designInputSurface()
         }
@@ -151,8 +160,10 @@ private struct SurfaceShowcase: View {
 }
 
 private struct ContainerShowcase: View {
+    @Environment(\.designTheme) private var theme
+
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: theme.spacing.oneAndHalfUnits) {
             DesignContainer(style: .card) { Text("Card container").frame(maxWidth: .infinity) }
             DesignContainer(style: .elevated) { Text("Elevated container").frame(maxWidth: .infinity) }
             DesignContainer(style: .outlined) { Text("Outlined container").frame(maxWidth: .infinity) }
@@ -188,21 +199,25 @@ private struct PagedViewShowcase: View {
 
     private static let allPages: [ShowcasePage] = [
         .init(id: 0, title: "Best of 2025", summary: "Editors' picks from across the year.", symbol: "sparkles"),
-        .init(id: 1, title: "Spotlight: Health", summary: "Apps to help you move, eat, sleep, and breathe.", symbol: "heart.fill"),
+        .init(
+            id: 1, title: "Spotlight: Health", summary: "Apps to help you move, eat, sleep, and breathe.",
+            symbol: "heart.fill"),
         .init(id: 2, title: "Travel Companions", summary: "Plan, book, and remember every trip.", symbol: "airplane"),
-        .init(id: 3, title: "Quiet Tools", summary: "Beautifully focused single-purpose apps.", symbol: "moon.stars.fill"),
+        .init(
+            id: 3, title: "Quiet Tools", summary: "Beautifully focused single-purpose apps.", symbol: "moon.stars.fill"),
     ]
 
     @State private var selection: Int = 0
     @State private var indicatorStyle: DesignPaginationIndicatorStyle = .dots
     @State private var peekDirection: DesignPaginationPeekDirection = .unidirectional
     @State private var isRTL: Bool = false
+    @Environment(\.designTheme) private var theme
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: theme.spacing.oneAndHalfUnits) {
             controlsRow
 
-            DesignPagedView(
+            DesignTitledPageView(
                 Self.allPages,
                 selection: $selection,
                 title: \ShowcasePage.title,
@@ -217,15 +232,15 @@ private struct PagedViewShowcase: View {
     }
 
     private var controlsRow: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(spacing: 8) {
+        VStack(alignment: .leading, spacing: theme.spacing.oneUnit) {
+            HStack(spacing: theme.spacing.oneUnit) {
                 ForEach([DesignPaginationIndicatorStyle.dots, .bar, .hidden], id: \.self) { style in
                     DesignPillChip(label(for: style), isSelected: indicatorStyle == style) {
                         indicatorStyle = style
                     }
                 }
             }
-            HStack(spacing: 8) {
+            HStack(spacing: theme.spacing.oneUnit) {
                 ForEach(DesignPaginationPeekDirection.allCases, id: \.self) { direction in
                     DesignPillChip(label(for: direction), isSelected: peekDirection == direction) {
                         peekDirection = direction
@@ -239,17 +254,17 @@ private struct PagedViewShowcase: View {
 
     @ViewBuilder
     private func pageBody(_ page: ShowcasePage) -> some View {
-        VStack(spacing: 12) {
+        VStack(spacing: theme.spacing.oneAndHalfUnits) {
             Image(systemName: page.symbol)
-                .font(.system(size: 56, weight: .semibold))
+                .font(theme.typography.largeTitle)
             Text(page.summary)
                 .designTextStyle(.body)
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding()
+        .padding(theme.spacing.twoUnits)
         .designCardSurface()
-        .padding(.horizontal, 8)
+        .padding(.horizontal, theme.spacing.oneUnit)
     }
 
     private func label(for style: DesignPaginationIndicatorStyle) -> String {

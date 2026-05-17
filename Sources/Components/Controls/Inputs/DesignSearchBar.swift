@@ -68,6 +68,8 @@ public struct DesignSearchBar: View {
 #Preview("Design Search Bar") {
     @Previewable @State var query = ""
 
-    DesignSearchBar(text: $query, placeholder: "Search components")
-        .padding()
+    DesignPreviewContent { theme in
+        DesignSearchBar(text: $query, placeholder: "Search components")
+            .padding(theme.spacing.twoUnits)
+    }
 }

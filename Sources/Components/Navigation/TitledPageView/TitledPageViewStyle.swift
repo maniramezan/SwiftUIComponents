@@ -1,9 +1,9 @@
 import DesignSystem
 import SwiftUI
 
-/// Per-call styling overrides for ``DesignPagedView``. Every optional property
-/// falls back to the active `DesignTheme` token when `nil`, so callers only
-/// need to override the values they actually want to customize.
+/// Per-call styling overrides for ``DesignTitledPageView``. Every optional
+/// property falls back to the active `DesignTheme` token when `nil`, so
+/// callers only need to override the values they actually want to customize.
 public struct DesignPaginationStyle: Sendable {
 
     /// Font used for page titles in the header strip. `nil` → `theme.typography.title`.
@@ -26,8 +26,7 @@ public struct DesignPaginationStyle: Sendable {
     public var indicatorInactiveColor: Color?
 
     /// How much of the adjacent pages' titles to reveal in the header strip.
-    /// Defaults to `.unidirectional` (next page peeks from the trailing edge),
-    /// which keeps the active title flush with the leading edge of the view.
+    /// Defaults to `.bidirectional` (both previous and next page titles peek).
     public var peekDirection: DesignPaginationPeekDirection
 
     /// Width (in points) of the visible peek on a single side.
@@ -56,7 +55,7 @@ public struct DesignPaginationStyle: Sendable {
         background: AnyShapeStyle? = nil,
         indicatorActiveColor: Color? = nil,
         indicatorInactiveColor: Color? = nil,
-        peekDirection: DesignPaginationPeekDirection = .unidirectional,
+        peekDirection: DesignPaginationPeekDirection = .bidirectional,
         peekWidth: CGFloat? = nil,
         headerSpacing: CGFloat? = nil,
         titleGap: CGFloat? = nil,
@@ -86,7 +85,7 @@ private struct DesignPaginationStyleKey: EnvironmentKey {
 }
 
 public extension EnvironmentValues {
-    /// Active styling overrides for ``DesignPagedView`` instances in this subtree.
+    /// Active styling overrides for ``DesignTitledPageView`` instances in this subtree.
     var designPaginationStyle: DesignPaginationStyle {
         get { self[DesignPaginationStyleKey.self] }
         set { self[DesignPaginationStyleKey.self] = newValue }
@@ -94,7 +93,7 @@ public extension EnvironmentValues {
 }
 
 public extension View {
-    /// Overrides the per-call styling for any ``DesignPagedView`` in this
+    /// Overrides the per-call styling for any ``DesignTitledPageView`` in this
     /// view hierarchy. Each non-`nil` property of `style` wins over the theme
     /// defaults; `nil` properties continue to resolve from the active
     /// `DesignTheme`.

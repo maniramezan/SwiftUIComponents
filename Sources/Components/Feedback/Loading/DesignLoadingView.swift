@@ -29,6 +29,8 @@ public struct DesignLoadingView: View {
 }
 
 #Preview("Design Loading") {
-    DesignLoadingView("Loading components")
-        .padding()
+    DesignPreviewContent { theme in
+        DesignLoadingView("Loading components")
+            .padding(theme.spacing.twoUnits)
+    }
 }

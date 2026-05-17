@@ -62,17 +62,19 @@ public extension View {
 }
 
 #Preview("Adaptive Surface") {
-    VStack(spacing: 16) {
-        Text("Default")
-            .padding()
-            .designAdaptiveSurface()
-        Text("With Tint")
-            .padding()
-            .designAdaptiveSurface(tint: .blue.opacity(0.2))
-        Text("Interactive")
-            .padding()
-            .designAdaptiveSurface(interactive: true)
+    DesignPreviewContent { theme in
+        VStack(spacing: theme.spacing.twoUnits) {
+            Text("Default")
+                .padding(theme.spacing.twoUnits)
+                .designAdaptiveSurface()
+            Text("With Tint")
+                .padding(theme.spacing.twoUnits)
+                .designAdaptiveSurface(tint: .blue.opacity(0.2))
+            Text("Interactive")
+                .padding(theme.spacing.twoUnits)
+                .designAdaptiveSurface(interactive: true)
+        }
+        .padding(theme.spacing.twoUnits)
+        .background(Color.teal.gradient)
     }
-    .padding()
-    .background(Color.teal.gradient)
 }

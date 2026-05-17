@@ -56,13 +56,15 @@ public extension View {
 }
 
 #Preview("Design Text Styles") {
-    VStack(alignment: .leading, spacing: 8) {
-        Text("Title").designTextStyle(.title)
-        Text("Headline").designTextStyle(.headline)
-        Text("Body text").designTextStyle(.body)
-        Text("Secondary text").designTextStyle(.secondary)
-        Text("Caption text").designTextStyle(.caption)
-        Text("Error text").designTextStyle(.error)
+    DesignPreviewContent { theme in
+        VStack(alignment: .leading, spacing: theme.spacing.oneUnit) {
+            Text("Title").designTextStyle(.title)
+            Text("Headline").designTextStyle(.headline)
+            Text("Body text").designTextStyle(.body)
+            Text("Secondary text").designTextStyle(.secondary)
+            Text("Caption text").designTextStyle(.caption)
+            Text("Error text").designTextStyle(.error)
+        }
+        .padding(theme.spacing.twoUnits)
     }
-    .padding()
 }

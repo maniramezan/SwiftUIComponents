@@ -27,8 +27,10 @@ public struct DesignCardSurface: ViewModifier {
 }
 
 #Preview("Design Card Surface") {
-    Text("Card surface")
-        .padding()
-        .designCardSurface()
-        .padding()
+    DesignPreviewContent { theme in
+        Text("Card surface")
+            .padding(theme.spacing.twoUnits)
+            .designCardSurface()
+            .padding(theme.spacing.twoUnits)
+    }
 }

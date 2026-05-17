@@ -267,7 +267,7 @@ struct ComponentSnapshotTests {
             .init(id: 1, title: "Spotlight: Health", symbol: "heart.fill"),
             .init(id: 2, title: "Travel Companions", symbol: "airplane"),
         ]
-        let view = DesignPagedView(pages, selection: .constant(0), title: \SnapshotPage.title) { page in
+        let view = DesignTitledPageView(pages, selection: .constant(0), title: \SnapshotPage.title) { page in
             VStack(spacing: 8) {
                 Image(systemName: page.symbol)
                     .font(.system(size: 40, weight: .semibold))
