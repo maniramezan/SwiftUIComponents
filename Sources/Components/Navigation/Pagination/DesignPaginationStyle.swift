@@ -26,6 +26,8 @@ public struct DesignPaginationStyle: Sendable {
     public var indicatorInactiveColor: Color?
 
     /// How much of the adjacent pages' titles to reveal in the header strip.
+    /// Defaults to `.unidirectional` (next page peeks from the trailing edge),
+    /// which keeps the active title flush with the leading edge of the view.
     public var peekDirection: DesignPaginationPeekDirection
 
     /// Width (in points) of the visible peek on a single side.
@@ -54,7 +56,7 @@ public struct DesignPaginationStyle: Sendable {
         background: AnyShapeStyle? = nil,
         indicatorActiveColor: Color? = nil,
         indicatorInactiveColor: Color? = nil,
-        peekDirection: DesignPaginationPeekDirection = .bidirectional,
+        peekDirection: DesignPaginationPeekDirection = .unidirectional,
         peekWidth: CGFloat? = nil,
         headerSpacing: CGFloat? = nil,
         titleGap: CGFloat? = nil,
