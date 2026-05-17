@@ -403,3 +403,75 @@ enum DesignPaginationMath {
         return max(0, configured)
     }
 }
+
+// MARK: - Previews
+
+private struct PagedViewPreviewPage: Identifiable {
+    let id: Int
+    let title: String
+    let symbol: String
+}
+
+private let pagedViewPreviewPages: [PagedViewPreviewPage] = [
+    .init(id: 0, title: "Best of 2025", symbol: "sparkles"),
+    .init(id: 1, title: "Spotlight: Health", symbol: "heart.fill"),
+    .init(id: 2, title: "Travel Companions", symbol: "airplane"),
+    .init(id: 3, title: "Quiet Tools", symbol: "moon.stars.fill"),
+]
+
+#Preview("Dots indicator") {
+    @Previewable @State var selection = 0
+    DesignPagedView(pagedViewPreviewPages, selection: $selection, title: \PagedViewPreviewPage.title) { page in
+        VStack(spacing: 8) {
+            Image(systemName: page.symbol)
+                .font(.system(size: 48, weight: .semibold))
+            Text(page.title)
+                .designTextStyle(.body)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .designCardSurface()
+        .padding(.horizontal, 8)
+    }
+    .frame(height: 240)
+    .padding()
+}
+
+#Preview("Bar indicator") {
+    @Previewable @State var selection = 0
+    DesignPagedView(
+        pagedViewPreviewPages,
+        selection: $selection,
+        title: \PagedViewPreviewPage.title,
+        indicatorStyle: .bar
+    ) { page in
+        VStack(spacing: 8) {
+            Image(systemName: page.symbol)
+                .font(.system(size: 48, weight: .semibold))
+            Text(page.title)
+                .designTextStyle(.body)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .designCardSurface()
+        .padding(.horizontal, 8)
+    }
+    .frame(height: 240)
+    .padding()
+}
+
+#Preview("Next-only peek") {
+    @Previewable @State var selection = 0
+    DesignPagedView(pagedViewPreviewPages, selection: $selection, title: \PagedViewPreviewPage.title) { page in
+        VStack(spacing: 8) {
+            Image(systemName: page.symbol)
+                .font(.system(size: 48, weight: .semibold))
+            Text(page.title)
+                .designTextStyle(.body)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .designCardSurface()
+        .padding(.horizontal, 8)
+    }
+    .designPaginationStyle(.init(peekDirection: .unidirectional))
+    .frame(height: 240)
+    .padding()
+}

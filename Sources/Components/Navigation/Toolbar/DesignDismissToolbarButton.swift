@@ -29,3 +29,13 @@ public struct DesignDismissToolbarButton: ToolbarContent {
         #endif
     }
 }
+
+#Preview("Dismiss toolbar button") {
+    NavigationStack {
+        Text("Content")
+            .navigationTitle("Sheet Title")
+            .toolbar {
+                DesignDismissToolbarButton {}
+            }
+    }
+}
