@@ -159,7 +159,7 @@ public struct MenuPicker<Item: MenuPickerItem>: View {
 
 #Preview {
     @Previewable @State var currentValue = 9
-    DesignPreviewContent { theme in
+    PreviewContent { theme in
         MenuPicker(items: 9...17, currentValue: $currentValue)
             .padding(theme.spacing.twoUnits)
             .background(Color.pink)

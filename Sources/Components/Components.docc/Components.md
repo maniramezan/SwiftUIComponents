@@ -4,7 +4,7 @@ Themeable, cross-platform SwiftUI views and modifiers built on top of `DesignSys
 
 ## Overview
 
-`Components` provides production-ready UI building blocks — buttons, inputs, badges, cards, and layout containers — that automatically adapt to whatever `DesignTheme` is injected through the environment.
+`Components` provides production-ready UI building blocks — buttons, inputs, badges, cards, and layout containers — that automatically adapt to whatever ``Theme`` is injected through the environment.
 
 ### Interactive Showcase
 
@@ -18,49 +18,49 @@ open Package.swift   # Opens in Xcode — select the ComponentShowcase scheme an
 
 ### Buttons
 
-- ``DesignButton``
-- ``DesignButtonRole``
-- ``DesignButtonStyle``
+- ``ThemeButton``
+- ``ThemeButtonRole``
+- ``ThemeButtonStyle``
 
 ### Controls
 
-- ``DesignSearchBar``
-- ``DesignToggleStyle``
+- ``SearchBar``
+- ``ThemeToggleStyle``
 
 ### Selection
 
 - ``MenuPicker``
 - ``MenuPickerItem``
-- ``DesignPillChip``
+- ``PillChip``
 
 ### Indicators
 
-- ``DesignBadge``
+- ``Badge``
 
 ### Typography
 
-- ``DesignTextRole``
-- ``DesignTextStyle``
+- ``TextRole``
+- ``TypeStyle``
 
 ### Surfaces
 
-- ``DesignCardSurface``
-- ``DesignCapsuleSurface``
-- ``DesignInputSurface``
+- ``CardSurface``
+- ``CapsuleSurface``
+- ``InputSurface``
 
 ### Layout
 
-- ``DesignContainer``
-- ``DesignContainerStyle``
+- ``Container``
+- ``ContainerStyle``
 
 ### Navigation
 
-- ``DesignTitledPageView``
-- ``DesignPaginationIndicatorStyle``
-- ``DesignPaginationPeekDirection``
-- ``DesignPaginationStyle``
+- ``TitledPageView``
+- ``PaginationIndicatorStyle``
+- ``PaginationPeekDirection``
+- ``PaginationStyle``
 
 ### Feedback
 
-- ``DesignEmptyStateView``
-- ``DesignLoadingView``
+- ``EmptyStateView``
+- ``LoadingView``

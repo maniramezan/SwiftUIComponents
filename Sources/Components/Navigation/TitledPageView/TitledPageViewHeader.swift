@@ -1,14 +1,14 @@
 import DesignSystem
 import SwiftUI
 
-/// Internal title strip drawn above the page content of `DesignTitledPageView`.
+/// Internal title strip drawn above the page content of `TitledPageView`.
 ///
 /// Renders a horizontal row of page titles offset in lockstep with the
 /// underlying scroll view's content offset, optionally revealing partial
 /// titles for the previous and/or next page (the "peek").
 ///
 /// This view is **internal**; consumers customize its appearance through
-/// ``DesignPaginationStyle`` and the active ``DesignTheme``.
+/// ``PaginationStyle`` and the active ``Theme``.
 struct TitledPageViewHeader: View {
 
     /// Resolved (theme-merged) configuration used to draw the strip.
@@ -99,7 +99,7 @@ struct TitledPageViewHeader: View {
 
     /// Peek direction also collapses to `.none` when Reduce Motion is on,
     /// preventing partial titles from sliding in.
-    private var effectiveDirection: DesignPaginationPeekDirection {
+    private var effectiveDirection: PaginationPeekDirection {
         if reduceMotion && resolved.reduceMotionUsesCrossfade {
             return .none
         }
@@ -131,7 +131,7 @@ struct TitledPageViewHeader: View {
 // MARK: - Previews
 
 @MainActor
-private func headerPreviewStyle(theme: any DesignTheme) -> ResolvedPaginationStyle {
+private func headerPreviewStyle(theme: any Theme) -> ResolvedPaginationStyle {
     ResolvedPaginationStyle(
         titleFont: theme.typography.title2,
         titleColor: theme.colors.textPrimary,
@@ -150,7 +150,7 @@ private func headerPreviewStyle(theme: any DesignTheme) -> ResolvedPaginationSty
 private let _headerPreviewTitles = ["Best of 2025", "Spotlight: Health", "Travel Companions"]
 
 #Preview("Snapped to first page") {
-    DesignPreviewContent { theme in
+    PreviewContent { theme in
         TitledPageViewHeader(
             resolved: headerPreviewStyle(theme: theme),
             titles: _headerPreviewTitles,
@@ -167,7 +167,7 @@ private let _headerPreviewTitles = ["Best of 2025", "Spotlight: Health", "Travel
 }
 
 #Preview("Mid-swipe between pages 1 and 2") {
-    DesignPreviewContent { theme in
+    PreviewContent { theme in
         TitledPageViewHeader(
             resolved: headerPreviewStyle(theme: theme),
             titles: _headerPreviewTitles,
