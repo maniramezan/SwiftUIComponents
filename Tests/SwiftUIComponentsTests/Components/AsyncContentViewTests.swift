@@ -69,9 +69,13 @@ struct AsyncContentViewTests {
     @Test("transitioning between states constructs without error")
     func transitions() {
         for state: TestState in [.idle, .loading, .loaded("X"), .failed(StubError(message: "E"))] {
-            _ = AsyncContentView(state: state) { Text($0) }
-                loadingContent: { Text("…") }
-                errorContent: { Text($0.message) }
+            _ = AsyncContentView(state: state) {
+                Text($0)
+            } loadingContent: {
+                Text("…")
+            } errorContent: {
+                Text($0.message)
+            }
         }
     }
 }
