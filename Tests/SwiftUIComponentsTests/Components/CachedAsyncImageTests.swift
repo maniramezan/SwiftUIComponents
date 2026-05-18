@@ -43,7 +43,11 @@ struct CachedAsyncImageTests {
     func explicitCache() {
         let cache = SpyCache()
         let url = URL(string: "https://example.com/img.png")
-        _ = CachedAsyncImage(url: url, cache: cache) { $0 } placeholder: { Color.clear }
+        _ = CachedAsyncImage(url: url, cache: cache) {
+            $0
+        } placeholder: {
+            Color.clear
+        }
     }
 
     @Test("environment-only init is constructible without explicit cache")

@@ -35,7 +35,9 @@ struct ChatBubbleViewTests {
     func customContent() {
         for role in [ChatMessageRole.user, .assistant, .system] {
             _ = ChatBubble(role: role) {
-                VStack { Text("Custom"); Text("Content") }
+                VStack {
+                    Text("Custom"); Text("Content")
+                }
             }
         }
     }
