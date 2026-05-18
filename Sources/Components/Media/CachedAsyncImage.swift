@@ -24,7 +24,19 @@ import SwiftUI
 /// load.
 ///
 /// ```swift
+/// // Option 1: Explicit cache parameter
 /// CachedAsyncImage(url: profile.avatarURL, cache: myCache) { image in
+///     image.resizable().scaledToFill()
+/// } placeholder: {
+///     Color.gray.opacity(0.2)
+/// }
+///
+/// // Option 2: Inject cache once at the root and omit the parameter
+/// ContentView()
+///     .imageCache(MyAppImageCache.shared)
+///
+/// // Then in any descendant view:
+/// CachedAsyncImage(url: profile.avatarURL) { image in
 ///     image.resizable().scaledToFill()
 /// } placeholder: {
 ///     Color.gray.opacity(0.2)
@@ -34,18 +46,23 @@ import SwiftUI
 public struct CachedAsyncImage<Content: View, Placeholder: View>: View {
 
     private let url: URL?
-    private let cache: any ImageCacheStore
+    private let explicitCache: (any ImageCacheStore)?
     @ViewBuilder private let content: (Image) -> Content
     @ViewBuilder private let placeholder: () -> Placeholder
 
     @State private var image: Image?
     @State private var loadedURL: URL?
+    @Environment(\.imageCache) private var environmentCache
+
+    private var resolvedCache: (any ImageCacheStore)? {
+        explicitCache ?? environmentCache
+    }
 
     private static var logger: Logger {
         Logger(subsystem: "com.swiftuicomponents", category: "CachedAsyncImage")
     }
 
-    /// Creates a cached async image view.
+    /// Creates a cached async image view with an explicit cache.
     ///
     /// - Parameters:
     ///   - url: The image URL. Pass `nil` to leave the placeholder showing
@@ -63,7 +80,28 @@ public struct CachedAsyncImage<Content: View, Placeholder: View>: View {
         @ViewBuilder placeholder: @escaping () -> Placeholder
     ) {
         self.url = url
-        self.cache = cache
+        self.explicitCache = cache
+        self.content = content
+        self.placeholder = placeholder
+    }
+
+    /// Creates a cached async image view using the environment cache.
+    ///
+    /// Requires that an `ImageCacheStore` has been injected into the
+    /// environment via `.imageCache(_:)` on an ancestor view. If no cache is
+    /// available, the placeholder is shown permanently.
+    ///
+    /// - Parameters:
+    ///   - url: The image URL. Pass `nil` to leave the placeholder showing.
+    ///   - content: Builder invoked with the decoded `Image` once available.
+    ///   - placeholder: Builder invoked while the image is unavailable.
+    public init(
+        url: URL?,
+        @ViewBuilder content: @escaping (Image) -> Content,
+        @ViewBuilder placeholder: @escaping () -> Placeholder
+    ) {
+        self.url = url
+        self.explicitCache = nil
         self.content = content
         self.placeholder = placeholder
     }
@@ -105,6 +143,8 @@ public struct CachedAsyncImage<Content: View, Placeholder: View>: View {
 
         image = nil
         loadedURL = nil
+
+        guard let cache = resolvedCache else { return }
 
         do {
             let data = try await cache.imageData(for: url)
