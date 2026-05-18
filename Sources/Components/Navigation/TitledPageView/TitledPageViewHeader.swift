@@ -143,7 +143,8 @@ private func headerPreviewStyle(theme: any Theme) -> ResolvedPaginationStyle {
         peekWidth: theme.spacing.fiveUnits,
         headerSpacing: theme.spacing.twoUnits,
         titleGap: theme.spacing.twoUnits,
-        reduceMotionUsesCrossfade: true
+        reduceMotionUsesCrossfade: true,
+        titleLeadingPadding: nil
     )
 }
 
