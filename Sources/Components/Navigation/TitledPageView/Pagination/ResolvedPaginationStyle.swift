@@ -17,6 +17,10 @@ struct ResolvedPaginationStyle: Equatable {
     let headerSpacing: CGFloat
     let titleGap: CGFloat
     let reduceMotionUsesCrossfade: Bool
+    /// Explicit leading padding for the title strip. `nil` means use the
+    /// computed value (`peekWidth + titleGap` for bidirectional, `0` for
+    /// unidirectional/none).
+    let titleLeadingPadding: CGFloat?
 
     static func == (lhs: ResolvedPaginationStyle, rhs: ResolvedPaginationStyle) -> Bool {
         lhs.peekDirection == rhs.peekDirection
