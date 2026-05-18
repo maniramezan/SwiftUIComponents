@@ -71,7 +71,8 @@ extension TitledPageView {
             peekWidth: override.peekWidth ?? theme.spacing.fiveUnits,
             headerSpacing: override.headerSpacing ?? theme.spacing.twoUnits,
             titleGap: override.titleGap ?? theme.spacing.twoUnits,
-            reduceMotionUsesCrossfade: override.reduceMotionUsesCrossfade
+            reduceMotionUsesCrossfade: override.reduceMotionUsesCrossfade,
+            titleLeadingPadding: override.titleLeadingPadding
         )
     }
 }

@@ -45,6 +45,16 @@ public struct PaginationStyle: Sendable {
     /// cross-fade and the header peek collapses to zero to suppress parallax.
     public var reduceMotionUsesCrossfade: Bool
 
+    /// Explicit leading inset for the title strip, in points. When set, this
+    /// value is used as the header's leading padding instead of the value
+    /// computed from `peekWidth` and `titleGap`. Use this to pin the active
+    /// title to a specific x-position (e.g. to align it with page content that
+    /// has its own horizontal padding) while keeping `peekWidth` free to
+    /// control how much of the next page's title is revealed.
+    ///
+    /// `nil` (default) falls back to the standard `peek + gap` calculation.
+    public var titleLeadingPadding: CGFloat?
+
     /// Creates a style with the given overrides. All parameters default to
     /// either `nil` (resolve from theme) or the design system's recommended
     /// behavior.
@@ -59,6 +69,7 @@ public struct PaginationStyle: Sendable {
         peekWidth: CGFloat? = nil,
         headerSpacing: CGFloat? = nil,
         titleGap: CGFloat? = nil,
+        titleLeadingPadding: CGFloat? = nil,
         reduceMotionUsesCrossfade: Bool = true
     ) {
         self.titleFont = titleFont
@@ -71,6 +82,7 @@ public struct PaginationStyle: Sendable {
         self.peekWidth = peekWidth
         self.headerSpacing = headerSpacing
         self.titleGap = titleGap
+        self.titleLeadingPadding = titleLeadingPadding
         self.reduceMotionUsesCrossfade = reduceMotionUsesCrossfade
     }
 

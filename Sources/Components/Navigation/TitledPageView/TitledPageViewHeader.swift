@@ -66,7 +66,7 @@ struct TitledPageViewHeader: View {
                             .allowsHitTesting(index != activeIndex && titleOpacity(for: index) > 0)
                     }
                 }
-                .padding(.leading, metrics.leadingPadding)
+                .padding(.leading, resolved.titleLeadingPadding ?? metrics.leadingPadding)
                 .offset(
                     x: TitledPageViewMath.headerOffset(
                         progress: effectiveProgress,
