@@ -24,9 +24,15 @@ public struct CompactActionButton: View {
 
     private let title: String
     private let icon: String
-    private let isDisabled: Bool
+    private let explicitDisabled: Bool?
     private let action: () -> Void
     @Environment(\.designTheme) private var theme
+    @Environment(\.isEnabled) private var isEnvironmentEnabled
+
+    private var isEffectivelyDisabled: Bool {
+        if let explicitDisabled { return explicitDisabled }
+        return !isEnvironmentEnabled
+    }
 
     /// Creates a compact action button.
     ///
@@ -34,17 +40,18 @@ public struct CompactActionButton: View {
     ///   - title: Button label text.
     ///   - icon: SF Symbol name shown leading the label.
     ///   - isDisabled: When `true`, suppresses hit-testing and dims the
-    ///     label. Defaults to `false`.
+    ///     label. When `nil` (the default), the button respects SwiftUI's
+    ///     `.disabled()` environment modifier instead.
     ///   - action: Closure invoked on tap when not disabled.
     public init(
         title: String,
         icon: String,
-        isDisabled: Bool = false,
+        isDisabled: Bool? = nil,
         action: @escaping () -> Void
     ) {
         self.title = title
         self.icon = icon
-        self.isDisabled = isDisabled
+        self.explicitDisabled = isDisabled
         self.action = action
     }
 
@@ -53,7 +60,9 @@ public struct CompactActionButton: View {
             Label(title, systemImage: icon)
                 .font(theme.typography.subheadline.weight(.medium))
                 .foregroundStyle(
-                    theme.colors.onPrimary.opacity(isDisabled ? theme.motion.disabledOpacity : 1)
+                    theme.colors.onPrimary.opacity(
+                        isEffectivelyDisabled ? theme.motion.disabledOpacity : 1
+                    )
                 )
                 .padding(.horizontal, theme.spacing.oneAndHalfUnits)
                 .padding(.vertical, theme.spacing.oneUnit)
@@ -61,8 +70,8 @@ public struct CompactActionButton: View {
         .buttonStyle(.borderedProminent)
         .buttonBorderShape(.capsule)
         .tint(theme.colors.primary)
-        .allowsHitTesting(!isDisabled)
-        .animation(theme.motion.standardAnimation, value: isDisabled)
+        .allowsHitTesting(!isEffectivelyDisabled)
+        .animation(theme.motion.standardAnimation, value: isEffectivelyDisabled)
     }
 }
 

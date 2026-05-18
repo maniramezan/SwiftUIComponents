@@ -18,9 +18,9 @@ import SwiftUI
 public struct TypingDotsView: View {
 
     @State private var animationPhase = 0
+    @State private var isVisible = false
     @Environment(\.designTheme) private var theme
 
-    private let timer = Timer.publish(every: 0.3, on: .main, in: .common).autoconnect()
     private static let dotSize: CGFloat = 8
 
     /// Creates a typing indicator.
@@ -35,9 +35,16 @@ public struct TypingDotsView: View {
                     .opacity(animationPhase == index ? 1.0 : theme.motion.disabledOpacity)
             }
         }
-        .onReceive(timer) { _ in
-            withAnimation(theme.motion.standardAnimation) {
-                animationPhase = (animationPhase + 1) % 3
+        .onAppear { isVisible = true }
+        .onDisappear { isVisible = false }
+        .task(id: isVisible) {
+            guard isVisible else { return }
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .milliseconds(300))
+                guard !Task.isCancelled else { return }
+                withAnimation(theme.motion.standardAnimation) {
+                    animationPhase = (animationPhase + 1) % 3
+                }
             }
         }
         .accessibilityLabel("Typing")

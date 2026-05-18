@@ -44,3 +44,4 @@ A platform-agnostic design token layer providing spacing, radius, stroke, motion
 ### Caching
 
 - ``ImageCacheStore``
+- ``SwiftUICore/EnvironmentValues/imageCache``

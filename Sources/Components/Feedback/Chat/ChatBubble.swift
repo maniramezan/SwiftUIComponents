@@ -47,6 +47,21 @@ public struct ChatBubble<Content: View>: View {
 
             if role != .user { Spacer(minLength: theme.spacing.sixUnits) }
         }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(Text(accessibilityRolePrefix))
+    }
+}
+
+// MARK: - Accessibility
+
+extension ChatBubble {
+
+    @MainActor fileprivate var accessibilityRolePrefix: String {
+        switch role {
+        case .user: "You"
+        case .assistant: "Assistant"
+        case .system: "System"
+        }
     }
 }
 
