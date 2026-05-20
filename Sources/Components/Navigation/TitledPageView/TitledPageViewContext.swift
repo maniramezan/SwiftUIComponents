@@ -1,16 +1,34 @@
 import Foundation
 
 /// Runtime state passed to custom ``TitledPageView`` title and footer builders.
+///
+/// Every time the active page changes or the scroll position updates,
+/// `TitledPageView` rebuilds any custom `titleContent` and `footerContent`
+/// closures with a fresh `TitledPageViewContext`. Use the properties here to
+/// drive your custom UI — for example, to display the current title, render a
+/// custom progress bar, or enable a "next" button when ``nextTitle`` is
+/// non-nil.
+///
+/// > Note: `TitledPageViewContext` is a value type (`struct`). Do not capture
+/// > it beyond the lifetime of the builder closure; always read from the
+/// > freshest value delivered by the parent view.
 public struct TitledPageViewContext<ID: Hashable> {
 
     /// The id currently bound to the paged view's selection.
+    ///
+    /// Matches the value of the `selection` binding passed to ``TitledPageView``.
+    /// Changes every time the active page changes.
     public let selection: ID
 
     /// The zero-based index of the page that is currently selected.
     public let activeIndex: Int
 
-    /// Continuous page progress, where whole values represent snapped pages
-    /// and fractional values represent in-flight drags.
+    /// Continuous scroll progress through the pages.
+    ///
+    /// Whole values (e.g. `1.0`) represent a fully snapped page. Fractional
+    /// values (e.g. `1.4`) represent an in-flight drag between two pages. Use
+    /// this to drive custom animations that track the user's finger, such as a
+    /// scrubbing progress bar or a cross-fading title.
     public let progress: Double
 
     /// Total number of pages represented by the paged view.
@@ -22,13 +40,24 @@ public struct TitledPageViewContext<ID: Hashable> {
     /// The active page title, or an empty string when no title is available.
     public let currentTitle: String
 
-    /// The previous page title when one exists.
+    /// The title of the page immediately before the active page, or `nil` when
+    /// the first page is active.
     public let previousTitle: String?
 
-    /// The next page title when one exists.
+    /// The title of the page immediately after the active page, or `nil` when
+    /// the last page is active.
     public let nextTitle: String?
 
-    /// Selects the page at the supplied zero-based index.
+    /// Navigates to the page at the given zero-based index.
+    ///
+    /// Calls to this closure are safe to make from a button action or gesture
+    /// handler inside a builder. The navigation respects the component's
+    /// current animation and unidirectional-mode constraints — forward-only
+    /// navigation is enforced automatically when the peek direction is
+    /// ``PaginationPeekDirection/unidirectional``.
+    ///
+    /// - Parameter index: The zero-based index of the destination page.
+    ///   Out-of-range values are ignored.
     public let selectPage: (Int) -> Void
 
     /// Creates a page view context.
