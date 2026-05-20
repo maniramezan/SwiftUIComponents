@@ -210,6 +210,26 @@ func noneSlotWidthAndStride() {
     #expect(padding == 0)
 }
 
+@Test("Trailing title layout reserves a single peek on the leading edge")
+func trailingTitleLayoutSlotWidthAndStride() {
+    let width = TitledPageViewMath.slotWidth(viewportWidth: 400, peek: 40, gap: 16, layout: .trailing)
+    let stride = TitledPageViewMath.slotStride(viewportWidth: 400, peek: 40, gap: 16, layout: .trailing)
+    let padding = TitledPageViewMath.headerLeadingPadding(peek: 40, gap: 16, layout: .trailing)
+    #expect(width == 344)
+    #expect(stride == 360)
+    #expect(padding == 56)
+}
+
+@Test("Center title layout fills the viewport and uses no gap")
+func centerTitleLayoutSlotWidthAndStride() {
+    let width = TitledPageViewMath.slotWidth(viewportWidth: 400, peek: 40, gap: 16, layout: .center)
+    let stride = TitledPageViewMath.slotStride(viewportWidth: 400, peek: 40, gap: 16, layout: .center)
+    let padding = TitledPageViewMath.headerLeadingPadding(peek: 40, gap: 16, layout: .center)
+    #expect(width == 400)
+    #expect(stride == 400)
+    #expect(padding == 0)
+}
+
 @Test("slotWidth clamps to zero when the viewport is too small for the peek and gap")
 func slotWidthClampsToZeroForTinyViewport() {
     let width = TitledPageViewMath.slotWidth(viewportWidth: 50, peek: 40, gap: 16, direction: .bidirectional)
@@ -308,6 +328,17 @@ func effectivePeekIsZeroForNoneDirection() {
     #expect(value == 0)
 }
 
+@Test("Effective peek respects the center title layout regardless of configuration")
+func effectivePeekIsZeroForCenterTitleLayout() {
+    let value = TitledPageViewMath.effectivePeek(
+        configured: 40,
+        layout: .center,
+        reduceMotion: false,
+        usesCrossfade: true
+    )
+    #expect(value == 0)
+}
+
 @Test("Effective peek preserves configured value under Reduce Motion when crossfade is opted out")
 func effectivePeekHonorsCrossfadeOptOut() {
     let value = TitledPageViewMath.effectivePeek(
@@ -334,6 +365,20 @@ func resolveStyleFallsBackToTheme() {
     #expect(resolved.headerSpacing == theme.spacing.twoUnits)
     #expect(resolved.titleGap == theme.spacing.twoUnits)
     #expect(resolved.reduceMotionUsesCrossfade == true)
+    #expect(resolved.titleAlignment == .automatic)
+    #expect(resolved.titleLeadingPadding == nil)
+}
+
+@Test("resolveStyle passes titleLeadingPadding through when set")
+@MainActor
+func resolveStylePassesThroughTitleLeadingPadding() {
+    let theme = DefaultTheme()
+    let override = PaginationStyle(titleLeadingPadding: 24)
+    let resolved = TitledPageView<[PagedFixturePage], Int, EmptyView>.resolveStyle(
+        override: override,
+        theme: theme
+    )
+    #expect(resolved.titleLeadingPadding == 24)
 }
 
 @Test("resolveStyle prefers explicit overrides over theme tokens")
@@ -345,7 +390,9 @@ func resolveStylePrefersOverrides() {
     override.peekWidth = 12
     override.headerSpacing = 7
     override.titleGap = 5
+    override.titleAlignment = .trailing
     override.reduceMotionUsesCrossfade = false
+    override.titleLeadingPadding = 32
 
     let resolved = TitledPageView<[PagedFixturePage], Int, EmptyView>.resolveStyle(
         override: override,
@@ -355,7 +402,25 @@ func resolveStylePrefersOverrides() {
     #expect(resolved.peekWidth == 12)
     #expect(resolved.headerSpacing == 7)
     #expect(resolved.titleGap == 5)
+    #expect(resolved.titleAlignment == .trailing)
     #expect(resolved.reduceMotionUsesCrossfade == false)
+    #expect(resolved.titleLeadingPadding == 32)
+}
+
+@Test("resolveStyle prefers explicit title alignment passed to the view")
+@MainActor
+func resolveStylePrefersViewTitleAlignment() {
+    let theme = DefaultTheme()
+    var override = PaginationStyle()
+    override.titleAlignment = .leading
+
+    let resolved = TitledPageView<[PagedFixturePage], Int, EmptyView>.resolveStyle(
+        override: override,
+        theme: theme,
+        titleAlignment: .center
+    )
+
+    #expect(resolved.titleAlignment == .center)
 }
 
 // MARK: - API construction smoke tests
@@ -406,6 +471,47 @@ func designPagedViewAcceptsAllIndicatorStyles() {
     }
 }
 
+@Test("TitledPageView accepts title alignment modes")
+@MainActor
+func designPagedViewAcceptsTitleAlignmentModes() {
+    let pages = makePages(2)
+    var selected = pages[0].id
+    let binding = Binding(get: { selected }, set: { selected = $0 })
+
+    _ = TitledPageView(pages, selection: binding, title: \PagedFixturePage.title, titleAlignment: .leading) { p in
+        Text(p.title)
+    }
+    _ = TitledPageView(pages, selection: binding, title: \PagedFixturePage.title, titleAlignment: .trailing) { p in
+        Text(p.title)
+    }
+    _ = TitledPageView(pages, selection: binding, title: \PagedFixturePage.title, titleAlignment: .center) { p in
+        Text(p.title)
+    }
+    _ = TitledPageView(pages, selection: binding, title: \PagedFixturePage.title, titleAlignment: .hidden) { p in
+        Text(p.title)
+    }
+}
+
+@Test("TitledPageView accepts custom title and footer builders")
+@MainActor
+func designPagedViewAcceptsCustomTitleAndFooterBuilders() {
+    let pages = makePages(3)
+    var selected = pages[0].id
+    let binding = Binding(get: { selected }, set: { selected = $0 })
+
+    _ = TitledPageView(
+        pages,
+        selection: binding,
+        title: \PagedFixturePage.title
+    ) { context in
+        Text(context.currentTitle)
+    } footerContent: { context in
+        ProgressView(value: context.progress, total: Double(max(1, context.pageCount - 1)))
+    } content: { page in
+        Text(page.title)
+    }
+}
+
 @Test("designPaginationStyle modifier returns a configured view")
 @MainActor
 func designPaginationStyleModifierApplies() {
@@ -415,4 +521,14 @@ func designPaginationStyleModifierApplies() {
 
     let view = Color.clear.designPaginationStyle(style)
     _ = view  // smoke: must compile and produce a valid View
+}
+
+@Test("PaginationStyle titleLeadingPadding initializer overload compiles")
+@MainActor
+func paginationStyleTitleLeadingPaddingInitCompiles() {
+    let style = PaginationStyle(titleLeadingPadding: 20)
+    #expect(style.titleLeadingPadding == 20)
+
+    let styleNil = PaginationStyle()
+    #expect(styleNil.titleLeadingPadding == nil)
 }

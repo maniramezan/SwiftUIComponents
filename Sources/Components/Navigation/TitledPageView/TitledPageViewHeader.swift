@@ -37,12 +37,13 @@ struct TitledPageViewHeader: View {
     let onJump: (Int) -> Void
 
     var body: some View {
-        let effectiveGap: CGFloat = effectiveDirection == .none ? 0 : resolved.titleGap
+        let layout = effectiveTitleLayout
+        let effectiveGap: CGFloat = layout == .center ? 0 : resolved.titleGap
         let metrics = TitledPageViewMetrics(
             viewportWidth: viewportWidth,
             peek: effectivePeek,
             gap: effectiveGap,
-            direction: effectiveDirection
+            layout: layout
         )
 
         ZStack(alignment: .leading) {
@@ -60,7 +61,7 @@ struct TitledPageViewHeader: View {
                             .animation(.easeInOut(duration: 0.2), value: activeIndex)
                             .lineLimit(1)
                             .minimumScaleFactor(0.85)
-                            .frame(width: metrics.slotWidth, alignment: .leading)
+                            .frame(width: metrics.slotWidth, alignment: slotAlignment(for: layout))
                             .contentShape(Rectangle())
                             .onTapGesture { onJump(index) }
                             .allowsHitTesting(index != activeIndex && titleOpacity(for: index) > 0)
@@ -91,19 +92,22 @@ struct TitledPageViewHeader: View {
     private var effectivePeek: CGFloat {
         TitledPageViewMath.effectivePeek(
             configured: resolved.peekWidth,
-            direction: resolved.peekDirection,
+            layout: effectiveTitleLayout,
             reduceMotion: reduceMotion,
             usesCrossfade: resolved.reduceMotionUsesCrossfade
         )
     }
 
-    /// Peek direction also collapses to `.none` when Reduce Motion is on,
+    /// Title layout also collapses to `.center` when Reduce Motion is on,
     /// preventing partial titles from sliding in.
-    private var effectiveDirection: PaginationPeekDirection {
+    private var effectiveTitleLayout: TitledPageTitleLayout {
         if reduceMotion && resolved.reduceMotionUsesCrossfade {
-            return .none
+            return .center
         }
-        return resolved.peekDirection
+        return TitledPageViewMath.titleLayout(
+            for: resolved.titleAlignment,
+            fallbackDirection: resolved.peekDirection
+        ) ?? .center
     }
 
     /// Under Reduce Motion + crossfade, the strip snaps to the nearest
@@ -123,8 +127,20 @@ struct TitledPageViewHeader: View {
         if index == activeIndex { return 1.0 }
         // In next-only mode, previous titles must be fully invisible.
         // The opacity change is animated via .animation(value: activeIndex) on the Text.
-        if effectiveDirection == .unidirectional && index < activeIndex { return 0.0 }
+        if effectiveTitleLayout == .leading && index < activeIndex { return 0.0 }
+        if effectiveTitleLayout == .trailing && index > activeIndex { return 0.0 }
         return 0.6
+    }
+
+    private func slotAlignment(for layout: TitledPageTitleLayout) -> Alignment {
+        switch layout {
+        case .bidirectional, .leading:
+            return .leading
+        case .trailing:
+            return .trailing
+        case .center:
+            return .center
+        }
     }
 }
 
@@ -140,6 +156,7 @@ private func headerPreviewStyle(theme: any Theme) -> ResolvedPaginationStyle {
         indicatorActiveColor: theme.colors.primary,
         indicatorInactiveColor: theme.colors.disabled,
         peekDirection: .bidirectional,
+        titleAlignment: .automatic,
         peekWidth: theme.spacing.fiveUnits,
         headerSpacing: theme.spacing.twoUnits,
         titleGap: theme.spacing.twoUnits,

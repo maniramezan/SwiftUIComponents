@@ -13,23 +13,23 @@ struct TitledPageViewMetrics: Equatable, Sendable {
     /// place at `progress == 0` for the selected peek direction.
     let leadingPadding: CGFloat
 
-    init(viewportWidth: CGFloat, peek: CGFloat, gap: CGFloat, direction: PaginationPeekDirection) {
+    init(viewportWidth: CGFloat, peek: CGFloat, gap: CGFloat, layout: TitledPageTitleLayout) {
         self.slotWidth = TitledPageViewMath.slotWidth(
             viewportWidth: viewportWidth,
             peek: peek,
             gap: gap,
-            direction: direction
+            layout: layout
         )
         self.slotStride = TitledPageViewMath.slotStride(
             viewportWidth: viewportWidth,
             peek: peek,
             gap: gap,
-            direction: direction
+            layout: layout
         )
         self.leadingPadding = TitledPageViewMath.headerLeadingPadding(
             peek: peek,
             gap: gap,
-            direction: direction
+            layout: layout
         )
     }
 }

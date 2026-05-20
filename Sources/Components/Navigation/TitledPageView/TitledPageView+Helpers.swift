@@ -58,9 +58,12 @@ extension TitledPageView {
     @MainActor
     static func resolveStyle(
         override: PaginationStyle,
-        theme: any Theme
+        theme: any Theme,
+        titleAlignment: TitledPageTitleAlignment = .automatic
     ) -> ResolvedPaginationStyle {
-        ResolvedPaginationStyle(
+        let effectiveTitleAlignment =
+            titleAlignment == .automatic ? override.titleAlignment : titleAlignment
+        return ResolvedPaginationStyle(
             titleFont: override.titleFont ?? theme.typography.title,
             titleColor: override.titleColor ?? theme.colors.textPrimary,
             adjacentTitleColor: override.adjacentTitleColor ?? theme.colors.textTertiary,
@@ -68,6 +71,7 @@ extension TitledPageView {
             indicatorActiveColor: override.indicatorActiveColor ?? theme.colors.primary,
             indicatorInactiveColor: override.indicatorInactiveColor ?? theme.colors.disabled,
             peekDirection: override.peekDirection,
+            titleAlignment: effectiveTitleAlignment,
             peekWidth: override.peekWidth ?? theme.spacing.fiveUnits,
             headerSpacing: override.headerSpacing ?? theme.spacing.twoUnits,
             titleGap: override.titleGap ?? theme.spacing.twoUnits,
