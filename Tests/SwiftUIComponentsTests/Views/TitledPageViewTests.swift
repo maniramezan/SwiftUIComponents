@@ -220,14 +220,17 @@ func trailingTitleLayoutSlotWidthAndStride() {
     #expect(padding == 56)
 }
 
-@Test("Center title layout fills the viewport and uses no gap")
+@Test("Center title layout peeks adjacent titles symmetrically like bidirectional")
 func centerTitleLayoutSlotWidthAndStride() {
     let width = TitledPageViewMath.slotWidth(viewportWidth: 400, peek: 40, gap: 16, layout: .center)
     let stride = TitledPageViewMath.slotStride(viewportWidth: 400, peek: 40, gap: 16, layout: .center)
     let padding = TitledPageViewMath.headerLeadingPadding(peek: 40, gap: 16, layout: .center)
-    #expect(width == 400)
-    #expect(stride == 400)
-    #expect(padding == 0)
+    // width = 400 − 2×peek − 2×gap = 400 − 80 − 32 = 288
+    #expect(width == 288)
+    // stride = slotWidth + gap = 288 + 16 = 304
+    #expect(stride == 304)
+    // leadingPadding = peek + gap = 40 + 16 = 56
+    #expect(padding == 56)
 }
 
 @Test("slotWidth clamps to zero when the viewport is too small for the peek and gap")
@@ -328,15 +331,15 @@ func effectivePeekIsZeroForNoneDirection() {
     #expect(value == 0)
 }
 
-@Test("Effective peek respects the center title layout regardless of configuration")
-func effectivePeekIsZeroForCenterTitleLayout() {
+@Test("Effective peek is preserved for center layout (adjacent titles are visible)")
+func effectivePeekIsPreservedForCenterTitleLayout() {
     let value = TitledPageViewMath.effectivePeek(
         configured: 40,
         layout: .center,
         reduceMotion: false,
         usesCrossfade: true
     )
-    #expect(value == 0)
+    #expect(value == 40)
 }
 
 @Test("Effective peek preserves configured value under Reduce Motion when crossfade is opted out")
