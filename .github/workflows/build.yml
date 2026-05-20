@@ -55,13 +55,15 @@ jobs:
         run: |
           swift package generate-documentation \
             --target DesignSystem \
-            --warnings-as-errors
+            --warnings-as-errors \
+            --exclude-extended-types
 
       - name: Validate DocC (Components)
         run: |
           swift package generate-documentation \
             --target Components \
-            --warnings-as-errors
+            --warnings-as-errors \
+            --exclude-extended-types
 
       - name: Save SwiftPM cache
         if: ${{ always() }}

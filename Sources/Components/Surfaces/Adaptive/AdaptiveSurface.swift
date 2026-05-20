@@ -3,6 +3,12 @@ import SwiftUI
 
 /// Applies a glass effect on iOS/macOS 26+ or an ultraThinMaterial fallback on older systems.
 ///
+/// ```swift
+/// Text("Floating panel")
+///     .padding()
+///     .designAdaptiveSurface(tint: .blue.opacity(0.2), interactive: true)
+/// ```
+///
 /// Respects the `UIDesignRequiresCompatibility` Info.plist key — when set to `true`, the
 /// material fallback is always used regardless of OS version.
 public struct AdaptiveSurface: ViewModifier {

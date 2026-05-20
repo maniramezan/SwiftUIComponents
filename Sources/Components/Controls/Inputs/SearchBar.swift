@@ -3,6 +3,14 @@ import SwiftUI
 
 /// Reusable themed search field with optional focus binding.
 ///
+/// ```swift
+/// @State private var query = ""
+///
+/// SearchBar(text: $query, placeholder: "Search components") {
+///     performSearch()
+/// }
+/// ```
+///
 /// ![A search bar with placeholder text](designSearchBar)
 public struct SearchBar: View {
     @Binding private var text: String

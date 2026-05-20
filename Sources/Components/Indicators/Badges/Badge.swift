@@ -3,6 +3,11 @@ import SwiftUI
 
 /// Compact text badge styled from the active design theme.
 ///
+/// ```swift
+/// Badge("Beta")
+/// Badge("New", isProminent: true)
+/// ```
+///
 /// ![Standard and prominent badges](designBadges)
 public struct Badge: View {
     private let text: String

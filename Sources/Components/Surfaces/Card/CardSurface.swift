@@ -2,6 +2,12 @@ import DesignSystem
 import SwiftUI
 
 /// Applies a themed card surface.
+///
+/// ```swift
+/// Text("Card content")
+///     .padding()
+///     .designCardSurface()
+/// ```
 public struct CardSurface: ViewModifier {
     private let showStroke: Bool
     @Environment(\.designTheme) private var theme

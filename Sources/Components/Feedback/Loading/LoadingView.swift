@@ -3,6 +3,10 @@ import SwiftUI
 
 /// Themed loading indicator with optional message.
 ///
+/// ```swift
+/// LoadingView("Fetching data…")
+/// ```
+///
 /// ![Loading spinner with message](designLoading)
 public struct LoadingView: View {
     private let message: String?

@@ -2,6 +2,13 @@ import DesignSystem
 import SwiftUI
 
 /// Applies a themed capsule surface.
+///
+/// ```swift
+/// Text("Tag")
+///     .padding(.horizontal, 16)
+///     .padding(.vertical, 8)
+///     .designCapsuleSurface(isSelected: true)
+/// ```
 public struct CapsuleSurface: ViewModifier {
     private let isSelected: Bool
     @Environment(\.designTheme) private var theme

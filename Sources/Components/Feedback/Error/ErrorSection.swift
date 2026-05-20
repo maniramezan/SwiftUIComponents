@@ -2,6 +2,12 @@ import DesignSystem
 import SwiftUI
 
 /// Error display wrapped in a `List`/`Form` section.
+///
+/// ```swift
+/// Form {
+///     ErrorSection(message: "Could not load data.")
+/// }
+/// ```
 public struct ErrorSection: View {
     private let title: String
     private let message: String
