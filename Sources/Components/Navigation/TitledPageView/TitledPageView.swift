@@ -21,6 +21,32 @@ import SwiftUI
 /// view modifier to override individual properties without redefining the
 /// theme.
 ///
+/// ## Observing page changes
+///
+/// `TitledPageView` has no dedicated `onPageChange` callback. Instead, the
+/// `selection` binding is updated every time the active page changes — whether
+/// from a swipe, a header-title tap, or programmatic navigation. Observe it
+/// with SwiftUI's standard `.onChange(of:)` modifier:
+///
+/// ```swift
+/// @State private var selectedID = pages.first!.id
+///
+/// TitledPageView(pages, selection: $selectedID, title: \.title) { page in
+///     PageBody(page: page)
+/// }
+/// .onChange(of: selectedID) { _, newID in
+///     // React to the page change here.
+///     print("Navigated to page", newID)
+/// }
+/// ```
+///
+/// For context beyond just the id — such as the new page's title, index, or
+/// scroll progress — supply a custom `titleContent` or `footerContent` builder.
+/// Those builders receive a ``TitledPageViewContext`` value on every render,
+/// which carries ``TitledPageViewContext/currentTitle``,
+/// ``TitledPageViewContext/activeIndex``, ``TitledPageViewContext/progress``,
+/// and more.
+///
 /// ## Layout requirement
 ///
 /// `TitledPageView` uses `containerRelativeFrame(.horizontal)` internally,
@@ -66,6 +92,10 @@ where
     ///   - pages: The page data. Must be non-empty for the view to render
     ///     content; an empty collection produces an `EmptyView`.
     ///   - selection: Two-way binding to the id of the currently visible page.
+    ///     `TitledPageView` writes a new value through this binding whenever
+    ///     the active page changes — on swipe, header-title tap, or
+    ///     programmatic navigation. Observe page changes with
+    ///     `.onChange(of: selection)`.
     ///   - id: KeyPath that yields a unique, stable id for each page.
     ///   - title: KeyPath that yields the display title for each page. The
     ///     title is shown in the header strip and used as the VoiceOver
@@ -102,6 +132,9 @@ where
     ///   - pages: The page data. Must be non-empty for the view to render
     ///     content; an empty collection produces an `EmptyView`.
     ///   - selection: Two-way binding to the id of the currently visible page.
+    ///     `TitledPageView` writes a new value through this binding whenever
+    ///     the active page changes. Observe page changes with
+    ///     `.onChange(of: selection)`.
     ///   - id: KeyPath that yields a unique, stable id for each page.
     ///   - title: KeyPath that yields the display title for each page. The
     ///     title remains the VoiceOver label for each page.
@@ -134,6 +167,9 @@ where
     ///   - pages: The page data. Must be non-empty for the view to render
     ///     content; an empty collection produces an `EmptyView`.
     ///   - selection: Two-way binding to the id of the currently visible page.
+    ///     `TitledPageView` writes a new value through this binding whenever
+    ///     the active page changes. Observe page changes with
+    ///     `.onChange(of: selection)`.
     ///   - id: KeyPath that yields a unique, stable id for each page.
     ///   - title: KeyPath that yields the display title for each page. The
     ///     title remains the VoiceOver label for each page.
@@ -167,6 +203,9 @@ where
     ///   - pages: The page data. Must be non-empty for the view to render
     ///     content; an empty collection produces an `EmptyView`.
     ///   - selection: Two-way binding to the id of the currently visible page.
+    ///     `TitledPageView` writes a new value through this binding whenever
+    ///     the active page changes. Observe page changes with
+    ///     `.onChange(of: selection)`.
     ///   - id: KeyPath that yields a unique, stable id for each page.
     ///   - title: KeyPath that yields the display title for each page. The
     ///     title is shown in the header strip and used as the VoiceOver label
@@ -424,6 +463,9 @@ public extension TitledPageView where Data.Element: Identifiable, ID == Data.Ele
     /// - Parameters:
     ///   - pages: The page data.
     ///   - selection: Two-way binding to the id of the currently visible page.
+    ///     `TitledPageView` writes a new value through this binding whenever
+    ///     the active page changes. Observe page changes with
+    ///     `.onChange(of: selection)`.
     ///   - title: KeyPath that yields the display title for each page.
     ///   - titleAlignment: How to position the default title strip.
     ///   - indicatorStyle: Indicator visual treatment. Defaults to `.dots`.
@@ -452,6 +494,9 @@ public extension TitledPageView where Data.Element: Identifiable, ID == Data.Ele
     /// - Parameters:
     ///   - pages: The page data.
     ///   - selection: Two-way binding to the id of the currently visible page.
+    ///     `TitledPageView` writes a new value through this binding whenever
+    ///     the active page changes. Observe page changes with
+    ///     `.onChange(of: selection)`.
     ///   - title: KeyPath that yields the display title for each page.
     ///   - titleContent: A view builder that replaces the default title strip.
     ///   - footerContent: A view builder that replaces the default indicator.
@@ -480,6 +525,9 @@ public extension TitledPageView where Data.Element: Identifiable, ID == Data.Ele
     /// - Parameters:
     ///   - pages: The page data.
     ///   - selection: Two-way binding to the id of the currently visible page.
+    ///     `TitledPageView` writes a new value through this binding whenever
+    ///     the active page changes. Observe page changes with
+    ///     `.onChange(of: selection)`.
     ///   - title: KeyPath that yields the display title for each page.
     ///   - indicatorStyle: Indicator visual treatment. Defaults to `.dots`.
     ///   - titleContent: A view builder that replaces the default title strip.
@@ -508,6 +556,9 @@ public extension TitledPageView where Data.Element: Identifiable, ID == Data.Ele
     /// - Parameters:
     ///   - pages: The page data.
     ///   - selection: Two-way binding to the id of the currently visible page.
+    ///     `TitledPageView` writes a new value through this binding whenever
+    ///     the active page changes. Observe page changes with
+    ///     `.onChange(of: selection)`.
     ///   - title: KeyPath that yields the display title for each page.
     ///   - titleAlignment: How to position the default title strip.
     ///   - footerContent: A view builder that replaces the default indicator.
