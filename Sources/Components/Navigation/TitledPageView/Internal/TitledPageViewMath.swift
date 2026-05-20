@@ -34,12 +34,10 @@ enum TitledPageViewMath {
         layout: TitledPageTitleLayout
     ) -> CGFloat {
         switch layout {
-        case .bidirectional:
+        case .bidirectional, .center:
             return max(0, viewportWidth - 2 * peek - 2 * gap)
         case .leading, .trailing:
             return max(0, viewportWidth - peek - gap)
-        case .center:
-            return max(0, viewportWidth)
         }
     }
 
@@ -66,12 +64,7 @@ enum TitledPageViewMath {
         layout: TitledPageTitleLayout
     ) -> CGFloat {
         let width = slotWidth(viewportWidth: viewportWidth, peek: peek, gap: gap, layout: layout)
-        switch layout {
-        case .bidirectional, .leading, .trailing:
-            return width + gap
-        case .center:
-            return width
-        }
+        return width + gap
     }
 
     /// Leading padding the header HStack should apply so that, at
@@ -92,8 +85,8 @@ enum TitledPageViewMath {
         layout: TitledPageTitleLayout
     ) -> CGFloat {
         switch layout {
-        case .bidirectional, .trailing: return peek + gap
-        case .leading, .center: return 0
+        case .bidirectional, .trailing, .center: return peek + gap
+        case .leading: return 0
         }
     }
 
@@ -119,7 +112,9 @@ enum TitledPageViewMath {
         reduceMotion: Bool,
         usesCrossfade: Bool
     ) -> CGFloat {
-        effectivePeek(
+        // The .none direction means no peek regardless of what is configured.
+        if direction == .none { return 0 }
+        return effectivePeek(
             configured: configured,
             layout: titleLayout(for: direction),
             reduceMotion: reduceMotion,
@@ -135,7 +130,6 @@ enum TitledPageViewMath {
         usesCrossfade: Bool
     ) -> CGFloat {
         if reduceMotion && usesCrossfade { return 0 }
-        if layout == .center { return 0 }
         return max(0, configured)
     }
 

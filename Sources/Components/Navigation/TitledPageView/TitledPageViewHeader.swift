@@ -38,11 +38,10 @@ struct TitledPageViewHeader: View {
 
     var body: some View {
         let layout = effectiveTitleLayout
-        let effectiveGap: CGFloat = layout == .center ? 0 : resolved.titleGap
         let metrics = TitledPageViewMetrics(
             viewportWidth: viewportWidth,
             peek: effectivePeek,
-            gap: effectiveGap,
+            gap: resolved.titleGap,
             layout: layout
         )
 
@@ -52,7 +51,7 @@ struct TitledPageViewHeader: View {
             Color.clear.frame(height: 1)
 
             if viewportWidth > 0, !titles.isEmpty {
-                HStack(spacing: effectiveGap) {
+                HStack(spacing: resolved.titleGap) {
                     ForEach(Array(titles.enumerated()), id: \.offset) { index, title in
                         Text(title)
                             .font(resolved.titleFont)
@@ -64,7 +63,7 @@ struct TitledPageViewHeader: View {
                             .frame(width: metrics.slotWidth, alignment: slotAlignment(for: layout))
                             .contentShape(Rectangle())
                             .onTapGesture { onJump(index) }
-                            .allowsHitTesting(index != activeIndex && titleOpacity(for: index) > 0)
+                            .allowsHitTesting(index != activeIndex)
                     }
                 }
                 .padding(.leading, resolved.titleLeadingPadding ?? metrics.leadingPadding)
@@ -125,10 +124,11 @@ struct TitledPageViewHeader: View {
 
     private func titleOpacity(for index: Int) -> Double {
         if index == activeIndex { return 1.0 }
-        // In next-only mode, previous titles must be fully invisible.
-        // The opacity change is animated via .animation(value: activeIndex) on the Text.
-        if effectiveTitleLayout == .leading && index < activeIndex { return 0.0 }
-        if effectiveTitleLayout == .trailing && index > activeIndex { return 0.0 }
+        // In unidirectional modes, titles on the non-peek side are
+        // visible but strongly dimmed to communicate they are disabled
+        // (visited/previous pages in leading mode; upcoming pages in trailing mode).
+        if effectiveTitleLayout == .leading && index < activeIndex { return 0.3 }
+        if effectiveTitleLayout == .trailing && index > activeIndex { return 0.3 }
         return 0.6
     }
 
@@ -190,6 +190,74 @@ private let _headerPreviewTitles = ["Best of 2025", "Spotlight: Health", "Travel
             resolved: headerPreviewStyle(theme: theme),
             titles: _headerPreviewTitles,
             progress: 1.4,
+            activeIndex: 1,
+            viewportWidth: 360,
+            layoutSign: 1,
+            reduceMotion: false,
+            onJump: { _ in }
+        )
+        .frame(width: 360)
+        .padding(.vertical, theme.spacing.twoUnits)
+    }
+}
+
+#Preview("Center alignment – snapped to page 1") {
+    PreviewContent { theme in
+        TitledPageViewHeader(
+            resolved: {
+                let s = headerPreviewStyle(theme: theme)
+                return ResolvedPaginationStyle(
+                    titleFont: s.titleFont,
+                    titleColor: s.titleColor,
+                    adjacentTitleColor: s.adjacentTitleColor,
+                    background: s.background,
+                    indicatorActiveColor: s.indicatorActiveColor,
+                    indicatorInactiveColor: s.indicatorInactiveColor,
+                    peekDirection: .bidirectional,
+                    titleAlignment: .center,
+                    peekWidth: s.peekWidth,
+                    headerSpacing: s.headerSpacing,
+                    titleGap: s.titleGap,
+                    reduceMotionUsesCrossfade: s.reduceMotionUsesCrossfade,
+                    titleLeadingPadding: s.titleLeadingPadding
+                )
+            }(),
+            titles: _headerPreviewTitles,
+            progress: 1,
+            activeIndex: 1,
+            viewportWidth: 360,
+            layoutSign: 1,
+            reduceMotion: false,
+            onJump: { _ in }
+        )
+        .frame(width: 360)
+        .padding(.vertical, theme.spacing.twoUnits)
+    }
+}
+
+#Preview("Unidirectional – dimmed previous title") {
+    PreviewContent { theme in
+        TitledPageViewHeader(
+            resolved: {
+                let s = headerPreviewStyle(theme: theme)
+                return ResolvedPaginationStyle(
+                    titleFont: s.titleFont,
+                    titleColor: s.titleColor,
+                    adjacentTitleColor: s.adjacentTitleColor,
+                    background: s.background,
+                    indicatorActiveColor: s.indicatorActiveColor,
+                    indicatorInactiveColor: s.indicatorInactiveColor,
+                    peekDirection: .unidirectional,
+                    titleAlignment: .leading,
+                    peekWidth: s.peekWidth,
+                    headerSpacing: s.headerSpacing,
+                    titleGap: s.titleGap,
+                    reduceMotionUsesCrossfade: s.reduceMotionUsesCrossfade,
+                    titleLeadingPadding: s.titleLeadingPadding
+                )
+            }(),
+            titles: _headerPreviewTitles,
+            progress: 1,
             activeIndex: 1,
             viewportWidth: 360,
             layoutSign: 1,
