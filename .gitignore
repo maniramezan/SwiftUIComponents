@@ -9,3 +9,8 @@ DerivedData/
 .claude/settings.local.json
 .docs-output/
 .docs-site/
+
+# Snapshot images are generated at build time (CI renders them in record mode).
+# Do not commit the PNGs — they are injected into DocC at docs-build time only.
+Tests/SwiftUIComponentsTests/Snapshots/__Snapshots__/
+Sources/Components/Components.docc/Resources/*.png

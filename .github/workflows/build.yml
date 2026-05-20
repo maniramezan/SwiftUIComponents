@@ -40,7 +40,13 @@ jobs:
       - name: Run validation script
         run: ./Scripts/validate.sh
 
-      - name: Copy snapshot baselines into DocC Resources
+      - name: Render component snapshots
+        # swift-snapshot-testing exits non-zero after writing new images in record
+        # mode — that is expected behaviour. The images are written regardless.
+        run: |
+          swift test --filter ComponentSnapshot || true
+
+      - name: Copy snapshots into DocC Resources
         run: |
           chmod +x Scripts/copy-snapshots-to-docc.sh
           ./Scripts/copy-snapshots-to-docc.sh
