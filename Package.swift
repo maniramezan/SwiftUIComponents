@@ -15,6 +15,10 @@ let package = Package(
             name: "Components",
             targets: ["Components"]
         ),
+        .library(
+            name: "ComponentShowcase",
+            targets: ["ComponentShowcase"]
+        ),
     ],
     dependencies: [
         .package(url: "https://github.com/swiftlang/swift-docc-plugin", from: "1.4.3"),
@@ -37,7 +41,7 @@ let package = Package(
                 .product(name: "SnapshotTesting", package: "swift-snapshot-testing"),
             ]
         ),
-        .executableTarget(
+        .target(
             name: "ComponentShowcase",
             dependencies: ["Components", "DesignSystem"]
         ),
