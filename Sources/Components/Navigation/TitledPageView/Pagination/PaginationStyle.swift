@@ -29,6 +29,10 @@ public struct PaginationStyle: Sendable {
     /// Defaults to `.bidirectional` (both previous and next page titles peek).
     public var peekDirection: PaginationPeekDirection
 
+    /// Alignment mode for the default title strip. Defaults to `.automatic`,
+    /// which preserves the title behavior implied by `peekDirection`.
+    public var titleAlignment: TitledPageTitleAlignment
+
     /// Width (in points) of the visible peek on a single side.
     /// `nil` → `theme.spacing.fiveUnits` (40 pt by default).
     public var peekWidth: CGFloat?
@@ -66,6 +70,7 @@ public struct PaginationStyle: Sendable {
         indicatorActiveColor: Color? = nil,
         indicatorInactiveColor: Color? = nil,
         peekDirection: PaginationPeekDirection = .bidirectional,
+        titleAlignment: TitledPageTitleAlignment = .automatic,
         peekWidth: CGFloat? = nil,
         headerSpacing: CGFloat? = nil,
         titleGap: CGFloat? = nil,
@@ -79,6 +84,7 @@ public struct PaginationStyle: Sendable {
         self.indicatorActiveColor = indicatorActiveColor
         self.indicatorInactiveColor = indicatorInactiveColor
         self.peekDirection = peekDirection
+        self.titleAlignment = titleAlignment
         self.peekWidth = peekWidth
         self.headerSpacing = headerSpacing
         self.titleGap = titleGap

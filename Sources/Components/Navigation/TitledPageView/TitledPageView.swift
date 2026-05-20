@@ -39,7 +39,10 @@ where
     let pages: [Data.Element]
     let idKeyPath: KeyPath<Data.Element, ID>
     let titleKeyPath: KeyPath<Data.Element, String>
+    let titleAlignment: TitledPageTitleAlignment
     let indicatorStyle: PaginationIndicatorStyle
+    let customTitle: ((TitledPageViewContext<ID>) -> AnyView)?
+    let customFooter: ((TitledPageViewContext<ID>) -> AnyView)?
     let content: (Data.Element) -> PageContent
 
     @Binding var selection: ID
@@ -67,6 +70,9 @@ where
     ///   - title: KeyPath that yields the display title for each page. The
     ///     title is shown in the header strip and used as the VoiceOver
     ///     label for each page.
+    ///   - titleAlignment: How to position the default title strip. Defaults
+    ///     to ``TitledPageTitleAlignment/automatic`` to preserve the style's
+    ///     existing title peek behavior.
     ///   - indicatorStyle: How — or whether — to draw the page-position
     ///     indicator. Defaults to ``PaginationIndicatorStyle/dots``.
     ///   - content: A view builder that produces the body for each page.
@@ -75,6 +81,7 @@ where
         selection: Binding<ID>,
         id: KeyPath<Data.Element, ID>,
         title: KeyPath<Data.Element, String>,
+        titleAlignment: TitledPageTitleAlignment = .automatic,
         indicatorStyle: PaginationIndicatorStyle = .dots,
         @ViewBuilder content: @escaping (Data.Element) -> PageContent
     ) {
@@ -82,7 +89,108 @@ where
         self._selection = selection
         self.idKeyPath = id
         self.titleKeyPath = title
+        self.titleAlignment = titleAlignment
         self.indicatorStyle = indicatorStyle
+        self.customTitle = nil
+        self.customFooter = nil
+        self.content = content
+    }
+
+    /// Creates a paged view with custom title and footer builders.
+    ///
+    /// - Parameters:
+    ///   - pages: The page data. Must be non-empty for the view to render
+    ///     content; an empty collection produces an `EmptyView`.
+    ///   - selection: Two-way binding to the id of the currently visible page.
+    ///   - id: KeyPath that yields a unique, stable id for each page.
+    ///   - title: KeyPath that yields the display title for each page. The
+    ///     title remains the VoiceOver label for each page.
+    ///   - titleContent: A view builder that replaces the default title strip.
+    ///   - footerContent: A view builder that replaces the default indicator.
+    ///   - content: A view builder that produces the body for each page.
+    public init<TitleContent: View, FooterContent: View>(
+        _ pages: Data,
+        selection: Binding<ID>,
+        id: KeyPath<Data.Element, ID>,
+        title: KeyPath<Data.Element, String>,
+        @ViewBuilder titleContent: @escaping (TitledPageViewContext<ID>) -> TitleContent,
+        @ViewBuilder footerContent: @escaping (TitledPageViewContext<ID>) -> FooterContent,
+        @ViewBuilder content: @escaping (Data.Element) -> PageContent
+    ) {
+        self.pages = Array(pages)
+        self._selection = selection
+        self.idKeyPath = id
+        self.titleKeyPath = title
+        self.titleAlignment = .automatic
+        self.indicatorStyle = .hidden
+        self.customTitle = { AnyView(titleContent($0)) }
+        self.customFooter = { AnyView(footerContent($0)) }
+        self.content = content
+    }
+
+    /// Creates a paged view with a custom title builder and default footer.
+    ///
+    /// - Parameters:
+    ///   - pages: The page data. Must be non-empty for the view to render
+    ///     content; an empty collection produces an `EmptyView`.
+    ///   - selection: Two-way binding to the id of the currently visible page.
+    ///   - id: KeyPath that yields a unique, stable id for each page.
+    ///   - title: KeyPath that yields the display title for each page. The
+    ///     title remains the VoiceOver label for each page.
+    ///   - indicatorStyle: How — or whether — to draw the page-position
+    ///     indicator below the pages.
+    ///   - titleContent: A view builder that replaces the default title strip.
+    ///   - content: A view builder that produces the body for each page.
+    public init<TitleContent: View>(
+        _ pages: Data,
+        selection: Binding<ID>,
+        id: KeyPath<Data.Element, ID>,
+        title: KeyPath<Data.Element, String>,
+        indicatorStyle: PaginationIndicatorStyle = .dots,
+        @ViewBuilder titleContent: @escaping (TitledPageViewContext<ID>) -> TitleContent,
+        @ViewBuilder content: @escaping (Data.Element) -> PageContent
+    ) {
+        self.pages = Array(pages)
+        self._selection = selection
+        self.idKeyPath = id
+        self.titleKeyPath = title
+        self.titleAlignment = .automatic
+        self.indicatorStyle = indicatorStyle
+        self.customTitle = { AnyView(titleContent($0)) }
+        self.customFooter = nil
+        self.content = content
+    }
+
+    /// Creates a paged view with the default title strip and a custom footer.
+    ///
+    /// - Parameters:
+    ///   - pages: The page data. Must be non-empty for the view to render
+    ///     content; an empty collection produces an `EmptyView`.
+    ///   - selection: Two-way binding to the id of the currently visible page.
+    ///   - id: KeyPath that yields a unique, stable id for each page.
+    ///   - title: KeyPath that yields the display title for each page. The
+    ///     title is shown in the header strip and used as the VoiceOver label
+    ///     for each page.
+    ///   - titleAlignment: How to position the default title strip.
+    ///   - footerContent: A view builder that replaces the default indicator.
+    ///   - content: A view builder that produces the body for each page.
+    public init<FooterContent: View>(
+        _ pages: Data,
+        selection: Binding<ID>,
+        id: KeyPath<Data.Element, ID>,
+        title: KeyPath<Data.Element, String>,
+        titleAlignment: TitledPageTitleAlignment = .automatic,
+        @ViewBuilder footerContent: @escaping (TitledPageViewContext<ID>) -> FooterContent,
+        @ViewBuilder content: @escaping (Data.Element) -> PageContent
+    ) {
+        self.pages = Array(pages)
+        self._selection = selection
+        self.idKeyPath = id
+        self.titleKeyPath = title
+        self.titleAlignment = titleAlignment
+        self.indicatorStyle = .hidden
+        self.customTitle = nil
+        self.customFooter = { AnyView(footerContent($0)) }
         self.content = content
     }
 
@@ -101,7 +209,11 @@ where
 
     @ViewBuilder
     private var pagedBody: some View {
-        let resolved = Self.resolveStyle(override: styleOverride, theme: theme)
+        let resolved = Self.resolveStyle(
+            override: styleOverride,
+            theme: theme,
+            titleAlignment: titleAlignment
+        )
         let showIndicator = Self.shouldShowIndicator(count: pages.count, style: indicatorStyle)
         let titles = pages.map { $0[keyPath: titleKeyPath] }
         let activeIdx = activeIndex
@@ -112,9 +224,12 @@ where
             } else {
                 rawProgress
             }
+        let context = pageContext(titles: titles, activeIndex: activeIdx, progress: progress)
 
         VStack(spacing: resolved.headerSpacing) {
-            if pages.count > 1 {
+            if let customTitle {
+                customTitle(context)
+            } else if resolved.titleAlignment != .hidden, pages.count > 1 {
                 TitledPageViewHeader(
                     resolved: resolved,
                     titles: titles,
@@ -125,19 +240,21 @@ where
                     reduceMotion: reduceMotion,
                     onJump: { idx in jump(to: idx, reduceMotion: reduceMotion) }
                 )
-            } else if let only = titles.first {
+            } else if resolved.titleAlignment != .hidden, let only = titles.first {
                 Text(only)
                     .font(resolved.titleFont)
                     .foregroundStyle(resolved.titleColor)
                     .lineLimit(1)
                     .minimumScaleFactor(0.85)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .frame(maxWidth: .infinity, alignment: singleTitleAlignment(for: resolved.titleAlignment))
                     .accessibilityHidden(true)
             }
 
             pagesScrollView
 
-            if showIndicator {
+            if let customFooter {
+                customFooter(context)
+            } else if showIndicator {
                 TitledPageViewIndicator(
                     resolved: resolved,
                     style: indicatorStyle,
@@ -169,6 +286,37 @@ where
             viewportWidth = width
         }
         .accessibilityElement(children: .contain)
+    }
+
+    private func pageContext(
+        titles: [String],
+        activeIndex: Int,
+        progress: CGFloat
+    ) -> TitledPageViewContext<ID> {
+        TitledPageViewContext(
+            selection: selection,
+            activeIndex: activeIndex,
+            progress: Double(progress),
+            pageCount: pages.count,
+            titles: titles,
+            currentTitle: titles.indices.contains(activeIndex) ? titles[activeIndex] : "",
+            previousTitle: titles.indices.contains(activeIndex - 1) ? titles[activeIndex - 1] : nil,
+            nextTitle: titles.indices.contains(activeIndex + 1) ? titles[activeIndex + 1] : nil,
+            selectPage: { idx in jump(to: idx, reduceMotion: reduceMotion) }
+        )
+    }
+
+    private func singleTitleAlignment(for titleAlignment: TitledPageTitleAlignment) -> Alignment {
+        switch titleAlignment {
+        case .automatic, .leading:
+            return .leading
+        case .trailing:
+            return .trailing
+        case .center:
+            return .center
+        case .hidden:
+            return .leading
+        }
     }
 
     /// The subset of pages visible in the scroll view. In unidirectional
@@ -277,12 +425,14 @@ public extension TitledPageView where Data.Element: Identifiable, ID == Data.Ele
     ///   - pages: The page data.
     ///   - selection: Two-way binding to the id of the currently visible page.
     ///   - title: KeyPath that yields the display title for each page.
+    ///   - titleAlignment: How to position the default title strip.
     ///   - indicatorStyle: Indicator visual treatment. Defaults to `.dots`.
     ///   - content: A view builder that produces the body for each page.
     init(
         _ pages: Data,
         selection: Binding<ID>,
         title: KeyPath<Data.Element, String>,
+        titleAlignment: TitledPageTitleAlignment = .automatic,
         indicatorStyle: PaginationIndicatorStyle = .dots,
         @ViewBuilder content: @escaping (Data.Element) -> PageContent
     ) {
@@ -291,7 +441,92 @@ public extension TitledPageView where Data.Element: Identifiable, ID == Data.Ele
             selection: selection,
             id: \Data.Element.id,
             title: title,
+            titleAlignment: titleAlignment,
             indicatorStyle: indicatorStyle,
+            content: content
+        )
+    }
+
+    /// Creates an identifiable paged view with custom title and footer builders.
+    ///
+    /// - Parameters:
+    ///   - pages: The page data.
+    ///   - selection: Two-way binding to the id of the currently visible page.
+    ///   - title: KeyPath that yields the display title for each page.
+    ///   - titleContent: A view builder that replaces the default title strip.
+    ///   - footerContent: A view builder that replaces the default indicator.
+    ///   - content: A view builder that produces the body for each page.
+    init<TitleContent: View, FooterContent: View>(
+        _ pages: Data,
+        selection: Binding<ID>,
+        title: KeyPath<Data.Element, String>,
+        @ViewBuilder titleContent: @escaping (TitledPageViewContext<ID>) -> TitleContent,
+        @ViewBuilder footerContent: @escaping (TitledPageViewContext<ID>) -> FooterContent,
+        @ViewBuilder content: @escaping (Data.Element) -> PageContent
+    ) {
+        self.init(
+            pages,
+            selection: selection,
+            id: \Data.Element.id,
+            title: title,
+            titleContent: titleContent,
+            footerContent: footerContent,
+            content: content
+        )
+    }
+
+    /// Creates an identifiable paged view with a custom title builder.
+    ///
+    /// - Parameters:
+    ///   - pages: The page data.
+    ///   - selection: Two-way binding to the id of the currently visible page.
+    ///   - title: KeyPath that yields the display title for each page.
+    ///   - indicatorStyle: Indicator visual treatment. Defaults to `.dots`.
+    ///   - titleContent: A view builder that replaces the default title strip.
+    ///   - content: A view builder that produces the body for each page.
+    init<TitleContent: View>(
+        _ pages: Data,
+        selection: Binding<ID>,
+        title: KeyPath<Data.Element, String>,
+        indicatorStyle: PaginationIndicatorStyle = .dots,
+        @ViewBuilder titleContent: @escaping (TitledPageViewContext<ID>) -> TitleContent,
+        @ViewBuilder content: @escaping (Data.Element) -> PageContent
+    ) {
+        self.init(
+            pages,
+            selection: selection,
+            id: \Data.Element.id,
+            title: title,
+            indicatorStyle: indicatorStyle,
+            titleContent: titleContent,
+            content: content
+        )
+    }
+
+    /// Creates an identifiable paged view with a custom footer builder.
+    ///
+    /// - Parameters:
+    ///   - pages: The page data.
+    ///   - selection: Two-way binding to the id of the currently visible page.
+    ///   - title: KeyPath that yields the display title for each page.
+    ///   - titleAlignment: How to position the default title strip.
+    ///   - footerContent: A view builder that replaces the default indicator.
+    ///   - content: A view builder that produces the body for each page.
+    init<FooterContent: View>(
+        _ pages: Data,
+        selection: Binding<ID>,
+        title: KeyPath<Data.Element, String>,
+        titleAlignment: TitledPageTitleAlignment = .automatic,
+        @ViewBuilder footerContent: @escaping (TitledPageViewContext<ID>) -> FooterContent,
+        @ViewBuilder content: @escaping (Data.Element) -> PageContent
+    ) {
+        self.init(
+            pages,
+            selection: selection,
+            id: \Data.Element.id,
+            title: title,
+            titleAlignment: titleAlignment,
+            footerContent: footerContent,
             content: content
         )
     }

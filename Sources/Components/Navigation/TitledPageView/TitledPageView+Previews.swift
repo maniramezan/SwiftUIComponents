@@ -86,3 +86,30 @@ private let titledPageViewPreviewPages: [TitledPageViewPreviewPage] = [
         .padding(theme.spacing.twoUnits)
     }
 }
+
+#Preview("Pinned title leading padding") {
+    @Previewable @State var selection = 0
+    PreviewContent { theme in
+        TitledPageView(
+            titledPageViewPreviewPages,
+            selection: $selection,
+            title: \TitledPageViewPreviewPage.title
+        ) { page in
+            VStack(spacing: theme.spacing.oneUnit) {
+                Image(systemName: page.symbol)
+                    .font(theme.typography.largeTitle)
+                Text(page.title)
+                    .designTextStyle(.body)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .designCardSurface()
+            .padding(.horizontal, theme.spacing.threeUnits)
+        }
+        // Pin the title strip's leading edge to match the page content inset
+        // so the active title aligns with the card's text rather than
+        // the peek+gap computed default.
+        .designPaginationStyle(.init(titleLeadingPadding: theme.spacing.threeUnits))
+        .frame(height: 240)
+        .padding(theme.spacing.twoUnits)
+    }
+}

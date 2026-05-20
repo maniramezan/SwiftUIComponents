@@ -127,6 +127,7 @@ private func indicatorPreviewStyle(theme: any Theme) -> ResolvedPaginationStyle 
         indicatorActiveColor: theme.colors.primary,
         indicatorInactiveColor: theme.colors.disabled,
         peekDirection: .bidirectional,
+        titleAlignment: .automatic,
         peekWidth: theme.spacing.fiveUnits,
         headerSpacing: theme.spacing.twoUnits,
         titleGap: theme.spacing.twoUnits,

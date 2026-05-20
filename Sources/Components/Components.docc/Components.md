@@ -59,6 +59,8 @@ open Package.swift   # Opens in Xcode — select the ComponentShowcase scheme an
 ### Navigation
 
 - ``TitledPageView``
+- ``TitledPageTitleAlignment``
+- ``TitledPageViewContext``
 - ``PaginationIndicatorStyle``
 - ``PaginationPeekDirection``
 - ``PaginationStyle``

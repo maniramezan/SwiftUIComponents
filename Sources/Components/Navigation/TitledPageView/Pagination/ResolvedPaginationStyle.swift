@@ -13,6 +13,7 @@ struct ResolvedPaginationStyle: Equatable {
     let indicatorActiveColor: Color
     let indicatorInactiveColor: Color
     let peekDirection: PaginationPeekDirection
+    let titleAlignment: TitledPageTitleAlignment
     let peekWidth: CGFloat
     let headerSpacing: CGFloat
     let titleGap: CGFloat
@@ -24,6 +25,7 @@ struct ResolvedPaginationStyle: Equatable {
 
     static func == (lhs: ResolvedPaginationStyle, rhs: ResolvedPaginationStyle) -> Bool {
         lhs.peekDirection == rhs.peekDirection
+            && lhs.titleAlignment == rhs.titleAlignment
             && lhs.peekWidth == rhs.peekWidth
             && lhs.headerSpacing == rhs.headerSpacing
             && lhs.titleGap == rhs.titleGap
