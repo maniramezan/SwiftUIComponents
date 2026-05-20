@@ -86,12 +86,49 @@ jobs:
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: |
           mkdir -p .docs-site
-          cp -R .docs-output/designsystem/ .docs-site/
-          # Merge components output into the same site (shared renderer assets)
-          cp -R .docs-output/components/data/documentation/components .docs-site/data/documentation/
-          cp -R .docs-output/components/documentation/components .docs-site/documentation/
 
-          # Root redirect
+          # Start with DesignSystem as the base (provides all shared renderer assets)
+          cp -R .docs-output/designsystem/ .docs-site/
+
+          # Merge Components page content
+          cp -R .docs-output/components/data/documentation/components \
+                .docs-site/data/documentation/
+          cp -R .docs-output/components/data/documentation/components.json \
+                .docs-site/data/documentation/
+          cp -R .docs-output/components/documentation/components \
+                .docs-site/documentation/
+
+          # Merge navigator index so both targets appear in the DocC nav bar
+          python3 - <<'PYEOF'
+          import json, sys
+
+          with open('.docs-output/designsystem/index/index.json') as f:
+              ds = json.load(f)
+          with open('.docs-output/components/index/index.json') as f:
+              comp = json.load(f)
+
+          merged = {
+              "schemaVersion": ds["schemaVersion"],
+              "includedArchiveIdentifiers": (
+                  ds["includedArchiveIdentifiers"] +
+                  comp["includedArchiveIdentifiers"]
+              ),
+              "interfaceLanguages": {},
+          }
+
+          all_langs = set(ds["interfaceLanguages"]) | set(comp["interfaceLanguages"])
+          for lang in sorted(all_langs):
+              merged["interfaceLanguages"][lang] = (
+                  ds["interfaceLanguages"].get(lang, []) +
+                  comp["interfaceLanguages"].get(lang, [])
+              )
+
+          with open('.docs-site/index/index.json', 'w') as f:
+              json.dump(merged, f)
+          print("Merged index.json written.")
+          PYEOF
+
+          # Root redirect to DesignSystem landing (keeps existing bookmark behaviour)
           cat > .docs-site/index.html <<'EOF'
           <!doctype html>
           <html>
