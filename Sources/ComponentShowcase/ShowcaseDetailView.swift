@@ -15,34 +15,34 @@ struct ShowcaseDetailView: View {
             }
         }
         .navigationTitle(component.rawValue)
-#if os(iOS) || targetEnvironment(macCatalyst)
-        .navigationBarTitleDisplayMode(.large)
-#endif
+        #if os(iOS) || targetEnvironment(macCatalyst)
+            .navigationBarTitleDisplayMode(.large)
+        #endif
     }
 
     @ViewBuilder
     private var detailContent: some View {
         switch component {
-        case .buttons:          ButtonsDetailView()
-        case .compactAction:    CompactActionDetailView()
-        case .searchBar:        SearchBarDetailView()
-        case .toggle:           ToggleDetailView()
-        case .menuPicker:       MenuPickerDetailView()
-        case .pillChips:        PillChipsDetailView()
-        case .badges:           BadgesDetailView()
-        case .textStyles:       TextStylesDetailView()
-        case .surfaces:         SurfacesDetailView()
-        case .adaptiveSurface:  AdaptiveSurfaceDetailView()
-        case .selectableCard:   SelectableCardDetailView()
-        case .containers:       ContainersDetailView()
-        case .errorBanner:      ErrorBannerDetailView()
-        case .errorSection:     ErrorSectionDetailView()
-        case .loading:          LoadingDetailView()
-        case .ghostLoading:     GhostLoadingDetailView()
-        case .emptyState:       EmptyStateDetailView()
-        case .pagedView:        PagedViewDetailView()
-        case .chatBubble:       ChatBubbleDetailView()
-        case .typingIndicator:  TypingIndicatorDetailView()
+        case .buttons: ButtonsDetailView()
+        case .compactAction: CompactActionDetailView()
+        case .searchBar: SearchBarDetailView()
+        case .toggle: ToggleDetailView()
+        case .menuPicker: MenuPickerDetailView()
+        case .pillChips: PillChipsDetailView()
+        case .badges: BadgesDetailView()
+        case .textStyles: TextStylesDetailView()
+        case .surfaces: SurfacesDetailView()
+        case .adaptiveSurface: AdaptiveSurfaceDetailView()
+        case .selectableCard: SelectableCardDetailView()
+        case .containers: ContainersDetailView()
+        case .errorBanner: ErrorBannerDetailView()
+        case .errorSection: ErrorSectionDetailView()
+        case .loading: LoadingDetailView()
+        case .ghostLoading: GhostLoadingDetailView()
+        case .emptyState: EmptyStateDetailView()
+        case .pagedView: PagedViewDetailView()
+        case .chatBubble: ChatBubbleDetailView()
+        case .typingIndicator: TypingIndicatorDetailView()
         }
     }
 }
