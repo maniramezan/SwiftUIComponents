@@ -12,7 +12,9 @@ public protocol Motion: Sendable {
 
 /// Default motion and interaction tokens.
 public struct DefaultMotion: Motion {
+    /// Minimum tap/click target size recommended for controls.
     public let minimumHitTarget: CGFloat
+    /// Opacity applied to disabled interactive elements.
     public let disabledOpacity: Double
     private let standardDuration: TimeInterval
 

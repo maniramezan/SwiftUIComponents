@@ -11,6 +11,7 @@ public struct CapsuleSurface: ViewModifier {
         self.isSelected = isSelected
     }
 
+    /// Applies the capsule surface styling to the wrapped content.
     public func body(content: Content) -> some View {
         content
             .background(

@@ -22,6 +22,8 @@ public struct AdaptiveSurface: ViewModifier {
         self.cornerRadius = cornerRadius
     }
 
+    /// Applies the adaptive surface to the wrapped content — glass on iOS/macOS 26+,
+    /// `ultraThinMaterial` on older systems.
     @ViewBuilder
     public func body(content: Content) -> some View {
         let radius = cornerRadius ?? theme.radius.oneAndHalfUnits
