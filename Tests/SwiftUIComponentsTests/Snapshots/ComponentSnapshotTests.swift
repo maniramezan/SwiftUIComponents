@@ -12,42 +12,25 @@ import Testing
     import AppKit
 #endif
 
-/// Tag for snapshot tests that should only run locally (not in CI).
+/// Snapshot tests that generate DocC documentation images.
 ///
-/// Snapshot rendering is environment-sensitive — font metrics and antialiasing
-/// differ across macOS/Xcode versions, making pixel comparison unreliable in CI.
-/// These tests exist to **generate** DocC images locally, not for regression.
-extension Tag {
-    @Tag static var localOnly: Self
-}
-
-/// Snapshot tests for generating DocC documentation images.
+/// These tests **always run in record mode** — they write PNGs into the
+/// `__Snapshots__` directory and never perform pixel-level comparison. The
+/// written files are not committed to the repository; instead, the CI
+/// docs workflow picks them up via `Scripts/copy-snapshots-to-docc.sh`
+/// and injects them into the DocC resource bundle before building the
+/// documentation archive.
 ///
-/// These tests are **local-only** — they generate baseline images for use in
-/// DocC documentation but are skipped in CI because pixel rendering varies
-/// across environments.
-///
-/// ## Workflow
+/// ## Generating images locally
 ///
 /// ```bash
-/// # Generate or update baseline images:
-/// SNAPSHOT_TESTING_RECORD=1 swift test --filter ComponentSnapshot
+/// # Render images and copy them into DocC Resources (for local preview):
+/// swift test --filter ComponentSnapshot && ./Scripts/copy-snapshots-to-docc.sh
 ///
-/// # Copy into DocC Resources:
-/// ./Scripts/copy-snapshots-to-docc.sh
-///
-/// # Commit the baselines:
-/// git add Tests/SwiftUIComponentsTests/Snapshots/__Snapshots__
-/// git add Sources/Components/Components.docc/Resources
+/// # Then preview the docs:
+/// swift package --disable-sandbox preview-documentation --target Components
 /// ```
-@Suite(
-    "Component Snapshots",
-    .tags(.localOnly),
-    .enabled(
-        if: ProcessInfo.processInfo.environment["CI"] == nil,
-        "Skipped in CI — snapshot rendering is environment-sensitive"
-    )
-)
+@Suite("Component Snapshots")
 struct ComponentSnapshotTests {
 
     // MARK: - Buttons
@@ -298,7 +281,12 @@ struct ComponentSnapshotTests {
 
 extension ComponentSnapshotTests {
 
-    /// Renders the view and compares against the stored baseline.
+    /// Renders `view` at `size` and writes it to the `__Snapshots__` directory.
+    ///
+    /// This helper always uses `record: .all` — it never compares against a
+    /// previously stored baseline. The goal is image generation, not regression
+    /// detection. Pixel-level regression tests live in the main test suite using
+    /// standard `assertSnapshot` calls with stored baselines.
     @MainActor
     private func assertComponentSnapshot<V: View>(
         _ view: V,
@@ -307,24 +295,26 @@ extension ComponentSnapshotTests {
         function: String = #function,
         line: UInt = #line
     ) {
-        #if canImport(UIKit)
-            assertSnapshot(
-                of: view,
-                as: .image(layout: .fixed(width: size.width, height: size.height)),
-                file: file,
-                testName: function,
-                line: line
-            )
-        #elseif canImport(AppKit)
-            let hostingView = NSHostingController(rootView: view)
-            hostingView.view.frame = CGRect(origin: .zero, size: size)
-            assertSnapshot(
-                of: hostingView.view,
-                as: .image(size: size),
-                file: file,
-                testName: function,
-                line: line
-            )
-        #endif
+        withSnapshotTesting(record: .all) {
+            #if canImport(UIKit)
+                assertSnapshot(
+                    of: view,
+                    as: .image(layout: .fixed(width: size.width, height: size.height)),
+                    file: file,
+                    testName: function,
+                    line: line
+                )
+            #elseif canImport(AppKit)
+                let hostingView = NSHostingController(rootView: view)
+                hostingView.view.frame = CGRect(origin: .zero, size: size)
+                assertSnapshot(
+                    of: hostingView.view,
+                    as: .image(size: size),
+                    file: file,
+                    testName: function,
+                    line: line
+                )
+            #endif
+        }
     }
 }
