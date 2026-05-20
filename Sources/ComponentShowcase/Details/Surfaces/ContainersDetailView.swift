@@ -27,3 +27,10 @@ struct ContainersDetailView: View {
         }
     }
 }
+
+#Preview {
+    ScrollView {
+        ContainersDetailView()
+            .padding()
+    }
+}

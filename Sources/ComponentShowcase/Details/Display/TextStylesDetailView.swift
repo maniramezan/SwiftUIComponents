@@ -34,3 +34,10 @@ struct TextStylesDetailView: View {
         }
     }
 }
+
+#Preview {
+    ScrollView {
+        TextStylesDetailView()
+            .padding()
+    }
+}

@@ -28,3 +28,10 @@ struct PillChipsDetailView: View {
         }
     }
 }
+
+#Preview {
+    ScrollView {
+        PillChipsDetailView()
+            .padding()
+    }
+}

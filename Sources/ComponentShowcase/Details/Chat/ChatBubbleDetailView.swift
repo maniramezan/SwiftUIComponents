@@ -35,3 +35,10 @@ struct ChatBubbleDetailView: View {
         }
     }
 }
+
+#Preview {
+    ScrollView {
+        ChatBubbleDetailView()
+            .padding()
+    }
+}

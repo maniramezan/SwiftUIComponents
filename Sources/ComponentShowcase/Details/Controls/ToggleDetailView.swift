@@ -24,3 +24,10 @@ struct ToggleDetailView: View {
         }
     }
 }
+
+#Preview {
+    ScrollView {
+        ToggleDetailView()
+            .padding()
+    }
+}

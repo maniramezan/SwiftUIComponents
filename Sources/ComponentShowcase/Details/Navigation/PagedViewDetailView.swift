@@ -123,3 +123,10 @@ struct PagedViewDetailView: View {
         }
     }
 }
+
+#Preview {
+    ScrollView {
+        PagedViewDetailView()
+            .padding()
+    }
+}

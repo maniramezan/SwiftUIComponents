@@ -45,3 +45,7 @@ struct ShowcaseRootView: View {
         }
     }
 }
+
+#Preview {
+    ShowcaseRootView()
+}

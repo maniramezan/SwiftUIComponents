@@ -31,3 +31,10 @@ struct GhostLoadingDetailView: View {
         }
     }
 }
+
+#Preview {
+    ScrollView {
+        GhostLoadingDetailView()
+            .padding()
+    }
+}

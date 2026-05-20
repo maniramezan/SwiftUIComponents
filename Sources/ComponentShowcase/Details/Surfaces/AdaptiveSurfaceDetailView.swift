@@ -23,3 +23,10 @@ struct AdaptiveSurfaceDetailView: View {
         }
     }
 }
+
+#Preview {
+    ScrollView {
+        AdaptiveSurfaceDetailView()
+            .padding()
+    }
+}
