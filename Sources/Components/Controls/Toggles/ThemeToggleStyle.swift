@@ -11,6 +11,9 @@ public struct ThemeToggleStyle: ToggleStyle {
     /// Creates a themed toggle style.
     public init() {}
 
+    /// Builds the toggle control from the given configuration.
+    ///
+    /// - Parameter configuration: The label and binding provided by the `Toggle`.
     public func makeBody(configuration: Configuration) -> some View {
         Button {
             withAnimation(theme.motion.standardAnimation) {

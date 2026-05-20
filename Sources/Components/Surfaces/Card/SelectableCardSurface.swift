@@ -19,6 +19,8 @@ public struct SelectableCardSurface: ViewModifier {
         self.cornerRadius = cornerRadius
     }
 
+    /// Applies the selectable card surface to the wrapped content — glass with accent tint on
+    /// iOS/macOS 26+, `ultraThinMaterial` with an accent stroke on older systems.
     @ViewBuilder
     public func body(content: Content) -> some View {
         let radius = cornerRadius ?? theme.radius.oneAndHalfUnits

@@ -13,6 +13,7 @@ public struct TypeStyle: ViewModifier {
         self.role = role
     }
 
+    /// Applies the themed font and foreground color to the wrapped content.
     public func body(content: Content) -> some View {
         content
             .font(font)

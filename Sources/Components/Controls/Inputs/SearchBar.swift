@@ -14,6 +14,12 @@ public struct SearchBar: View {
     @Environment(\.designTheme) private var theme
 
     /// Creates a themed search bar.
+    /// - Parameters:
+    ///   - text: Two-way binding to the current search string.
+    ///   - placeholder: Hint text shown when the field is empty. Defaults to `"Search"`.
+    ///   - isFocused: Optional external binding that mirrors the field's focus state.
+    ///     Pass a binding to programmatically focus or blur the field.
+    ///   - onSubmit: Closure called when the user submits the search (e.g. taps Return).
     public init(
         text: Binding<String>,
         placeholder: String = "Search",

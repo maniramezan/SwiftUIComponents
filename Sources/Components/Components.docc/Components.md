@@ -48,6 +48,8 @@ open Package.swift   # Opens in Xcode — select the ComponentShowcase scheme an
 - ``CardSurface``
 - ``CapsuleSurface``
 - ``InputSurface``
+- ``AdaptiveSurface``
+- ``SelectableCardSurface``
 
 ### Layout
 
@@ -71,6 +73,8 @@ open Package.swift   # Opens in Xcode — select the ComponentShowcase scheme an
 - ``LoadingView``
 - ``GhostLoadingBlock``
 - ``AsyncContentView``
+- ``ErrorBanner``
+- ``ErrorSection``
 - ``ChatBubble``
 - ``ChatBubbleView``
 - ``ChatMessageRole``

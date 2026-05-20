@@ -11,6 +11,7 @@ public struct CardSurface: ViewModifier {
         self.showStroke = showStroke
     }
 
+    /// Applies the card surface styling to the wrapped content.
     public func body(content: Content) -> some View {
         content
             .background(

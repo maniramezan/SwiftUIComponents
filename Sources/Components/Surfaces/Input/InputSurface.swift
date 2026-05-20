@@ -8,6 +8,7 @@ public struct InputSurface: ViewModifier {
     /// Creates an input surface modifier.
     public init() {}
 
+    /// Applies the input surface styling to the wrapped content.
     public func body(content: Content) -> some View {
         content
             .background(
