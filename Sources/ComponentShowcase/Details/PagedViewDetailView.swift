@@ -12,10 +12,13 @@ struct PagedViewDetailView: View {
     }
 
     private static let pages: [Page] = [
-        .init(id: 0, title: "Best of 2025",      summary: "Editors' picks from across the year.",        symbol: "sparkles"),
-        .init(id: 1, title: "Spotlight: Health",  summary: "Apps to help you move, eat, sleep, breathe.", symbol: "heart.fill"),
-        .init(id: 2, title: "Travel Companions",  summary: "Plan, book, and remember every trip.",         symbol: "airplane"),
-        .init(id: 3, title: "Quiet Tools",        summary: "Beautifully focused single-purpose apps.",     symbol: "moon.stars.fill"),
+        .init(id: 0, title: "Best of 2025", summary: "Editors' picks from across the year.", symbol: "sparkles"),
+        .init(
+            id: 1, title: "Spotlight: Health", summary: "Apps to help you move, eat, sleep, breathe.",
+            symbol: "heart.fill"),
+        .init(id: 2, title: "Travel Companions", summary: "Plan, book, and remember every trip.", symbol: "airplane"),
+        .init(
+            id: 3, title: "Quiet Tools", summary: "Beautifully focused single-purpose apps.", symbol: "moon.stars.fill"),
     ]
 
     @State private var selection: Int = 0
@@ -41,7 +44,9 @@ struct PagedViewDetailView: View {
                         }
                     }
                     controlRow(label: "Title") {
-                        ForEach([TitledPageTitleAlignment.automatic, .leading, .center, .trailing, .hidden], id: \.self) { a in
+                        ForEach(
+                            [TitledPageTitleAlignment.automatic, .leading, .center, .trailing, .hidden], id: \.self
+                        ) { a in
                             PillChip(alignmentLabel(a), isSelected: titleAlignment == a) { titleAlignment = a }
                         }
                     }
@@ -95,18 +100,26 @@ struct PagedViewDetailView: View {
     }
 
     private func indicatorLabel(_ s: PaginationIndicatorStyle) -> String {
-        switch s { case .dots: "Dots"; case .bar: "Bar"; case .hidden: "Hidden" }
+        switch s {
+        case .dots: "Dots";
+        case .bar: "Bar";
+        case .hidden: "Hidden"
+        }
     }
     private func peekLabel(_ d: PaginationPeekDirection) -> String {
-        switch d { case .bidirectional: "Both"; case .unidirectional: "Next only"; case .none: "None" }
+        switch d {
+        case .bidirectional: "Both";
+        case .unidirectional: "Next only";
+        case .none: "None"
+        }
     }
     private func alignmentLabel(_ a: TitledPageTitleAlignment) -> String {
         switch a {
         case .automatic: "Auto"
-        case .leading:   "Leading"
-        case .center:    "Center"
-        case .trailing:  "Trailing"
-        case .hidden:    "Hidden"
+        case .leading: "Leading"
+        case .center: "Center"
+        case .trailing: "Trailing"
+        case .hidden: "Hidden"
         }
     }
 }

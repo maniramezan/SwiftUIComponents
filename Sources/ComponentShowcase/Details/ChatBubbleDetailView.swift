@@ -10,7 +10,8 @@ struct ChatBubbleDetailView: View {
             ShowcaseSection("Conversation") {
                 VStack(spacing: theme.spacing.oneUnit) {
                     ChatBubbleView(role: .user, content: "What's the weather like today?")
-                    ChatBubbleView(role: .assistant, content: "It's currently **sunny and 22 °C**. A great day to go outside!")
+                    ChatBubbleView(
+                        role: .assistant, content: "It's currently **sunny and 22 °C**. A great day to go outside!")
                     ChatBubbleView(role: .user, content: "Any chance of rain this afternoon?")
                     ChatBubbleView(role: .assistant, content: "There's a **30 % chance** of light showers after 5 PM.")
                 }
