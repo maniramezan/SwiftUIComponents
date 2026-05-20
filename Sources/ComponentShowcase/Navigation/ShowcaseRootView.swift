@@ -5,7 +5,7 @@ import SwiftUI
 /// The root navigation split view listing all showcase components in the sidebar.
 struct ShowcaseRootView: View {
 
-    @State private var selection: ShowcaseComponent? = .buttons
+    @State private var selection: ShowcaseComponent?
     @Environment(\.designTheme) private var theme
 
     /// Components grouped for sidebar sections.
