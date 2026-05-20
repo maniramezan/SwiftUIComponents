@@ -17,3 +17,10 @@ struct LoadingDetailView: View {
         }
     }
 }
+
+#Preview {
+    ScrollView {
+        LoadingDetailView()
+            .padding()
+    }
+}

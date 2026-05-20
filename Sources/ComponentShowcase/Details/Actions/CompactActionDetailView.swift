@@ -25,3 +25,10 @@ struct CompactActionDetailView: View {
         }
     }
 }
+
+#Preview {
+    ScrollView {
+        CompactActionDetailView()
+            .padding()
+    }
+}

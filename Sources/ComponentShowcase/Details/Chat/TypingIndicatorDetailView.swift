@@ -32,3 +32,10 @@ struct TypingIndicatorDetailView: View {
         }
     }
 }
+
+#Preview {
+    ScrollView {
+        TypingIndicatorDetailView()
+            .padding()
+    }
+}

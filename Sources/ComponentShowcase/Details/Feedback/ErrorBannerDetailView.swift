@@ -17,3 +17,10 @@ struct ErrorBannerDetailView: View {
         }
     }
 }
+
+#Preview {
+    ScrollView {
+        ErrorBannerDetailView()
+            .padding()
+    }
+}

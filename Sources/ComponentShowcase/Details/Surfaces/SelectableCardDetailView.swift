@@ -30,3 +30,10 @@ struct SelectableCardDetailView: View {
         }
     }
 }
+
+#Preview {
+    ScrollView {
+        SelectableCardDetailView()
+            .padding()
+    }
+}

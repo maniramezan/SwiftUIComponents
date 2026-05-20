@@ -27,3 +27,10 @@ struct EmptyStateDetailView: View {
         }
     }
 }
+
+#Preview {
+    ScrollView {
+        EmptyStateDetailView()
+            .padding()
+    }
+}

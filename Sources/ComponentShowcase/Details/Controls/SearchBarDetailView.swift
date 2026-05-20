@@ -18,3 +18,10 @@ struct SearchBarDetailView: View {
         }
     }
 }
+
+#Preview {
+    ScrollView {
+        SearchBarDetailView()
+            .padding()
+    }
+}

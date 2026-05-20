@@ -37,3 +37,10 @@ struct ButtonsDetailView: View {
         }
     }
 }
+
+#Preview {
+    ScrollView {
+        ButtonsDetailView()
+            .padding()
+    }
+}

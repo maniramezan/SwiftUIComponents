@@ -20,3 +20,10 @@ struct ErrorSectionDetailView: View {
         }
     }
 }
+
+#Preview {
+    ScrollView {
+        ErrorSectionDetailView()
+            .padding()
+    }
+}

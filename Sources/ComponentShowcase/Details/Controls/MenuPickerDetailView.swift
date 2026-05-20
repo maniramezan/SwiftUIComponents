@@ -49,3 +49,10 @@ struct MenuPickerDetailView: View {
         }
     }
 }
+
+#Preview {
+    ScrollView {
+        MenuPickerDetailView()
+            .padding()
+    }
+}

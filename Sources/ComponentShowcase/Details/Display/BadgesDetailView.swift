@@ -33,3 +33,10 @@ struct BadgesDetailView: View {
         }
     }
 }
+
+#Preview {
+    ScrollView {
+        BadgesDetailView()
+            .padding()
+    }
+}

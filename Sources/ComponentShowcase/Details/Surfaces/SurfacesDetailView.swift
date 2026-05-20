@@ -37,3 +37,10 @@ struct SurfacesDetailView: View {
         }
     }
 }
+
+#Preview {
+    ScrollView {
+        SurfacesDetailView()
+            .padding()
+    }
+}
