@@ -3,6 +3,19 @@ import SwiftUI
 
 /// Reusable button that follows the active design theme.
 ///
+/// `ThemeButton` wraps SwiftUI's `Button` with ``ThemeButtonStyle`` and adds
+/// a built-in loading state that a plain `ButtonStyle` cannot provide.
+///
+/// ```swift
+/// ThemeButton("Save", role: .primary, isLoading: isSaving) {
+///     await save()
+/// }
+///
+/// ThemeButton("Delete", role: .destructive) {
+///     confirmDeletion()
+/// }
+/// ```
+///
 /// ![Buttons in all roles](designButtons)
 public struct ThemeButton<Label: View>: View {
     private let role: ThemeButtonRole

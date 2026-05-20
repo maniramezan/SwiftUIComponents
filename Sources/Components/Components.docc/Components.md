@@ -18,6 +18,8 @@ open Package.swift   # Opens in Xcode — select the ComponentShowcase scheme an
 
 ### Buttons
 
+@Image(source: "designButtons.png", alt: "Button component variants")
+
 - ``ThemeButton``
 - ``ThemeButtonRole``
 - ``ThemeButtonStyle``
@@ -25,10 +27,15 @@ open Package.swift   # Opens in Xcode — select the ComponentShowcase scheme an
 
 ### Controls
 
+@Image(source: "designSearchBar.png", alt: "SearchBar component")
+@Image(source: "designToggle.png", alt: "Toggle style component")
+
 - ``SearchBar``
 - ``ThemeToggleStyle``
 
 ### Selection
+
+@Image(source: "designPillChips.png", alt: "PillChip selection components")
 
 - ``MenuPicker``
 - ``MenuPickerItem``
@@ -36,14 +43,23 @@ open Package.swift   # Opens in Xcode — select the ComponentShowcase scheme an
 
 ### Indicators
 
+@Image(source: "designBadges.png", alt: "Badge indicator variants")
+
 - ``Badge``
 
 ### Typography
+
+@Image(source: "designTextStyles.png", alt: "Typography styles")
 
 - ``TextRole``
 - ``TypeStyle``
 
 ### Surfaces
+
+@Image(source: "designCardSurface.png", alt: "CardSurface component")
+@Image(source: "designCapsuleSurface.png", alt: "CapsuleSurface component")
+@Image(source: "designInputSurface.png", alt: "InputSurface component")
+@Image(source: "designAdaptiveSurface.png", alt: "AdaptiveSurface component")
 
 - ``CardSurface``
 - ``CapsuleSurface``
@@ -53,12 +69,16 @@ open Package.swift   # Opens in Xcode — select the ComponentShowcase scheme an
 
 ### Layout
 
+@Image(source: "designContainers.png", alt: "Container layout components")
+
 - ``Container``
 - ``ContainerStyle``
 - ``FlowLayout``
 - ``SectionHeader``
 
 ### Navigation
+
+@Image(source: "designPagedView.png", alt: "TitledPageView paged navigation")
 
 - ``TitledPageView``
 - ``TitledPageTitleAlignment``
@@ -68,6 +88,11 @@ open Package.swift   # Opens in Xcode — select the ComponentShowcase scheme an
 - ``PaginationStyle``
 
 ### Feedback
+
+@Image(source: "designEmptyState.png", alt: "EmptyStateView component")
+@Image(source: "designErrorBanner.png", alt: "ErrorBanner component")
+@Image(source: "designErrorSection.png", alt: "ErrorSection component")
+@Image(source: "designLoading.png", alt: "Loading view components")
 
 - ``EmptyStateView``
 - ``LoadingView``

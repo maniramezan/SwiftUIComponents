@@ -2,6 +2,12 @@ import DesignSystem
 import SwiftUI
 
 /// Applies a themed input field surface.
+///
+/// ```swift
+/// TextField("Email", text: $email)
+///     .padding()
+///     .designInputSurface()
+/// ```
 public struct InputSurface: ViewModifier {
     @Environment(\.designTheme) private var theme
 

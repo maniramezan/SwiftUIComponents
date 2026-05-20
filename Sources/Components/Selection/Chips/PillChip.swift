@@ -3,6 +3,13 @@ import SwiftUI
 
 /// Selectable pill chip for filters and tag lists.
 ///
+/// ```swift
+/// HStack {
+///     PillChip("All", isSelected: filter == .all) { filter = .all }
+///     PillChip("Recent", isSelected: filter == .recent) { filter = .recent }
+/// }
+/// ```
+///
 /// ![Pill chips with selected and unselected states](designPillChips)
 public struct PillChip: View {
     private let title: String

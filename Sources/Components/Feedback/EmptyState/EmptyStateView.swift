@@ -3,6 +3,16 @@ import SwiftUI
 
 /// Themed empty state for list and content placeholders.
 ///
+/// ```swift
+/// EmptyStateView(
+///     title: "No Results",
+///     message: "Try a different search term.",
+///     systemImage: "magnifyingglass"
+/// ) {
+///     ThemeButton("Clear Filters") { clearFilters() }
+/// }
+/// ```
+///
 /// ![Empty state with icon, title, message, and action button](designEmptyState)
 public struct EmptyStateView<Action: View>: View {
     private let title: String

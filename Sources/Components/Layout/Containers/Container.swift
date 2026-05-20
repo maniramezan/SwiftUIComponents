@@ -3,6 +3,15 @@ import SwiftUI
 
 /// Generic themed container for composing shared component layouts.
 ///
+/// ```swift
+/// Container(style: .elevated) {
+///     VStack {
+///         Text("Title")
+///         Text("Subtitle")
+///     }
+/// }
+/// ```
+///
 /// ![Card, elevated, and outlined containers](designContainers)
 public struct Container<Content: View>: View {
     private let style: ContainerStyle

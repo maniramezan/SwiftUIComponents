@@ -3,6 +3,12 @@ import SwiftUI
 
 /// Applies an interactive adaptive surface with a selection-state tint.
 ///
+/// ```swift
+/// Text("Option A")
+///     .padding()
+///     .designSelectableCardSurface(isSelected: selectedOption == .a)
+/// ```
+///
 /// Uses a glass effect on iOS/macOS 26+ with an accent tint when selected, or an
 /// ultraThinMaterial with an accent overlay stroke on older systems.
 public struct SelectableCardSurface: ViewModifier {

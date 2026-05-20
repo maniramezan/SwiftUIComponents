@@ -3,6 +3,11 @@ import SwiftUI
 
 /// Toggle style that uses the active design theme for colors and sizing.
 ///
+/// ```swift
+/// Toggle("Enable notifications", isOn: $isEnabled)
+///     .toggleStyle(ThemeToggleStyle())
+/// ```
+///
 /// ![Toggle in on and off states](designToggle)
 public struct ThemeToggleStyle: ToggleStyle {
     @Environment(\.isEnabled) private var isEnabled

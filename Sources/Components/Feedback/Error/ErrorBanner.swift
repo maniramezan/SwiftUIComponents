@@ -2,6 +2,10 @@ import DesignSystem
 import SwiftUI
 
 /// Inline error banner with a theme-colored background.
+///
+/// ```swift
+/// ErrorBanner("Something went wrong. Please try again.")
+/// ```
 public struct ErrorBanner: View {
     private let message: String
     @Environment(\.designTheme) private var theme

@@ -2,6 +2,11 @@ import DesignSystem
 import SwiftUI
 
 /// Button style used by `ThemeButton` and native SwiftUI buttons.
+///
+/// ```swift
+/// Button("Continue") { next() }
+///     .buttonStyle(ThemeButtonStyle(role: .secondary))
+/// ```
 public struct ThemeButtonStyle: ButtonStyle {
     private let role: ThemeButtonRole
     @Environment(\.isEnabled) private var isEnabled

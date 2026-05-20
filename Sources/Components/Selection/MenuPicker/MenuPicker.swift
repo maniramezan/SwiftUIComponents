@@ -15,6 +15,18 @@ public extension MenuPickerItem where Self: CustomStringConvertible {
 
 /// A lightweight dropdown-like picker that keeps the trigger width in sync with the widest option and
 /// works consistently across iOS, macOS, and Mac Catalyst.
+///
+/// ```swift
+/// enum Flavor: String, CaseIterable, MenuPickerItem {
+///     case vanilla, chocolate, strawberry
+///     var id: String { rawValue }
+///     var title: String { rawValue.capitalized }
+/// }
+///
+/// @State private var flavor: Flavor = .vanilla
+///
+/// MenuPicker(items: Flavor.allCases, currentValue: $flavor)
+/// ```
 public struct MenuPicker<Item: MenuPickerItem>: View {
 
     // MARK: - Styling Constants
