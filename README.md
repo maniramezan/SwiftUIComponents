@@ -1,13 +1,21 @@
 # SwiftUIComponents
 
-Themeable, cross-platform SwiftUI building blocks targeting **macOS 15**, **iOS 18**, and **Mac Catalyst 18**. The package ships two libraries — `DesignSystem` (tokens) and `Components` (views) — that can be adopted independently through Swift Package Manager.
+Themeable, cross-platform SwiftUI building blocks targeting **macOS 15**, **iOS 18**, and **Mac Catalyst 18**. The package ships three SwiftPM library products: `DesignSystem` (tokens), `Components` (reusable views and modifiers), and `ComponentShowcase` (example screens and internal previews).
 
 ## Libraries
 
 | Library | Purpose |
 |---|---|
-| **DesignSystem** | Spacing, radius, stroke, motion, color, and typography token protocols with sensible defaults. Inject a custom `DesignTheme` to rebrand the entire component set. |
-| **Components** | Production-ready views and modifiers — buttons, inputs, badges, cards, containers, and feedback states — that adapt automatically to the active theme. |
+| **DesignSystem** | Spacing, radius, stroke, motion, color, and typography token protocols with sensible defaults. Inject a custom `Theme` to rebrand the entire component set. |
+| **Components** | Production-ready views and modifiers built on `DesignSystem` — buttons, inputs, badges, cards, containers, chat UI, and feedback states. |
+| **ComponentShowcase** | Internal showcase screens used to demonstrate and validate components in one place. Treat this as a demo/reference target, not a dependency for production app code. |
+
+## Architecture
+
+- `DesignSystem` owns tokens, default token implementations, and theme environment wiring.
+- `Components` depends on `DesignSystem` and owns reusable production-facing views, modifiers, and helper protocols.
+- `ComponentShowcase` depends on `Components` and `DesignSystem` and exists for demos, previews, and exploration only.
+- Apply `.designTheme(...)` near the root of a hierarchy and let components read the active theme from `@Environment(\.designTheme)`.
 
 ## Installation
 
@@ -19,7 +27,7 @@ dependencies: [
 ]
 ```
 
-Then add the libraries you need to your target:
+Then add the libraries you need to your target. Most apps should depend on `DesignSystem` and `Components`, but not `ComponentShowcase`:
 
 ```swift
 .target(
@@ -43,19 +51,19 @@ struct ContentView: View {
 
     var body: some View {
         VStack {
-            DesignSearchBar(text: $query, prompt: "Search…")
-            DesignButton("Submit", role: .primary) {
+            SearchBar(text: $query, placeholder: "Search components")
+            ThemeButton("Submit", role: .primary) {
                 // handle tap
             }
         }
-        .designTheme(DefaultDesignTheme())
+        .designTheme(DefaultTheme())
     }
 }
 ```
 
 ## AI-Assisted Integration
 
-When using Claude Code or another AI assistant to build with SwiftUIComponents, add a project-level CLAUDE.md so the AI understands the library's API surface. A ready-made snippet — covering imports, theme setup, all components, common patterns, and anti-patterns — is available in [`docs/ai-integration.md`](docs/ai-integration.md).
+When using Claude Code or another AI assistant to build with SwiftUIComponents, add a project-level `CLAUDE.md` so the AI understands the library's current API surface and package architecture. A ready-made snippet covering imports, theme setup, package layering, reusable component usage, and anti-patterns is available in [`docs/ai-integration.md`](docs/ai-integration.md).
 
 ## Build & Test
 

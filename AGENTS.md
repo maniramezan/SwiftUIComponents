@@ -9,8 +9,16 @@
 ## Project Structure & Module Organization
 - `Package.swift` is the single source of truth; keep the declared platforms (macOS 15, iOS 18, Mac Catalyst 18) consistent and only add targets when isolation truly requires it.
 - Primary sources live in `Sources/DesignSystem/` and `Sources/Components/`; store each public view or modifier in its own file with private helpers nearby.
+- `ComponentShowcase` is a demo/reference target for previews and exploration. Do not add reusable production APIs there; promote stable UI into `Components` instead.
 - Tests live under `Tests/SwiftUIComponentsTests/` and should mirror source file names (e.g., `MenuPickerTests.swift`). Shared fixtures or snapshots go in `Tests/Resources/`.
 - DocC catalogs live in `Sources/<Target>/<Target>.docc/`. Each library target has its own catalog with a landing page.
+
+## Architecture Decisions
+- `DesignSystem` owns tokens, default token implementations, and theme environment wiring.
+- `Components` depends on `DesignSystem` and owns reusable production-facing views, modifiers, and helper protocols.
+- `ComponentShowcase` depends on `Components` and `DesignSystem` and exists to demonstrate usage, not to define the package's public architecture.
+- Apply theming through `.designTheme(_:)` at the root of a hierarchy and read tokens from `@Environment(\.designTheme)` inside views.
+- When public APIs change, update `README.md`, `docs/ai-integration.md`, and `CLAUDE.md` in the same change so consumer docs and AI guidance stay aligned.
 
 ## Build, Test, and Development Commands
 - `swift package resolve` updates dependencies whenever `Package.swift` changes.
@@ -24,6 +32,7 @@
 - Doc comments should describe behavior, inputs, and assumptions — not just restate the name.
 - CI runs `swift package generate-documentation --warnings-as-errors` for both `DesignSystem` and `Components` on every PR; undocumented public symbols will fail the build.
 - When adding a new public type, add it to the relevant `Topics` section in the target's DocC landing page (`DesignSystem.md` or `Components.md`).
+- Keep README examples, AI integration docs, and the consumer `CLAUDE.md` snippet on the current public API names and initializer signatures.
 
 ## Coding Style & Naming Conventions
 - Follow the Swift API Design Guidelines: UpperCamelCase for types, lowerCamelCase for functions and variables, protocols named for capabilities (`SelectableMenuItem`).

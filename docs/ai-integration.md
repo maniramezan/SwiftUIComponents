@@ -1,12 +1,12 @@
 # AI-Assisted Integration
 
-When you use Claude Code (or another AI assistant that reads CLAUDE.md files) in a project that depends on SwiftUIComponents, you can give the AI rich context about the library by adding a snippet to your project's own CLAUDE.md.
+When you use Claude Code (or another AI assistant that reads `CLAUDE.md` files) in a project that depends on SwiftUIComponents, you can give the AI accurate context about the library by adding a snippet to your project's own `CLAUDE.md`.
 
-**Why this is necessary:** SwiftUIComponents resolves into `.build/checkouts/` when added as an SPM dependency. Claude Code does not auto-load CLAUDE.md files inside package checkouts — only files in your own project tree. Pasting the snippet below into your project's CLAUDE.md closes that gap.
+**Why this is necessary:** SwiftUIComponents resolves into `.build/checkouts/` when added as an SPM dependency. Claude Code does not auto-load `CLAUDE.md` files inside package checkouts, only files in your own project tree. Pasting the snippet below into your project's `CLAUDE.md` closes that gap.
 
 ## How to Use
 
-1. Open (or create) `CLAUDE.md` in your project's root directory.
+1. Open or create `CLAUDE.md` in your project's root directory.
 2. Copy the entire fenced snippet below and paste it in.
 3. Optionally trim sections for products you aren't using.
 
@@ -15,23 +15,37 @@ When you use Claude Code (or another AI assistant that reads CLAUDE.md files) in
 ```markdown
 ## Dependency: SwiftUIComponents
 
-Two SPM library products — add both to your target when you need views:
+SwiftUIComponents currently ships three SwiftPM library products:
+
+- `DesignSystem`: design tokens and theming primitives.
+- `Components`: reusable SwiftUI views and modifiers. Depends on `DesignSystem`.
+- `ComponentShowcase`: demo/reference screens used by the package itself. Do not depend on this from production app targets.
+
+For application code, import the first two:
 
     import DesignSystem   // tokens: spacing, radius, stroke, motion, colors, typography
     import Components     // views and modifiers — depends on DesignSystem
 
 Platforms: iOS 18+, macOS 15+, Mac Catalyst 18+. Swift language mode: 6 (strict concurrency).
 
+### Package Architecture Decisions
+
+- `DesignSystem` owns tokens and theme protocols. Keep product branding and token definitions here.
+- `Components` owns reusable UI primitives and view modifiers. Shared app UI should live here, not in `ComponentShowcase`.
+- `ComponentShowcase` is for demos, previews, and exploration only. Do not import it into shipping app code.
+- Apply `.designTheme(...)` once near the root of a feature or app. Components read the active theme from the environment.
+- Prefer composing with existing components and modifiers before creating app-local lookalikes.
+
 ### Theme Setup (required)
 
 Apply once at the root of your view hierarchy; all child components inherit it via SwiftUI environment:
 
     ContentView()
-        .designTheme(DefaultDesignTheme())
+        .designTheme(DefaultTheme())
 
-To create a custom theme, conform a struct to `DesignTheme` and provide six sub-protocol properties:
-`spacing` (DesignSpacing), `radius` (DesignRadius), `stroke` (DesignStroke),
-`motion` (DesignMotion), `colors` (DesignColorTheme), `typography` (DesignTypography).
+To create a custom theme, conform a struct to `Theme` and provide six properties:
+`spacing` (`Spacing`), `radius` (`Radius`), `stroke` (`Stroke`),
+`motion` (`Motion`), `colors` (`ColorTheme`), and `typography` (`Typography`).
 
 ### Reading Tokens in Custom Views
 
@@ -45,39 +59,55 @@ All `colors` and `typography` access is @MainActor — use only from View.body o
 ### Component Reference
 
 Buttons:
-    DesignButton("Label", role: .primary, isLoading: false) { }
+    ThemeButton("Label", role: .primary, isLoading: false) { }
     // roles: .primary (default) | .secondary | .tertiary | .destructive
-    DesignButton(role: .secondary, action: { }) { Label("Share", systemImage: "square.and.arrow.up") }
-    Button("Label") { }.buttonStyle(DesignButtonStyle(role: .primary))
+    ThemeButton(role: .secondary, action: { }) { Label("Share", systemImage: "square.and.arrow.up") }
+    Button("Label") { }.buttonStyle(ThemeButtonStyle(role: .primary))
 
 Search:
-    DesignSearchBar(text: $query, placeholder: "Search", isFocused: $isFocused, onSubmit: { })
+    SearchBar(text: $query, placeholder: "Search", isFocused: $isFocused, onSubmit: { })
 
 Toggle:
-    Toggle("Label", isOn: $isOn).toggleStyle(DesignToggleStyle())
+    Toggle("Label", isOn: $isOn).toggleStyle(ThemeToggleStyle())
 
 Badge:
-    DesignBadge("New")                      // standard
-    DesignBadge("Pro", isProminent: true)   // primary color fill
+    Badge("New")                    // standard
+    Badge("Pro", isProminent: true) // primary color fill
 
 Filter chip:
-    DesignPillChip("Label", isSelected: isSelected) { /* action */ }
+    PillChip("Label", isSelected: isSelected) { /* action */ }
 
 Picker (item must conform to MenuPickerItem: Hashable & Identifiable, var title: String):
     MenuPicker(items: allItems, currentValue: $selected)
-    MenuPicker(items: allItems, currentValue: $selected) { newWidth in pickerWidth = newWidth }
+    MenuPicker(items: allItems, currentValue: $selected, onWidthChange: { newWidth in pickerWidth = newWidth })
 
 Container:
-    DesignContainer(style: .card) { content }
+    Container(style: .card) { content }
     // styles: .plain | .card (default) | .elevated (shadow) | .outlined
 
 Feedback:
-    DesignLoadingView()
-    DesignLoadingView("Loading…")
-    DesignEmptyStateView(title: "No results")
-    DesignEmptyStateView(title: "No results", message: "Try again.", systemImage: "magnifyingglass") {
-        DesignButton("Clear") { query = "" }
+    LoadingView()
+    LoadingView("Loading…")
+    EmptyStateView(title: "No results") { EmptyView() }
+    EmptyStateView(title: "No results", message: "Try again.", systemImage: "magnifyingglass") {
+        ThemeButton("Clear") { query = "" }
     }
+    ErrorBanner("Something went wrong.")
+    ErrorSection(message: "Could not load data.")
+
+Async state container:
+    AsyncContentView(state: profileState) { profile in
+        ProfileView(profile: profile)
+    } loadingContent: {
+        LoadingView("Loading profile")
+    } errorContent: { error in
+        ErrorBanner(error.localizedDescription)
+    }
+
+Chat:
+    ChatBubbleView(role: .user, content: "Hello")
+    ChatBubbleView(role: .assistant, content: "Hi there")
+    TypingIndicatorBubbleView()
 
 Modifiers:
     .designCardSurface()                    // rounded card with border
@@ -94,7 +124,7 @@ Filter chip group:
     ScrollView(.horizontal, showsIndicators: false) {
         HStack(spacing: theme.spacing.oneUnit) {
             ForEach(filters) { f in
-                DesignPillChip(f.label, isSelected: selected == f) { selected = f }
+                PillChip(f.label, isSelected: selected == f) { selected = f }
             }
         }
         .padding(.horizontal, theme.spacing.twoUnits)
@@ -106,19 +136,25 @@ Themed text field:
         .designInputSurface()
 
 Loading / empty / content:
-    if isLoading { DesignLoadingView("Fetching…") }
-    else if items.isEmpty { DesignEmptyStateView(title: "Nothing here yet", systemImage: "tray") {
-        DesignButton("Refresh") { load() }
+    if isLoading { LoadingView("Fetching…") }
+    else if items.isEmpty { EmptyStateView(title: "Nothing here yet", systemImage: "tray") {
+        ThemeButton("Refresh") { load() }
     }}
     else { List(items) { /* row */ } }
+
+Use the showcase for reference, not reuse:
+    // Good: copy interaction patterns from ComponentShowcase into app code using Components APIs.
+    // Avoid: importing ComponentShowcase into the app target.
 
 ### Do Not
 
 - Don't import only `DesignSystem` when you need views — `Components` is a separate SPM product.
+- Don't import `ComponentShowcase` into production targets — it is a demo/reference layer.
 - Don't access `theme.colors` or `theme.typography` outside @MainActor — they are @MainActor-isolated.
 - Don't skip `.designTheme()` — a default exists but won't match your brand.
 - Don't conform `MenuPickerItem` items with only `Identifiable` — `Hashable` is also required.
-- Don't pass a String literal to DesignButton's @ViewBuilder init — use the String convenience init.
+- Don't put reusable shipping components in the showcase target — promote them into `Components` first.
+- Don't pass a String literal to ThemeButton's @ViewBuilder init — use the String convenience init.
 ```
 
 ---
@@ -128,6 +164,7 @@ Loading / empty / content:
 | Section | Why it matters |
 |---|---|
 | **Package identity** | Prevents the AI from suggesting wrong import names or assuming UIKit availability |
+| **Architecture decisions** | Keeps the AI from putting production code in `ComponentShowcase` or importing the wrong product |
 | **Theme setup** | Without this, the AI may tell you to skip `.designTheme()` and get a mis-styled UI |
 | **Reading tokens** | The `@MainActor` callout prevents concurrency errors in Swift 6 projects |
 | **Component reference** | Gives the AI exact initializer signatures so it generates code that compiles |
