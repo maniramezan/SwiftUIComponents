@@ -18,7 +18,13 @@ This file serves two audiences:
 
 ## Dependency: SwiftUIComponents
 
-Two SPM library products — add both to your target when you need views:
+SwiftUIComponents currently ships three SwiftPM library products:
+
+- `DesignSystem`: design tokens and theming primitives.
+- `Components`: reusable SwiftUI views and modifiers. Depends on `DesignSystem`.
+- `ComponentShowcase`: demo/reference screens used by this package. Do not import it into production app targets.
+
+For application code, import the first two:
 
 ```swift
 import DesignSystem   // tokens: spacing, radius, stroke, motion, colors, typography
@@ -27,31 +33,33 @@ import Components     // views and modifiers — depends on DesignSystem
 
 Platforms: iOS 18+, macOS 15+, Mac Catalyst 18+. Swift language mode: 6 (strict concurrency).
 
+## Architecture Decisions
+
+- `DesignSystem` owns token protocols, default token implementations, and theme environment wiring.
+- `Components` owns reusable UI primitives, view modifiers, and production-facing APIs.
+- `ComponentShowcase` is a demo layer for previews, examples, and exploration. Never treat it as a reusable dependency for app features.
+- Apply `.designTheme(...)` near the root and let views read tokens from the environment.
+- When a pattern becomes reusable, move it into `Components` instead of duplicating showcase code in apps.
+
 ## Theme Setup (required)
 
 Apply once at the root of your view hierarchy; all child components inherit it via SwiftUI environment:
 
 ```swift
 ContentView()
-    .designTheme(DefaultDesignTheme())
+    .designTheme(DefaultTheme())
 ```
 
-To create a custom theme, conform a struct to `DesignTheme` (a `Sendable` protocol with six sub-protocol properties):
+To create a custom theme, conform a struct to `Theme` (a `Sendable` protocol with six properties):
 
 ```swift
-struct MyTheme: DesignTheme {
-    var spacing: any DesignSpacing      // halfUnit … sixUnits (4 pt grid)
-    var radius: any DesignRadius        // oneUnit … threeUnits, pill
-    var stroke: any DesignStroke        // hairline, thin, regular, thick
-    var motion: any DesignMotion        // minimumHitTarget, disabledOpacity, standardAnimation
-    var colors: any DesignColorTheme    // primary, onPrimary, textPrimary/Secondary/Tertiary,
-                                        // background, backgroundSecondary, container,
-                                        // containerSecondary, border, separator,
-                                        // error, onError, success, warning, disabled
-    var typography: any DesignTypography // largeTitle, title, title2, title3,
-                                         // headline, body, callout, subheadline,
-                                         // footnote, caption, caption2,
-                                         // button, control, field, badge
+struct MyTheme: Theme {
+    var spacing: any Spacing         // halfUnit … sixUnits (4/8-point scale)
+    var radius: any Radius           // oneUnit, oneAndHalfUnits, twoUnits, threeUnits, pill
+    var stroke: any Stroke           // hairline, thin, regular, thick
+    var motion: any Motion           // minimumHitTarget, disabledOpacity, standardAnimation
+    var colors: any ColorTheme       // background, container, primary, textPrimary, error, etc.
+    var typography: any Typography   // largeTitle, title, title2, headline, body, field, badge, etc.
 }
 ```
 
@@ -74,22 +82,22 @@ All `colors` and `typography` access is `@MainActor` — use only from `View.bod
 
 ```swift
 // Convenience text init (most common)
-DesignButton("Label", role: .primary, isLoading: false) { /* action */ }
+ThemeButton("Label", role: .primary, isLoading: false) { /* action */ }
 // roles: .primary (default) | .secondary | .tertiary | .destructive
 
 // ViewBuilder label init
-DesignButton(role: .secondary, isLoading: false, action: { }) {
+ThemeButton(role: .secondary, isLoading: false, action: { }) {
     Label("Share", systemImage: "square.and.arrow.up")
 }
 
 // Apply design style to a native SwiftUI Button
-Button("Label") { }.buttonStyle(DesignButtonStyle(role: .primary))
+Button("Label") { }.buttonStyle(ThemeButtonStyle(role: .primary))
 ```
 
 ### Search Input
 
 ```swift
-DesignSearchBar(
+SearchBar(
     text: $query,
     placeholder: "Search",        // default: "Search"
     isFocused: $isFocused,        // optional Binding<Bool>
@@ -101,20 +109,20 @@ DesignSearchBar(
 
 ```swift
 Toggle("Label", isOn: $isOn)
-    .toggleStyle(DesignToggleStyle())
+    .toggleStyle(ThemeToggleStyle())
 ```
 
 ### Badge
 
 ```swift
-DesignBadge("New")                       // standard (secondary container fill)
-DesignBadge("Pro", isProminent: true)    // prominent (primary color fill)
+Badge("New")                       // standard (secondary container fill)
+Badge("Pro", isProminent: true)    // prominent (primary color fill)
 ```
 
 ### Filter Chip
 
 ```swift
-DesignPillChip("Label", isSelected: isSelected) { /* action */ }
+PillChip("Label", isSelected: isSelected) { /* action */ }
 ```
 
 ### Picker
@@ -124,32 +132,46 @@ DesignPillChip("Label", isSelected: isSelected) { /* action */ }
 MenuPicker(items: allItems, currentValue: $selected)
 
 // Optional width change callback (useful for aligning adjacent controls)
-MenuPicker(items: allItems, currentValue: $selected) { newWidth in
+MenuPicker(items: allItems, currentValue: $selected, onWidthChange: { newWidth in
     pickerWidth = newWidth
-}
+})
 ```
 
 ### Container
 
 ```swift
-DesignContainer(style: .card) { content }
+Container(style: .card) { content }
 // styles: .plain | .card (default) | .elevated (shadow) | .outlined
 ```
 
 ### Feedback States
 
 ```swift
-DesignLoadingView()                           // spinner only
-DesignLoadingView("Loading items…")           // spinner + message
+LoadingView()                           // spinner only
+LoadingView("Loading items…")           // spinner + message
 
-DesignEmptyStateView(title: "No results")     // no action
-DesignEmptyStateView(
+EmptyStateView(title: "No results") { EmptyView() }
+EmptyStateView(
     title: "No results",
     message: "Try a different search term.",
     systemImage: "magnifyingglass"
 ) {
-    DesignButton("Clear search") { query = "" }
+    ThemeButton("Clear search") { query = "" }
 }
+
+ErrorBanner("Something went wrong.")
+ErrorSection(message: "Could not load data.")
+
+AsyncContentView(state: viewModel.profileState) { profile in
+    ProfileDetail(profile)
+} loadingContent: {
+    LoadingView("Loading profile")
+} errorContent: { error in
+    ErrorBanner(error.localizedDescription)
+}
+
+ChatBubbleView(role: .assistant, content: "Hello! How can I help?")
+TypingIndicatorBubbleView()
 ```
 
 ### View Modifiers
@@ -171,7 +193,7 @@ DesignEmptyStateView(
 ScrollView(.horizontal, showsIndicators: false) {
     HStack(spacing: theme.spacing.oneUnit) {
         ForEach(filters) { filter in
-            DesignPillChip(filter.label, isSelected: selectedFilter == filter) {
+            PillChip(filter.label, isSelected: selectedFilter == filter) {
                 selectedFilter = filter
             }
         }
@@ -186,10 +208,10 @@ TextField("Email", text: $email)
 
 // Loading / empty / content conditional
 if isLoading {
-    DesignLoadingView("Fetching items…")
+    LoadingView("Fetching items…")
 } else if items.isEmpty {
-    DesignEmptyStateView(title: "Nothing here yet", systemImage: "tray") {
-        DesignButton("Refresh") { load() }
+    EmptyStateView(title: "Nothing here yet", systemImage: "tray") {
+        ThemeButton("Refresh") { load() }
     }
 } else {
     List(items) { /* row */ }
@@ -199,7 +221,9 @@ if isLoading {
 ## Do Not
 
 - **Do not** import only `DesignSystem` and then use views — `Components` is a separate SPM product and must be added to your target explicitly.
+- **Do not** import `ComponentShowcase` into production targets — it is a demo/reference layer.
 - **Do not** access `theme.colors` or `theme.typography` outside `@MainActor` context — these properties are `@MainActor`-isolated and will produce concurrency errors.
 - **Do not** skip `.designTheme()` — a fallback default exists, but it won't reflect your brand colors or custom fonts.
 - **Do not** conform `MenuPickerItem` items with only `Identifiable` — the protocol also requires `Hashable`.
-- **Do not** pass a `String` literal to the `DesignButton` `@ViewBuilder` initializer — use the convenience `init(_ title: String, role:isLoading:action:)` for text-only buttons.
+- **Do not** put reusable production UI in `ComponentShowcase` — move it into `Components`.
+- **Do not** pass a `String` literal to the `ThemeButton` `@ViewBuilder` initializer — use the convenience `init(_ title: String, role:isLoading:action:)` for text-only buttons.
