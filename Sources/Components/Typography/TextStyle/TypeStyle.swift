@@ -3,7 +3,6 @@ import SwiftUI
 
 /// Applies typography and foreground color from the active design theme.
 ///
-/// ![All text style roles](designTextStyles)
 public struct TypeStyle: ViewModifier {
     private let role: TextRole
     @Environment(\.designTheme) private var theme

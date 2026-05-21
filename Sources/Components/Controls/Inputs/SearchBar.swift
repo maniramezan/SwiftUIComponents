@@ -11,7 +11,6 @@ import SwiftUI
 /// }
 /// ```
 ///
-/// ![A search bar with placeholder text](designSearchBar)
 public struct SearchBar: View {
     @Binding private var text: String
     @Binding private var externalFocus: Bool

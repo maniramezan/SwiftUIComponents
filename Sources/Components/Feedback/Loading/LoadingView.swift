@@ -7,7 +7,6 @@ import SwiftUI
 /// LoadingView("Fetching data…")
 /// ```
 ///
-/// ![Loading spinner with message](designLoading)
 public struct LoadingView: View {
     private let message: String?
     @Environment(\.designTheme) private var theme

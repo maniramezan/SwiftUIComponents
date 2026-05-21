@@ -8,7 +8,6 @@ import SwiftUI
 /// Badge("New", isProminent: true)
 /// ```
 ///
-/// ![Standard and prominent badges](designBadges)
 public struct Badge: View {
     private let text: String
     private let isProminent: Bool

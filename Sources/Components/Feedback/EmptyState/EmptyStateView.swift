@@ -13,7 +13,6 @@ import SwiftUI
 /// }
 /// ```
 ///
-/// ![Empty state with icon, title, message, and action button](designEmptyState)
 public struct EmptyStateView<Action: View>: View {
     private let title: String
     private let message: String?

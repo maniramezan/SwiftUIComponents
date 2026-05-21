@@ -8,7 +8,6 @@ import SwiftUI
 ///     .toggleStyle(ThemeToggleStyle())
 /// ```
 ///
-/// ![Toggle in on and off states](designToggle)
 public struct ThemeToggleStyle: ToggleStyle {
     @Environment(\.isEnabled) private var isEnabled
     @Environment(\.designTheme) private var theme

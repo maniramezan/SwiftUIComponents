@@ -16,7 +16,7 @@ import SwiftUI
 /// }
 /// ```
 ///
-/// ![Buttons in all roles](designButtons)
+
 public struct ThemeButton<Label: View>: View {
     private let role: ThemeButtonRole
     private let isLoading: Bool
