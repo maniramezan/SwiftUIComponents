@@ -10,7 +10,6 @@ import SwiftUI
 /// }
 /// ```
 ///
-/// ![Pill chips with selected and unselected states](designPillChips)
 public struct PillChip: View {
     private let title: String
     private let isSelected: Bool

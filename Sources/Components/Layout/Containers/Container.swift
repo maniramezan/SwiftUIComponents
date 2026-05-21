@@ -12,7 +12,6 @@ import SwiftUI
 /// }
 /// ```
 ///
-/// ![Card, elevated, and outlined containers](designContainers)
 public struct Container<Content: View>: View {
     private let style: ContainerStyle
     @ViewBuilder private let content: Content

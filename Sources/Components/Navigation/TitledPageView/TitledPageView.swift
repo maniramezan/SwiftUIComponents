@@ -3,7 +3,6 @@ import SwiftUI
 
 /// A themed, horizontally paged view with a synchronized title header.
 ///
-/// ![TitledPageView showing three pages with dots indicator and bidirectional title peek](designPagedView)
 ///
 /// `TitledPageView` renders each element of a collection as a full-width
 /// page inside a paging `ScrollView`. Above the pages, a title strip shows the
