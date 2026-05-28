@@ -12,6 +12,25 @@ import SwiftUI
 /// supports right-to-left layouts, Dynamic Type, and VoiceOver
 /// page-by-page navigation out of the box.
 ///
+/// ## Swipe hint
+///
+/// On first appearance, `TitledPageView` plays a brief animation that peeks the
+/// next page, signalling to users that the content is horizontally swipeable.
+/// The hint fires automatically when there are two or more pages and the view
+/// is on the first page. It is suppressed when Reduce Motion is enabled.
+///
+/// Configure or disable the hint with the ``SwiftUI/View/designSwipeHint(_:)``
+/// modifier and a ``TitledPageSwipeHintConfig`` value:
+///
+/// ```swift
+/// TitledPageView(pages, selection: $selection, title: \.title) { page in
+///     PageBody(page: page)
+/// }
+/// .designSwipeHint(.disabled)                  // opt out entirely
+/// .designSwipeHint(.init(delay: 1.5))          // fire later
+/// .designSwipeHint(.init(distance: 60))        // peek further
+/// ```
+///
 /// ## Theming
 ///
 /// All visual defaults — fonts, colors, spacing, motion — resolve from the
@@ -72,16 +91,21 @@ where
 
     @Binding var selection: ID
 
-    @State private var scrollOffsetX: CGFloat = 0
-    @State private var viewportWidth: CGFloat = 0
+    @State var scrollOffsetX: CGFloat = 0
+    @State var viewportWidth: CGFloat = 0
     /// In unidirectional mode, tracks the lowest visible page index. Updated
     /// only after the scroll settles so that pages aren't removed mid-swipe.
-    @State private var unidirectionalBaseIndex: Int = 0
+    @State var unidirectionalBaseIndex: Int = 0
+    /// Visual offset applied to the page content during the swipe-hint animation.
+    /// Zero at all other times.
+    @State var swipeHintOffset: CGFloat = 0
+    @State var isSwipeHintPlaying: Bool = false
 
-    @Environment(\.designTheme) private var theme
-    @Environment(\.designPaginationStyle) private var styleOverride
-    @Environment(\.layoutDirection) private var layoutDirection
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.designTheme) var theme
+    @Environment(\.designPaginationStyle) var styleOverride
+    @Environment(\.layoutDirection) var layoutDirection
+    @Environment(\.accessibilityReduceMotion) var reduceMotion
+    @Environment(\.designSwipeHintConfig) var swipeHintConfig
 
     // MARK: - Initializers
 
@@ -244,352 +268,4 @@ where
             }
         }
     }
-
-    @ViewBuilder
-    private var pagedBody: some View {
-        let resolved = Self.resolveStyle(
-            override: styleOverride,
-            theme: theme,
-            titleAlignment: titleAlignment
-        )
-        let showIndicator = Self.shouldShowIndicator(count: pages.count, style: indicatorStyle)
-        let titles = pages.map { $0[keyPath: titleKeyPath] }
-        let activeIdx = activeIndex
-        let rawProgress = Self.progress(contentOffsetX: scrollOffsetX, viewportWidth: viewportWidth)
-        let progress: CGFloat =
-            if styleOverride.peekDirection == .unidirectional {
-                rawProgress + CGFloat(unidirectionalBaseIndex)
-            } else {
-                rawProgress
-            }
-        let context = pageContext(titles: titles, activeIndex: activeIdx, progress: progress)
-
-        VStack(spacing: resolved.headerSpacing) {
-            if let customTitle {
-                customTitle(context)
-            } else if resolved.titleAlignment != .hidden, pages.count > 1 {
-                TitledPageViewHeader(
-                    resolved: resolved,
-                    titles: titles,
-                    progress: progress,
-                    activeIndex: activeIdx,
-                    viewportWidth: viewportWidth,
-                    layoutSign: layoutDirection == .rightToLeft ? -1 : 1,
-                    reduceMotion: reduceMotion,
-                    onJump: { idx in jump(to: idx, reduceMotion: reduceMotion) }
-                )
-            } else if resolved.titleAlignment != .hidden, let only = titles.first {
-                Text(only)
-                    .font(resolved.titleFont)
-                    .foregroundStyle(resolved.titleColor)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.85)
-                    .frame(maxWidth: .infinity, alignment: singleTitleAlignment(for: resolved.titleAlignment))
-                    .accessibilityHidden(true)
-            }
-
-            pagesScrollView
-
-            if let customFooter {
-                customFooter(context)
-            } else if showIndicator {
-                TitledPageViewIndicator(
-                    resolved: resolved,
-                    style: indicatorStyle,
-                    count: pages.count,
-                    activeIndex: activeIdx,
-                    progress: progress,
-                    currentTitle: titles.indices.contains(activeIdx) ? titles[activeIdx] : "",
-                    onJump: { idx in jump(to: idx, reduceMotion: reduceMotion) },
-                    onAdjustableStep: { step in
-                        let newIdx = Self.stepIndex(by: step, from: activeIdx, count: pages.count)
-                        jump(to: newIdx, reduceMotion: reduceMotion)
-                    },
-                    minimumHitTarget: theme.motion.minimumHitTarget
-                )
-            }
-        }
-        .background {
-            if let background = resolved.background {
-                Rectangle().fill(background)
-            }
-        }
-        .background(
-            GeometryReader { proxy in
-                Color.clear
-                    .preference(key: TitledPageViewViewportWidthKey.self, value: proxy.size.width)
-            }
-        )
-        .onPreferenceChange(TitledPageViewViewportWidthKey.self) { width in
-            viewportWidth = width
-        }
-        .accessibilityElement(children: .contain)
-    }
-
-    private func pageContext(
-        titles: [String],
-        activeIndex: Int,
-        progress: CGFloat
-    ) -> TitledPageViewContext<ID> {
-        TitledPageViewContext(
-            selection: selection,
-            activeIndex: activeIndex,
-            progress: Double(progress),
-            pageCount: pages.count,
-            titles: titles,
-            currentTitle: titles.indices.contains(activeIndex) ? titles[activeIndex] : "",
-            previousTitle: titles.indices.contains(activeIndex - 1) ? titles[activeIndex - 1] : nil,
-            nextTitle: titles.indices.contains(activeIndex + 1) ? titles[activeIndex + 1] : nil,
-            selectPage: { idx in jump(to: idx, reduceMotion: reduceMotion) }
-        )
-    }
-
-    private func singleTitleAlignment(for titleAlignment: TitledPageTitleAlignment) -> Alignment {
-        switch titleAlignment {
-        case .automatic, .leading:
-            return .leading
-        case .trailing:
-            return .trailing
-        case .center:
-            return .center
-        case .hidden:
-            return .leading
-        }
-    }
-
-    /// The subset of pages visible in the scroll view. In unidirectional
-    /// mode only the current page and those after it are rendered, preventing
-    /// any backward swiping. Uses `unidirectionalBaseIndex` which updates
-    /// after the scroll settles to avoid removing pages mid-animation.
-    private var visiblePages: [Data.Element] {
-        if styleOverride.peekDirection == .unidirectional {
-            let base = min(unidirectionalBaseIndex, pages.count - 1)
-            return Array(pages[max(0, base)...])
-        }
-        return pages
-    }
-
-    private var pagesScrollView: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            LazyHStack(spacing: 0) {
-                ForEach(visiblePages, id: idKeyPath) { page in
-                    content(page)
-                        .containerRelativeFrame(.horizontal)
-                        .id(page[keyPath: idKeyPath])
-                        .accessibilityElement(children: .contain)
-                        .accessibilityLabel(Text(page[keyPath: titleKeyPath]))
-                }
-            }
-            .scrollTargetLayout()
-        }
-        .scrollTargetBehavior(.paging)
-        .scrollPosition(id: scrollPositionBinding)
-        .onScrollGeometryChange(for: CGFloat.self) { geometry in
-            geometry.contentOffset.x
-        } action: { _, newValue in
-            scrollOffsetX = newValue
-        }
-        .onScrollPhaseChange { _, newPhase in
-            if styleOverride.peekDirection == .unidirectional,
-                newPhase == .idle,
-                let idx = pages.firstIndex(where: { $0[keyPath: idKeyPath] == selection }),
-                idx > unidirectionalBaseIndex
-            {
-                unidirectionalBaseIndex = idx
-                // Reset offset since the content shifted.
-                scrollOffsetX = 0
-            }
-        }
-        .accessibilityScrollAction { edge in
-            var delta = Self.accessibilityStep(for: edge, layoutDirection: layoutDirection)
-            if styleOverride.peekDirection == .unidirectional {
-                delta = max(0, delta)
-            }
-            let newIdx = Self.stepIndex(by: delta, from: activeIndex, count: pages.count)
-            jump(to: newIdx, reduceMotion: reduceMotion)
-        }
-    }
-
-    // MARK: - State helpers
-
-    /// The index in `pages` whose id currently matches `selection`. Falls
-    /// back to the nearest integer of the scroll progress when the binding
-    /// is mid-update, which keeps the indicator and header in sync during
-    /// in-flight drags.
-    private var activeIndex: Int {
-        if let idx = pages.firstIndex(where: { $0[keyPath: idKeyPath] == selection }) {
-            return idx
-        }
-        let progress = Self.progress(contentOffsetX: scrollOffsetX, viewportWidth: viewportWidth)
-        return Self.stepIndex(by: 0, from: Int(progress.rounded()), count: pages.count)
-    }
-
-    /// Bridges the `ID?` shape required by `scrollPosition(id:)` to the
-    /// non-optional `Binding<ID>` API. In unidirectional mode, backward
-    /// scroll-position updates are rejected since previous pages have been
-    /// removed from the scroll content.
-    private var scrollPositionBinding: Binding<ID?> {
-        Binding(
-            get: { selection },
-            set: { newValue in
-                guard let newValue else { return }
-                selection = newValue
-            }
-        )
-    }
-
-    private func jump(to index: Int, reduceMotion: Bool) {
-        guard pages.indices.contains(index) else { return }
-        if styleOverride.peekDirection == .unidirectional {
-            guard index >= activeIndex else { return }
-        }
-        let newID = pages[index][keyPath: idKeyPath]
-        let animation: Animation =
-            reduceMotion ? .easeInOut(duration: 0.15) : theme.motion.standardAnimation
-        withAnimation(animation) {
-            selection = newID
-        }
-    }
 }
-
-// MARK: - Identifiable convenience
-
-public extension TitledPageView where Data.Element: Identifiable, ID == Data.Element.ID {
-
-    /// Creates a paged view over a collection whose elements are
-    /// `Identifiable`. The id is derived automatically.
-    ///
-    /// - Parameters:
-    ///   - pages: The page data.
-    ///   - selection: Two-way binding to the id of the currently visible page.
-    ///     `TitledPageView` writes a new value through this binding whenever
-    ///     the active page changes. Observe page changes with
-    ///     `.onChange(of: selection)`.
-    ///   - title: KeyPath that yields the display title for each page.
-    ///   - titleAlignment: How to position the default title strip.
-    ///   - indicatorStyle: Indicator visual treatment. Defaults to `.dots`.
-    ///   - content: A view builder that produces the body for each page.
-    init(
-        _ pages: Data,
-        selection: Binding<ID>,
-        title: KeyPath<Data.Element, String>,
-        titleAlignment: TitledPageTitleAlignment = .automatic,
-        indicatorStyle: PaginationIndicatorStyle = .dots,
-        @ViewBuilder content: @escaping (Data.Element) -> PageContent
-    ) {
-        self.init(
-            pages,
-            selection: selection,
-            id: \Data.Element.id,
-            title: title,
-            titleAlignment: titleAlignment,
-            indicatorStyle: indicatorStyle,
-            content: content
-        )
-    }
-
-    /// Creates an identifiable paged view with custom title and footer builders.
-    ///
-    /// - Parameters:
-    ///   - pages: The page data.
-    ///   - selection: Two-way binding to the id of the currently visible page.
-    ///     `TitledPageView` writes a new value through this binding whenever
-    ///     the active page changes. Observe page changes with
-    ///     `.onChange(of: selection)`.
-    ///   - title: KeyPath that yields the display title for each page.
-    ///   - titleContent: A view builder that replaces the default title strip.
-    ///   - footerContent: A view builder that replaces the default indicator.
-    ///   - content: A view builder that produces the body for each page.
-    init<TitleContent: View, FooterContent: View>(
-        _ pages: Data,
-        selection: Binding<ID>,
-        title: KeyPath<Data.Element, String>,
-        @ViewBuilder titleContent: @escaping (TitledPageViewContext<ID>) -> TitleContent,
-        @ViewBuilder footerContent: @escaping (TitledPageViewContext<ID>) -> FooterContent,
-        @ViewBuilder content: @escaping (Data.Element) -> PageContent
-    ) {
-        self.init(
-            pages,
-            selection: selection,
-            id: \Data.Element.id,
-            title: title,
-            titleContent: titleContent,
-            footerContent: footerContent,
-            content: content
-        )
-    }
-
-    /// Creates an identifiable paged view with a custom title builder.
-    ///
-    /// - Parameters:
-    ///   - pages: The page data.
-    ///   - selection: Two-way binding to the id of the currently visible page.
-    ///     `TitledPageView` writes a new value through this binding whenever
-    ///     the active page changes. Observe page changes with
-    ///     `.onChange(of: selection)`.
-    ///   - title: KeyPath that yields the display title for each page.
-    ///   - indicatorStyle: Indicator visual treatment. Defaults to `.dots`.
-    ///   - titleContent: A view builder that replaces the default title strip.
-    ///   - content: A view builder that produces the body for each page.
-    init<TitleContent: View>(
-        _ pages: Data,
-        selection: Binding<ID>,
-        title: KeyPath<Data.Element, String>,
-        indicatorStyle: PaginationIndicatorStyle = .dots,
-        @ViewBuilder titleContent: @escaping (TitledPageViewContext<ID>) -> TitleContent,
-        @ViewBuilder content: @escaping (Data.Element) -> PageContent
-    ) {
-        self.init(
-            pages,
-            selection: selection,
-            id: \Data.Element.id,
-            title: title,
-            indicatorStyle: indicatorStyle,
-            titleContent: titleContent,
-            content: content
-        )
-    }
-
-    /// Creates an identifiable paged view with a custom footer builder.
-    ///
-    /// - Parameters:
-    ///   - pages: The page data.
-    ///   - selection: Two-way binding to the id of the currently visible page.
-    ///     `TitledPageView` writes a new value through this binding whenever
-    ///     the active page changes. Observe page changes with
-    ///     `.onChange(of: selection)`.
-    ///   - title: KeyPath that yields the display title for each page.
-    ///   - titleAlignment: How to position the default title strip.
-    ///   - footerContent: A view builder that replaces the default indicator.
-    ///   - content: A view builder that produces the body for each page.
-    init<FooterContent: View>(
-        _ pages: Data,
-        selection: Binding<ID>,
-        title: KeyPath<Data.Element, String>,
-        titleAlignment: TitledPageTitleAlignment = .automatic,
-        @ViewBuilder footerContent: @escaping (TitledPageViewContext<ID>) -> FooterContent,
-        @ViewBuilder content: @escaping (Data.Element) -> PageContent
-    ) {
-        self.init(
-            pages,
-            selection: selection,
-            id: \Data.Element.id,
-            title: title,
-            titleAlignment: titleAlignment,
-            footerContent: footerContent,
-            content: content
-        )
-    }
-}
-
-// MARK: - Preference keys
-
-struct TitledPageViewViewportWidthKey: PreferenceKey {
-    static var defaultValue: CGFloat { 0 }
-
-    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
-        value = max(value, nextValue())
-    }
-}
-
-// MARK: - Backward compatibility

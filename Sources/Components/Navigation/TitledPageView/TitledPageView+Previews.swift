@@ -87,6 +87,74 @@ private let titledPageViewPreviewPages: [TitledPageViewPreviewPage] = [
     }
 }
 
+#Preview("Swipe hint (tap Replay to reset)") {
+    @Previewable @State var selection = 0
+    @Previewable @State var hintToken = UUID()
+    PreviewContent { theme in
+        VStack(spacing: theme.spacing.twoUnits) {
+            TitledPageView(
+                titledPageViewPreviewPages,
+                selection: $selection,
+                title: \TitledPageViewPreviewPage.title,
+                indicatorStyle: .dots
+            ) { page in
+                VStack(spacing: theme.spacing.oneUnit) {
+                    Image(systemName: page.symbol)
+                        .font(theme.typography.largeTitle)
+                    Text(page.title)
+                        .designTextStyle(.body)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .designCardSurface()
+                .padding(.horizontal, theme.spacing.oneUnit)
+            }
+            .id(hintToken)
+            .frame(height: 240)
+            // To replay the hint in previews, tap the button below — it re-creates the view
+            // with a fresh identity, which restarts the hint task from the beginning.
+            Button("Replay hint") {
+                selection = 0
+                hintToken = UUID()
+            }
+            .buttonStyle(ThemeButtonStyle(role: .secondary))
+        }
+        .padding(theme.spacing.twoUnits)
+    }
+}
+
+#Preview("Swipe hint — custom config") {
+    @Previewable @State var selection = 0
+    @Previewable @State var hintToken = UUID()
+    PreviewContent { theme in
+        VStack(spacing: theme.spacing.twoUnits) {
+            TitledPageView(
+                titledPageViewPreviewPages,
+                selection: $selection,
+                title: \TitledPageViewPreviewPage.title
+            ) { page in
+                VStack(spacing: theme.spacing.oneUnit) {
+                    Image(systemName: page.symbol)
+                        .font(theme.typography.largeTitle)
+                    Text(page.title)
+                        .designTextStyle(.body)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .designCardSurface()
+                .padding(.horizontal, theme.spacing.oneUnit)
+            }
+            .id(hintToken)
+            .designSwipeHint(.init(delay: 0.3, distance: 72))
+            .frame(height: 240)
+            Button("Replay hint") {
+                selection = 0
+                hintToken = UUID()
+            }
+            .buttonStyle(ThemeButtonStyle(role: .secondary))
+        }
+        .padding(theme.spacing.twoUnits)
+    }
+}
+
 #Preview("Pinned title leading padding") {
     @Previewable @State var selection = 0
     PreviewContent { theme in

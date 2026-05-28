@@ -33,6 +33,7 @@ open Package.swift   # Opens in Xcode — select the ComponentShowcase scheme an
 - ``MenuPicker``
 - ``MenuPickerItem``
 - ``PillChip``
+- ``SegmentedPicker``
 
 ### Indicators
 
@@ -66,6 +67,8 @@ open Package.swift   # Opens in Xcode — select the ComponentShowcase scheme an
 - ``PaginationIndicatorStyle``
 - ``PaginationPeekDirection``
 - ``PaginationStyle``
+- ``TitledPageSwipeHintConfig``
+- ``SwiftUI/View/designSwipeHint(_:)``
 
 ### Feedback
 
