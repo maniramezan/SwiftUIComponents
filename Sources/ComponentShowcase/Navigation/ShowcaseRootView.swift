@@ -11,7 +11,7 @@ struct ShowcaseRootView: View {
     /// Components grouped for sidebar sections.
     private var groups: [(title: String, items: [ShowcaseComponent])] {
         let allGroups = Dictionary(grouping: ShowcaseComponent.allCases, by: \.group)
-        let order = ["Actions", "Controls", "Display", "Surfaces", "Feedback", "Navigation", "Chat"]
+        let order = ["Actions", "Controls", "Display", "Surfaces", "Feedback", "Pagination", "Chat"]
         return order.compactMap { key in
             guard let items = allGroups[key] else { return nil }
             return (title: key, items: items)
