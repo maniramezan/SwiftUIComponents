@@ -137,6 +137,29 @@ MenuPicker(items: allItems, currentValue: $selected, onWidthChange: { newWidth i
 })
 ```
 
+### Segmented Picker
+
+A horizontally laid out single-selection picker. Sizes to fit its segments
+when there is room; falls back to a horizontally scrolling row when they
+overflow. In the scrolling layout, the scrollable edges are veiled by a
+trough-colored gradient so users can see that more segments exist off-screen.
+The active segment auto-scrolls into view when `selection` changes.
+
+```swift
+// Item must conform to MenuPickerItem (same as MenuPicker).
+SegmentedPicker(items: Filter.allCases, selection: $filter)
+
+// Custom label per segment (icon + text, etc.). The closure receives the item
+// and an isActive flag; the picker already flips foreground color and fades in
+// the primary capsule for the active segment, so most callers ignore the flag.
+SegmentedPicker(items: tabs, selection: $tab) { tab, _ in
+    HStack(spacing: 4) {
+        Image(systemName: tab.systemImage)
+        Text(tab.title)
+    }
+}
+```
+
 ### Container
 
 ```swift
@@ -184,6 +207,15 @@ TypingIndicatorBubbleView()
 .designInputSurface()                 // text field background (secondary container)
 .designTextStyle(.headline)           // sets font + foreground color from active theme
 // roles: .title | .headline | .body | .secondary | .caption | .error
+
+// TitledPageView swipe hint (plays automatically by default)
+.designSwipeHint(.disabled)              // suppress entirely
+.designSwipeHint(enabled: false)         // shorthand for .disabled
+.designSwipeHint(.init(delay: 1.0))      // fire later (default 0.6 s)
+.designSwipeHint(.init(distance: 60))    // peek 60 pt (default: theme.spacing.fiveUnits)
+// Replay the hint in previews/sample apps by changing the view's .id:
+// Button("Replay") { hintToken = UUID() }
+// TitledPageView(...).id(hintToken)
 ```
 
 ## Common Patterns
@@ -227,3 +259,4 @@ if isLoading {
 - **Do not** conform `MenuPickerItem` items with only `Identifiable` — the protocol also requires `Hashable`.
 - **Do not** put reusable production UI in `ComponentShowcase` — move it into `Components`.
 - **Do not** pass a `String` literal to the `ThemeButton` `@ViewBuilder` initializer — use the convenience `init(_ title: String, role:isLoading:action:)` for text-only buttons.
+- **Do not** wrap `SegmentedPicker` in a parent that constrains its width to the segments' intrinsic size (an `HStack` next to a non-flexible sibling, a `Form` row). The scroll-and-fade behavior requires a parent that proposes a finite, potentially-narrower width — otherwise the picker just grows to fit every segment and never scrolls.
