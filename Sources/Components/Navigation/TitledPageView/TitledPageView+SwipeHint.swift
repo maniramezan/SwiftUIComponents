@@ -4,7 +4,7 @@ import SwiftUI
 
 /// Configuration for ``TitledPageView``'s swipe-hint animation.
 ///
-/// Pass a value to ``SwiftUI/View/designSwipeHint(_:)`` to customise or disable
+/// Pass a value to the `designSwipeHint(_:)` view modifier to customise or disable
 /// the automatic peek animation. Every property has a sensible default so
 /// callers only need to override what they want to change:
 ///
@@ -89,7 +89,7 @@ public extension View {
 
     /// Enables or disables the automatic swipe-hint animation on ``TitledPageView``.
     ///
-    /// Convenience shorthand for ``SwiftUI/View/designSwipeHint(_:)`` when you only
+    /// Convenience shorthand for `designSwipeHint(_:)` when you only
     /// need to toggle the hint on or off without customising timing or distance.
     ///
     /// - Parameter enabled: Pass `false` to suppress the hint animation.

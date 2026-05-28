@@ -19,8 +19,8 @@ import SwiftUI
 /// The hint fires automatically when there are two or more pages and the view
 /// is on the first page. It is suppressed when Reduce Motion is enabled.
 ///
-/// Configure or disable the hint with the ``SwiftUI/View/designSwipeHint(_:)``
-/// modifier and a ``TitledPageSwipeHintConfig`` value:
+/// Configure or disable the hint with the `designSwipeHint(_:)` view modifier
+/// and a ``TitledPageSwipeHintConfig`` value:
 ///
 /// ```swift
 /// TitledPageView(pages, selection: $selection, title: \.title) { page in

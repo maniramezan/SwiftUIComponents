@@ -68,7 +68,6 @@ open Package.swift   # Opens in Xcode — select the ComponentShowcase scheme an
 - ``PaginationPeekDirection``
 - ``PaginationStyle``
 - ``TitledPageSwipeHintConfig``
-- ``SwiftUI/View/designSwipeHint(_:)``
 
 ### Feedback
 
