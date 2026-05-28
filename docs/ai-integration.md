@@ -81,6 +81,12 @@ Picker (item must conform to MenuPickerItem: Hashable & Identifiable, var title:
     MenuPicker(items: allItems, currentValue: $selected)
     MenuPicker(items: allItems, currentValue: $selected, onWidthChange: { newWidth in pickerWidth = newWidth })
 
+Segmented picker (horizontal, single-selection; scrolls with fading edges when overflowing; auto-scrolls active segment into view):
+    SegmentedPicker(items: Filter.allCases, selection: $filter)
+    SegmentedPicker(items: tabs, selection: $tab) { tab, _ in
+        HStack { Image(systemName: tab.systemImage); Text(tab.title) }
+    }
+
 Container:
     Container(style: .card) { content }
     // styles: .plain | .card (default) | .elevated (shadow) | .outlined

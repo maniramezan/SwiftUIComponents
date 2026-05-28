@@ -12,6 +12,7 @@ enum ShowcaseComponent: String, CaseIterable, Identifiable {
     case toggle = "Toggle"
     case menuPicker = "Menu Picker"
     case pillChips = "Pill Chips"
+    case segmentedPicker = "Segmented Picker"
 
     // MARK: - Display
     case badges = "Badges"
@@ -47,6 +48,7 @@ enum ShowcaseComponent: String, CaseIterable, Identifiable {
         case .toggle: return "switch.2"
         case .menuPicker: return "list.bullet"
         case .pillChips: return "capsule.fill"
+        case .segmentedPicker: return "rectangle.split.3x1.fill"
         case .badges: return "seal.fill"
         case .textStyles: return "textformat"
         case .surfaces: return "square.on.square"
@@ -69,7 +71,7 @@ enum ShowcaseComponent: String, CaseIterable, Identifiable {
         switch self {
         case .buttons, .compactAction:
             return "Actions"
-        case .searchBar, .toggle, .menuPicker, .pillChips:
+        case .searchBar, .toggle, .menuPicker, .pillChips, .segmentedPicker:
             return "Controls"
         case .badges, .textStyles:
             return "Display"
