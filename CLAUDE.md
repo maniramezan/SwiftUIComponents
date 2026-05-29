@@ -149,6 +149,12 @@ The active segment auto-scrolls into view when `selection` changes.
 // Item must conform to MenuPickerItem (same as MenuPicker).
 SegmentedPicker(items: Filter.allCases, selection: $filter)
 
+// Badge overlay — pass a closure returning a String? per item.
+// Non-empty string → labeled badge; "" → dot indicator; nil → no badge.
+SegmentedPicker(items: Filter.allCases, selection: $filter) { item in
+    item == .inbox ? "3" : nil
+}
+
 // Custom label per segment (icon + text, etc.). The closure receives the item
 // and an isActive flag; the picker already flips foreground color and fades in
 // the primary capsule for the active segment, so most callers ignore the flag.
@@ -157,6 +163,11 @@ SegmentedPicker(items: tabs, selection: $tab) { tab, _ in
         Image(systemName: tab.systemImage)
         Text(tab.title)
     }
+}
+
+// Custom label with badge
+SegmentedPicker(items: tabs, selection: $tab, badge: { tab in tab.unreadCount > 0 ? "\(tab.unreadCount)" : nil }) { tab, _ in
+    Text(tab.title)
 }
 ```
 
