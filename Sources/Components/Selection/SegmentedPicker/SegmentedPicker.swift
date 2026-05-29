@@ -134,8 +134,13 @@ private extension SegmentedPicker {
             }
             .task(id: selection.id) {
                 await Task.yield()
+                // For non-last items, position toward the leading side so
+                // subsequent segments remain partially visible, signalling
+                // there is more content off the trailing edge.
+                let isLast = selection.id == items.last?.id
+                let anchor: UnitPoint = isLast ? .center : .init(x: 0.25, y: 0.5)
                 withAnimation(activeAnimation) {
-                    proxy.scrollTo(selection.id, anchor: .center)
+                    proxy.scrollTo(selection.id, anchor: anchor)
                 }
             }
         }
