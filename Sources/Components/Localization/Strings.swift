@@ -16,6 +16,31 @@ enum Strings {
             bundle: .atURL(Bundle.module.bundleURL),
             comment: "Default section header title for error sections."
         )
+
+        static func accessibilityLabel(_ message: String) -> LocalizedStringResource {
+            LocalizedStringResource(
+                "Error: \(message)",
+                bundle: .atURL(Bundle.module.bundleURL),
+                comment:
+                    "Accessibility label for an inline error banner. The interpolated value is the error message; the \"Error\" prefix conveys the error nature to VoiceOver users, who cannot perceive the red tint."
+            )
+        }
+    }
+
+    enum Chat {
+        static let typingIndicator = LocalizedStringResource(
+            "Typing",
+            bundle: .atURL(Bundle.module.bundleURL),
+            comment: "Accessibility label for the animated three-dot indicator shown while a response is being composed."
+        )
+    }
+
+    enum Button {
+        static let loading = LocalizedStringResource(
+            "Loading",
+            bundle: .atURL(Bundle.module.bundleURL),
+            comment: "Accessibility value announced on a button while it is in its loading state and temporarily disabled."
+        )
     }
 
     enum MenuPicker {
