@@ -27,9 +27,6 @@ struct TitledPageViewHeader: View {
     /// Current viewport width, in points. The strip degrades gracefully if 0.
     let viewportWidth: CGFloat
 
-    /// Layout direction sign: `+1` for LTR, `-1` for RTL.
-    let layoutSign: CGFloat
-
     /// Whether the system Reduce Motion preference is currently on.
     let reduceMotion: Bool
 
@@ -70,8 +67,7 @@ struct TitledPageViewHeader: View {
                 .offset(
                     x: TitledPageViewMath.headerOffset(
                         progress: effectiveProgress,
-                        stride: metrics.slotStride,
-                        layoutSign: layoutSign
+                        stride: metrics.slotStride
                     )
                 )
                 .animation(reduceMotion ? .easeInOut(duration: 0.15) : nil, value: activeIndex)
@@ -175,7 +171,6 @@ private let _headerPreviewTitles = ["Best of 2025", "Spotlight: Health", "Travel
             progress: 0,
             activeIndex: 0,
             viewportWidth: 360,
-            layoutSign: 1,
             reduceMotion: false,
             onJump: { _ in }
         )
@@ -192,7 +187,6 @@ private let _headerPreviewTitles = ["Best of 2025", "Spotlight: Health", "Travel
             progress: 1.4,
             activeIndex: 1,
             viewportWidth: 360,
-            layoutSign: 1,
             reduceMotion: false,
             onJump: { _ in }
         )
@@ -226,7 +220,6 @@ private let _headerPreviewTitles = ["Best of 2025", "Spotlight: Health", "Travel
             progress: 1,
             activeIndex: 1,
             viewportWidth: 360,
-            layoutSign: 1,
             reduceMotion: false,
             onJump: { _ in }
         )
@@ -260,7 +253,6 @@ private let _headerPreviewTitles = ["Best of 2025", "Spotlight: Health", "Travel
             progress: 1,
             activeIndex: 1,
             viewportWidth: 360,
-            layoutSign: 1,
             reduceMotion: false,
             onJump: { _ in }
         )

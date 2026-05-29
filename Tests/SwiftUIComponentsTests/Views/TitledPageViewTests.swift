@@ -245,39 +245,39 @@ func slotWidthClampsToZeroForTinyViewport() {
 func headerOffsetZeroAtZeroProgress() {
     for direction in PaginationPeekDirection.allCases {
         let stride = TitledPageViewMath.slotStride(viewportWidth: 400, peek: 40, gap: 16, direction: direction)
-        let offset = TitledPageViewMath.headerOffset(progress: 0, stride: stride, layoutSign: 1)
+        let offset = TitledPageViewMath.headerOffset(progress: 0, stride: stride)
         #expect(offset == 0, "expected 0 offset at progress=0 for \(direction)")
     }
 }
 
-@Test("Bidirectional header offset at progress one equals negative stride in LTR")
-func bidirectionalFullProgressInLTR() {
+@Test("Bidirectional header offset at progress one equals negative stride")
+func bidirectionalFullProgress() {
     let stride = TitledPageViewMath.slotStride(viewportWidth: 400, peek: 40, gap: 16, direction: .bidirectional)
-    let offset = TitledPageViewMath.headerOffset(progress: 1, stride: stride, layoutSign: 1)
+    let offset = TitledPageViewMath.headerOffset(progress: 1, stride: stride)
     #expect(offset == -304)
 }
 
-@Test("Unidirectional header offset at progress one equals negative stride in LTR")
-func unidirectionalFullProgressInLTR() {
+@Test("Unidirectional header offset at progress one equals negative stride")
+func unidirectionalFullProgress() {
     let stride = TitledPageViewMath.slotStride(viewportWidth: 400, peek: 40, gap: 16, direction: .unidirectional)
-    let offset = TitledPageViewMath.headerOffset(progress: 1, stride: stride, layoutSign: 1)
+    let offset = TitledPageViewMath.headerOffset(progress: 1, stride: stride)
     #expect(offset == -360)
 }
 
 @Test("None header offset at progress one equals negative viewport width")
-func noneFullProgressInLTR() {
+func noneFullProgress() {
     let stride = TitledPageViewMath.slotStride(viewportWidth: 400, peek: 0, gap: 0, direction: .none)
-    let offset = TitledPageViewMath.headerOffset(progress: 1, stride: stride, layoutSign: 1)
+    let offset = TitledPageViewMath.headerOffset(progress: 1, stride: stride)
     #expect(offset == -400)
 }
 
-@Test("RTL flips the sign of the header offset")
-func rtlFlipsHeaderOffset() {
+// The header offset is direction-agnostic: it is always computed in the
+// natural (pre-mirroring) coordinate space. SwiftUI mirrors `offset(x:)` in
+// RTL automatically, so the header must not flip the sign itself.
+@Test("Header offset does not depend on layout direction")
+func headerOffsetIsDirectionAgnostic() {
     let stride = TitledPageViewMath.slotStride(viewportWidth: 400, peek: 40, gap: 16, direction: .bidirectional)
-    let ltr = TitledPageViewMath.headerOffset(progress: 1, stride: stride, layoutSign: 1)
-    let rtl = TitledPageViewMath.headerOffset(progress: 1, stride: stride, layoutSign: -1)
-    #expect(ltr == -304)
-    #expect(rtl == 304)
+    #expect(TitledPageViewMath.headerOffset(progress: 1, stride: stride) == -304)
 }
 
 @Test("Header offset is linear in progress")
@@ -291,7 +291,7 @@ func headerOffsetLinearInProgress() {
         (1.0, -304),
     ]
     for (progress, expected) in offsets {
-        let value = TitledPageViewMath.headerOffset(progress: progress, stride: stride, layoutSign: 1)
+        let value = TitledPageViewMath.headerOffset(progress: progress, stride: stride)
         #expect(abs(value - expected) < 0.0001, "progress=\(progress) → \(value), expected \(expected)")
     }
 }

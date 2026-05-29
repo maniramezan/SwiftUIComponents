@@ -16,6 +16,10 @@ extension TitledPageView {
         let showIndicator = Self.shouldShowIndicator(count: pages.count, style: indicatorStyle)
         let titles = pages.map { $0[keyPath: titleKeyPath] }
         let activeIdx = activeIndex
+        // SwiftUI reports `contentOffset.x` in logical coordinates, so page 0
+        // is always 0 and progress increases toward the last page — in both
+        // LTR and RTL. No layout-direction conversion is needed here; the
+        // header and indicator mirror themselves automatically in RTL.
         let rawProgress = Self.progress(contentOffsetX: scrollOffsetX, viewportWidth: viewportWidth)
         // Blend the hint offset so the header and indicator animate in sync with the content.
         let hintProgress: CGFloat = viewportWidth > 0 ? (-swipeHintOffset / viewportWidth) : 0
@@ -37,7 +41,6 @@ extension TitledPageView {
                     progress: progress,
                     activeIndex: activeIdx,
                     viewportWidth: viewportWidth,
-                    layoutSign: layoutDirection == .rightToLeft ? -1 : 1,
                     reduceMotion: reduceMotion,
                     onJump: { idx in jump(to: idx, reduceMotion: reduceMotion) }
                 )
@@ -188,9 +191,10 @@ extension TitledPageView {
             try await Task.sleep(for: .seconds(swipeHintConfig.delay))
             guard activeIndex == 0 else { return }
             isSwipeHintPlaying = true
-            let sign: CGFloat = layoutDirection == .rightToLeft ? 1 : -1
+            // Shifting content left reveals the next page in both LTR (next is right)
+            // and RTL (next is left in physical layout), and keeps hintProgress positive.
             withAnimation(.easeOut(duration: 0.3)) {
-                swipeHintOffset = sign * hintDistance
+                swipeHintOffset = -hintDistance
             }
             try await Task.sleep(for: .seconds(0.38))
             withAnimation(.spring(response: 0.42, dampingFraction: 0.68)) {
