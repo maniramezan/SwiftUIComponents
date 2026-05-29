@@ -11,6 +11,22 @@ import SwiftUI
 /// the corresponding band fades away once the scroll reaches that end.
 /// Selecting a segment auto-scrolls it into the center of the visible area.
 ///
+/// ### Badging
+/// Pass a `badge` closure to overlay a small indicator on individual segments.
+/// Return a non-empty string for a labeled badge, an empty string (`""`) for a
+/// plain dot, or `nil` for no badge:
+///
+/// ```swift
+/// SegmentedPicker(items: Filter.allCases, selection: $filter) { item in
+///     item == .inbox ? "3" : nil   // count badge on one segment
+/// }
+///
+/// SegmentedPicker(items: Filter.allCases, selection: $filter) { item in
+///     hasUpdates(item) ? "" : nil  // dot badge, no label
+/// }
+/// ```
+///
+/// ### Basic usage
 /// ```swift
 /// enum Filter: String, CaseIterable, MenuPickerItem {
 ///     case all, recent, favorites, archived
@@ -28,6 +44,7 @@ public struct SegmentedPicker<Item: MenuPickerItem, Label: View>: View {
 
     private let items: [Item]
     @Binding private var selection: Item
+    private let badge: ((Item) -> String?)?
     private let label: (Item, Bool) -> Label
 
     @State private var geometry = ScrollGeometrySnapshot()
@@ -44,6 +61,9 @@ public struct SegmentedPicker<Item: MenuPickerItem, Label: View>: View {
     ///   - items: The selectable items. Must be non-empty and must contain
     ///     `selection`.
     ///   - selection: Two-way binding to the currently selected item.
+    ///   - badge: Optional closure returning a badge string for an item.
+    ///     Return a non-empty string for a labeled badge, `""` for a dot
+    ///     indicator, or `nil` for no badge.
     ///   - label: A view builder invoked for every item. Receives the item and
     ///     a `Bool` indicating whether it is the active selection so the caller
     ///     may render an emphasized state if desired. The picker already flips
@@ -53,6 +73,7 @@ public struct SegmentedPicker<Item: MenuPickerItem, Label: View>: View {
     public init(
         items: some RandomAccessCollection<Item>,
         selection: Binding<Item>,
+        badge: ((Item) -> String?)? = nil,
         @ViewBuilder label: @escaping (Item, Bool) -> Label
     ) {
         let items = Array(items)
@@ -63,6 +84,7 @@ public struct SegmentedPicker<Item: MenuPickerItem, Label: View>: View {
         )
         self.items = items
         self._selection = selection
+        self.badge = badge
         self.label = label
     }
 
@@ -88,11 +110,15 @@ public extension SegmentedPicker where Label == Text {
     ///   - items: The selectable items. Must be non-empty and must contain
     ///     `selection`.
     ///   - selection: Two-way binding to the currently selected item.
+    ///   - badge: Optional closure returning a badge string for an item.
+    ///     Return a non-empty string for a labeled badge, `""` for a dot
+    ///     indicator, or `nil` for no badge.
     init(
         items: some RandomAccessCollection<Item>,
-        selection: Binding<Item>
+        selection: Binding<Item>,
+        badge: ((Item) -> String?)? = nil
     ) {
-        self.init(items: items, selection: selection) { item, isActive in
+        self.init(items: items, selection: selection, badge: badge) { item, isActive in
             Text(item.title)
                 .fontWeight(isActive ? .semibold : .regular)
         }
@@ -170,6 +196,10 @@ private extension SegmentedPicker {
                 .fixedSize(horizontal: true, vertical: false)
                 .padding(.horizontal, theme.spacing.oneAndHalfUnits)
                 .padding(.vertical, theme.spacing.oneUnit)
+                .overlay(alignment: .topTrailing) {
+                    segmentBadgeView(for: item)
+                        .padding([.top, .trailing], theme.spacing.halfUnit)
+                }
                 .frame(minHeight: theme.motion.minimumHitTarget)
                 .foregroundStyle(isActive ? theme.colors.onPrimary : theme.colors.textPrimary)
                 .background {
@@ -183,7 +213,37 @@ private extension SegmentedPicker {
         .buttonStyle(.plain)
         .id(item.id)
         .accessibilityAddTraits(isActive ? [.isSelected] : [])
-        .accessibilityLabel(Text(item.title))
+        .accessibilityLabel(segmentAccessibilityLabel(for: item))
+    }
+
+    /// Badge view rendered at the top-trailing corner of a segment. Returns
+    /// `EmptyView` when no badge is configured for the item.
+    @ViewBuilder
+    func segmentBadgeView(for item: Item) -> some View {
+        if let text = badge?(item) {
+            if text.isEmpty {
+                Circle()
+                    .fill(theme.colors.error)
+                    .frame(width: theme.spacing.oneUnit, height: theme.spacing.oneUnit)
+            } else {
+                Text(text)
+                    .font(theme.typography.badge)
+                    .foregroundStyle(theme.colors.onError)
+                    .padding(.horizontal, theme.spacing.halfUnit)
+                    .padding(.vertical, 2)
+                    .background(theme.colors.error, in: Capsule(style: .continuous))
+                    .fixedSize()
+            }
+        }
+    }
+
+    /// Accessibility label that appends the badge value when present so
+    /// VoiceOver reads e.g. "Inbox, 3" instead of just "Inbox".
+    func segmentAccessibilityLabel(for item: Item) -> Text {
+        guard let text = badge?(item), !text.isEmpty else {
+            return Text(item.title)
+        }
+        return Text("\(item.title), \(text)")
     }
 }
 
@@ -322,6 +382,23 @@ private struct ScrollGeometrySnapshot: Equatable {
             Text("Scrolls horizontally")
                 .designTextStyle(.headline)
             SegmentedPicker(items: 1...12, selection: $overflowSelection)
+        }
+        .padding(theme.spacing.twoUnits)
+    }
+}
+
+#Preview("Segmented Picker — Badges") {
+    @Previewable @State var selection: Int = 1
+
+    let badgeCounts: [Int: String] = [2: "3", 4: "", 5: "99+"]
+
+    PreviewContent { theme in
+        VStack(alignment: .leading, spacing: theme.spacing.threeUnits) {
+            Text("Count badge, dot badge, no badge")
+                .designTextStyle(.headline)
+            SegmentedPicker(items: 1...6, selection: $selection) { item in
+                badgeCounts[item]
+            }
         }
         .padding(theme.spacing.twoUnits)
     }
