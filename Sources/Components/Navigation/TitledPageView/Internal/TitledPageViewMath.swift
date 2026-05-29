@@ -91,14 +91,20 @@ enum TitledPageViewMath {
     }
 
     /// The horizontal offset to apply to the header HStack for a given
-    /// progress value. `layoutSign` is `+1` for left-to-right layouts and
-    /// `-1` for right-to-left.
+    /// progress value.
+    ///
+    /// `progress` is always logical (0 at the first page, increasing toward
+    /// the last) and the returned offset is expressed in the natural,
+    /// pre-mirroring coordinate space. SwiftUI mirrors `offset(x:)` (along
+    /// with the surrounding `HStack`, padding, and frame alignment) in
+    /// right-to-left layouts automatically, so the header must **not** flip
+    /// the sign itself — doing so double-mirrors and drives the active title
+    /// off-screen.
     nonisolated static func headerOffset(
         progress: CGFloat,
-        stride: CGFloat,
-        layoutSign: CGFloat
+        stride: CGFloat
     ) -> CGFloat {
-        layoutSign * (-progress * stride)
+        -progress * stride
     }
 
     /// Effective peek width after applying the Reduce Motion fallback.
