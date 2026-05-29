@@ -34,7 +34,11 @@ public struct ThemeToggleStyle: ToggleStyle {
         }
         .buttonStyle(.plain)
         .opacity(isEnabled ? 1 : theme.motion.disabledOpacity)
-        .accessibilityValue(configuration.isOn ? Text("On") : Text("Off"))
+        .accessibilityRepresentation {
+            Toggle(isOn: configuration.$isOn) {
+                configuration.label
+            }
+        }
     }
 
     private func capsule(isOn: Bool) -> some View {

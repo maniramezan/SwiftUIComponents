@@ -25,6 +25,30 @@
         }
       }
     },
+    "Error: %@" : {
+      "comment" : "Accessibility label for an inline error banner. The %@ is the error message; the \"Error\" prefix conveys the error nature to VoiceOver users, who cannot perceive the red tint.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Error: %@"
+          }
+        }
+      }
+    },
+    "Loading" : {
+      "comment" : "Accessibility value announced on a button while it is in its loading state and temporarily disabled.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading"
+          }
+        }
+      }
+    },
     "Opens a picker to change the selected value" : {
       "comment" : "Accessibility hint describing that activating the menu picker opens a selection interface.",
       "extractionState" : "manual",
@@ -33,6 +57,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Opens a picker to change the selected value"
+          }
+        }
+      }
+    },
+    "Typing" : {
+      "comment" : "Accessibility label for the animated three-dot indicator shown while a response is being composed.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Typing"
           }
         }
       }

@@ -48,6 +48,7 @@ public struct ThemeButton<Label: View>: View {
         }
         .buttonStyle(ThemeButtonStyle(role: role))
         .disabled(isLoading)
+        .accessibilityValue(isLoading ? Text(Strings.Button.loading) : Text(verbatim: ""))
     }
 }
 

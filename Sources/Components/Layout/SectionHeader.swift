@@ -46,6 +46,7 @@ public struct SectionHeader: View {
             Text(title)
                 .font(theme.typography.headline)
                 .foregroundStyle(theme.colors.textPrimary)
+                .accessibilityAddTraits(.isHeader)
             Spacer(minLength: 0)
             if let actionLabel, let onAction {
                 Button(actionLabel, action: onAction)

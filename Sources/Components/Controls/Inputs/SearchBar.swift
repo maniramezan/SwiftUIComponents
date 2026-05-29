@@ -44,6 +44,7 @@ public struct SearchBar: View {
         HStack(spacing: theme.spacing.oneUnit) {
             Image(systemName: "magnifyingglass")
                 .foregroundStyle(theme.colors.textSecondary)
+                .accessibilityHidden(true)
             TextField(placeholder, text: $text)
                 .font(theme.typography.field)
                 .foregroundStyle(theme.colors.textPrimary)

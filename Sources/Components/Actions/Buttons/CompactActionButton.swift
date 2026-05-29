@@ -16,10 +16,13 @@ import SwiftUI
 /// }
 /// ```
 ///
-/// When `isDisabled` is `true`, the button stops responding to taps and
-/// fades its label to `theme.motion.disabledOpacity`. The transition is
-/// animated with `theme.motion.standardAnimation` so toggling disabled state
-/// reads as a smooth state change rather than a pop.
+/// When `isDisabled` is `true`, the button is marked disabled via SwiftUI's
+/// `.disabled(_:)` so it stops responding to taps *and* reports the disabled
+/// state to assistive technologies (VoiceOver, Switch Control, Full Keyboard
+/// Access), which then cannot activate it. It also takes on the standard
+/// dimmed disabled appearance. The transition is animated with
+/// `theme.motion.standardAnimation` so toggling disabled state reads as a
+/// smooth state change rather than a pop.
 public struct CompactActionButton: View {
 
     private let title: String
@@ -39,8 +42,9 @@ public struct CompactActionButton: View {
     /// - Parameters:
     ///   - title: Button label text.
     ///   - icon: SF Symbol name shown leading the label.
-    ///   - isDisabled: When `true`, suppresses hit-testing and dims the
-    ///     label. When `nil` (the default), the button respects SwiftUI's
+    ///   - isDisabled: When `true`, disables the button — it stops responding
+    ///     to taps, reports its disabled state to assistive technologies, and
+    ///     dims. When `nil` (the default), the button respects SwiftUI's
     ///     `.disabled()` environment modifier instead.
     ///   - action: Closure invoked on tap when not disabled.
     public init(
@@ -59,18 +63,14 @@ public struct CompactActionButton: View {
         Button(action: action) {
             Label(title, systemImage: icon)
                 .font(theme.typography.subheadline.weight(.medium))
-                .foregroundStyle(
-                    theme.colors.onPrimary.opacity(
-                        isEffectivelyDisabled ? theme.motion.disabledOpacity : 1
-                    )
-                )
+                .foregroundStyle(theme.colors.onPrimary)
                 .padding(.horizontal, theme.spacing.oneAndHalfUnits)
                 .padding(.vertical, theme.spacing.oneUnit)
         }
         .buttonStyle(.borderedProminent)
         .buttonBorderShape(.capsule)
         .tint(theme.colors.primary)
-        .allowsHitTesting(!isEffectivelyDisabled)
+        .disabled(isEffectivelyDisabled)
         .animation(theme.motion.standardAnimation, value: isEffectivelyDisabled)
     }
 }

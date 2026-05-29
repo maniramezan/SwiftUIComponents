@@ -16,16 +16,23 @@ public struct ErrorBanner: View {
     }
 
     public var body: some View {
-        Text(message)
-            .lineLimit(2)
-            .font(theme.typography.footnote)
-            .foregroundStyle(theme.colors.error)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(theme.spacing.oneAndHalfUnits)
-            .background(
-                theme.colors.error.opacity(0.08),
-                in: RoundedRectangle(cornerRadius: theme.radius.oneUnit, style: .continuous)
-            )
+        HStack(alignment: .firstTextBaseline, spacing: theme.spacing.oneUnit) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .font(theme.typography.footnote)
+                .accessibilityHidden(true)
+            Text(message)
+                .lineLimit(2)
+                .font(theme.typography.footnote)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .foregroundStyle(theme.colors.error)
+        .padding(theme.spacing.oneAndHalfUnits)
+        .background(
+            theme.colors.error.opacity(0.08),
+            in: RoundedRectangle(cornerRadius: theme.radius.oneUnit, style: .continuous)
+        )
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(Text(Strings.ErrorView.accessibilityLabel(message)))
     }
 }
 
