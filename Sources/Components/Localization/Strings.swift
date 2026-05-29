@@ -31,7 +31,8 @@ enum Strings {
         static let typingIndicator = LocalizedStringResource(
             "Typing",
             bundle: .atURL(Bundle.module.bundleURL),
-            comment: "Accessibility label for the animated three-dot indicator shown while a response is being composed."
+            comment:
+                "Accessibility label for the animated three-dot indicator shown while a response is being composed."
         )
     }
 
@@ -39,7 +40,8 @@ enum Strings {
         static let loading = LocalizedStringResource(
             "Loading",
             bundle: .atURL(Bundle.module.bundleURL),
-            comment: "Accessibility value announced on a button while it is in its loading state and temporarily disabled."
+            comment:
+                "Accessibility value announced on a button while it is in its loading state and temporarily disabled."
         )
     }
 
