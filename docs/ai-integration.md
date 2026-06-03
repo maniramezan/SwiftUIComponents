@@ -81,6 +81,22 @@ Picker (item must conform to MenuPickerItem: Hashable & Identifiable, var title:
     MenuPicker(items: allItems, currentValue: $selected)
     MenuPicker(items: allItems, currentValue: $selected, onWidthChange: { newWidth in pickerWidth = newWidth })
 
+Selection sheet (selection list for `.sheet`/drawer; single- or multiple-choice; rows are a SelectionNode<ID> tree — leaf nodes select on tap, parent nodes expand inline to reveal children; node has id, title, optional subtitle/leadingGlyph, children; controlled + content-only — you present it and update selection/dismiss in the callback; isSearchable filters both levels, case-insensitive):
+    let nodes: [SelectionNode<String>] = [
+        .init(id: "water", title: "Water"),
+        .init(id: "fruit", title: "Fruit", children: [
+            .init(id: "apple", title: "Apple"),
+        ]),
+    ]
+    // Single choice:
+    SelectionSheetView(title: "Category", nodes: nodes, selectedID: choice, isSearchable: true) { id in
+        choice = id; isPresented = false
+    }
+    // Multiple choice (toggle; stays open):
+    SelectionSheetView(title: "Categories", nodes: nodes, selectedIDs: choices) { id in
+        choices.formSymmetricDifference([id])
+    }
+
 Segmented picker (horizontal, single-selection; scrolls with fading edges when overflowing; auto-scrolls active segment into view):
     SegmentedPicker(items: Filter.allCases, selection: $filter)
     SegmentedPicker(items: tabs, selection: $tab) { tab, _ in
