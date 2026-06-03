@@ -53,15 +53,7 @@ struct SelectionRow: View {
             }
         }
         .padding(.leading, isIndented ? theme.spacing.twoUnits : 0)
-        .padding(.horizontal, theme.spacing.oneUnit)
-        .padding(.vertical, theme.spacing.oneUnit)
-        .frame(maxWidth: .infinity, minHeight: theme.motion.minimumHitTarget, alignment: .leading)
-        .background {
-            if isSelected {
-                RoundedRectangle(cornerRadius: theme.radius.oneAndHalfUnits, style: .continuous)
-                    .fill(theme.colors.primary.opacity(0.16))
-            }
-        }
         .contentShape(Rectangle())
+        .frame(minHeight: theme.motion.minimumHitTarget)
     }
 }
