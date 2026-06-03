@@ -137,6 +137,42 @@ MenuPicker(items: allItems, currentValue: $selected, onWidthChange: { newWidth i
 })
 ```
 
+### Selection Sheet
+
+A themed selection list for presenting inside a `.sheet` or drawer, with optional
+search and inline two-level disclosure. Supports single-choice and multiple-choice.
+Rows come from a `SelectionNode` tree: a node with no children is a leaf that selects
+on tap; a node with children expands inline to reveal them. Controlled and
+content-only — it reflects the selection you pass and reports taps via a callback;
+it never mutates selection or dismisses itself. Search filters across both levels;
+selected rows show a checkmark and a collapsed parent lists its selected children as
+its subtitle.
+
+```swift
+let nodes: [SelectionNode<String>] = [
+    .init(id: "water", title: "Water"),                   // leaf
+    .init(id: "fruit", title: "Fruit", children: [        // expands inline
+        .init(id: "apple", title: "Apple"),
+        .init(id: "banana", title: "Banana"),
+    ]),
+]
+
+// Single choice — replace selection and dismiss in the callback
+.sheet(isPresented: $isPresented) {
+    SelectionSheetView(title: "Category", nodes: nodes, selectedID: choice, isSearchable: true) { id in
+        choice = id
+        isPresented = false
+    }
+}
+
+// Multiple choice — toggle membership; the sheet stays open
+.sheet(isPresented: $isPresented) {
+    SelectionSheetView(title: "Categories", nodes: nodes, selectedIDs: choices) { id in
+        choices.formSymmetricDifference([id])
+    }
+}
+```
+
 ### Segmented Picker
 
 A horizontally laid out single-selection picker. Sizes to fit its segments
