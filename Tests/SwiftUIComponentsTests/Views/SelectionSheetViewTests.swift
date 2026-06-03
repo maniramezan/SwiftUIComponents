@@ -22,13 +22,13 @@ private let sampleNodes: [SelectionNode<String>] = [
 
 @Test("filtered returns all nodes for an empty query")
 func filteredReturnsAllForEmptyQuery() {
-    let result = SelectionSheetView<String>.filtered(sampleNodes, query: "")
+    let result = filteredSelectionNodes(sampleNodes, query: "")
     #expect(result.map(\.id) == ["water", "juice", "fruit"])
 }
 
 @Test("filtered returns all nodes for a whitespace-only query")
 func filteredReturnsAllForWhitespaceQuery() {
-    let result = SelectionSheetView<String>.filtered(sampleNodes, query: "   ")
+    let result = filteredSelectionNodes(sampleNodes, query: "   ")
     #expect(result.count == sampleNodes.count)
 }
 
@@ -36,13 +36,13 @@ func filteredReturnsAllForWhitespaceQuery() {
 
 @Test("filtered matches a leaf by title")
 func filteredMatchesLeafTitle() {
-    let result = SelectionSheetView<String>.filtered(sampleNodes, query: "Juice")
+    let result = filteredSelectionNodes(sampleNodes, query: "Juice")
     #expect(result.map(\.id) == ["juice"])
 }
 
 @Test("filtered matches a leaf by subtitle and is case-insensitive")
 func filteredMatchesLeafSubtitleCaseInsensitive() {
-    let result = SelectionSheetView<String>.filtered(sampleNodes, query: "STILL")
+    let result = filteredSelectionNodes(sampleNodes, query: "STILL")
     #expect(result.map(\.id) == ["water"])
 }
 
@@ -50,34 +50,34 @@ func filteredMatchesLeafSubtitleCaseInsensitive() {
 
 @Test("filtered keeps all children when the parent title matches")
 func filteredKeepsAllChildrenOnParentMatch() {
-    let result = SelectionSheetView<String>.filtered(sampleNodes, query: "Fruit")
+    let result = filteredSelectionNodes(sampleNodes, query: "Fruit")
     #expect(result.map(\.id) == ["fruit"])
     #expect(result.first?.children.map(\.id) == ["apple", "banana", "mango"])
 }
 
 @Test("filtered prunes a parent to only its matching children")
 func filteredPrunesChildrenOnChildMatch() {
-    let result = SelectionSheetView<String>.filtered(sampleNodes, query: "Banana")
+    let result = filteredSelectionNodes(sampleNodes, query: "Banana")
     #expect(result.map(\.id) == ["fruit"])
     #expect(result.first?.children.map(\.id) == ["banana"])
 }
 
 @Test("filtered trims surrounding whitespace from the query")
 func filteredTrimsQuery() {
-    let result = SelectionSheetView<String>.filtered(sampleNodes, query: "  Mango  ")
+    let result = filteredSelectionNodes(sampleNodes, query: "  Mango  ")
     #expect(result.first?.children.map(\.id) == ["mango"])
 }
 
 @Test("filtered returns no nodes when nothing matches")
 func filteredReturnsEmptyWhenNoMatch() {
-    let result = SelectionSheetView<String>.filtered(sampleNodes, query: "zzz")
+    let result = filteredSelectionNodes(sampleNodes, query: "zzz")
     #expect(result.isEmpty)
 }
 
 @Test("filtered preserves the original ordering of matches")
 func filteredPreservesOrder() {
     let nodes = [leaf("1", "Alpha test"), leaf("2", "Beta"), leaf("3", "Gamma test")]
-    let result = SelectionSheetView<String>.filtered(nodes, query: "test")
+    let result = filteredSelectionNodes(nodes, query: "test")
     #expect(result.map(\.id) == ["1", "3"])
 }
 

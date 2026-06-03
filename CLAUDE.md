@@ -173,6 +173,14 @@ let nodes: [SelectionNode<String>] = [
 }
 ```
 
+To embed the same list inline in your own screen (no NavigationStack / dismiss button —
+e.g. a full-screen onboarding step with its own header and button), use
+`SelectionSheetContentView` with the same params minus `title`:
+
+```swift
+SelectionSheetContentView(nodes: nodes, selectedID: choice, isSearchable: true) { choice = $0 }
+```
+
 ### Segmented Picker
 
 A horizontally laid out single-selection picker. Sizes to fit its segments

@@ -96,6 +96,8 @@ Selection sheet (selection list for `.sheet`/drawer; single- or multiple-choice;
     SelectionSheetView(title: "Categories", nodes: nodes, selectedIDs: choices) { id in
         choices.formSymmetricDifference([id])
     }
+    // Inline embed (no NavigationStack/dismiss — own-screen use), same params minus title:
+    SelectionSheetContentView(nodes: nodes, selectedID: choice, isSearchable: true) { choice = $0 }
 
 Segmented picker (horizontal, single-selection; scrolls with fading edges when overflowing; auto-scrolls active segment into view):
     SegmentedPicker(items: Filter.allCases, selection: $filter)
