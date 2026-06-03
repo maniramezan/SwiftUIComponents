@@ -36,7 +36,8 @@ struct SelectionRow: View {
             VStack(alignment: .leading, spacing: theme.spacing.halfUnit) {
                 Text(title)
                     .font(theme.typography.body)
-                    .foregroundStyle(theme.colors.textPrimary)
+                    .fontWeight(isSelected ? .semibold : .regular)
+                    .foregroundStyle(isSelected ? theme.colors.primary : theme.colors.textPrimary)
                 if let subtitle {
                     Text(subtitle)
                         .font(theme.typography.subheadline)
@@ -52,7 +53,15 @@ struct SelectionRow: View {
             }
         }
         .padding(.leading, isIndented ? theme.spacing.twoUnits : 0)
+        .padding(.horizontal, theme.spacing.oneUnit)
+        .padding(.vertical, theme.spacing.oneUnit)
+        .frame(maxWidth: .infinity, minHeight: theme.motion.minimumHitTarget, alignment: .leading)
+        .background {
+            if isSelected {
+                RoundedRectangle(cornerRadius: theme.radius.oneAndHalfUnits, style: .continuous)
+                    .fill(theme.colors.primary.opacity(0.16))
+            }
+        }
         .contentShape(Rectangle())
-        .frame(minHeight: theme.motion.minimumHitTarget)
     }
 }
