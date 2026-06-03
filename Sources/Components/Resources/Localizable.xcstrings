@@ -1,6 +1,18 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Clear search" : {
+      "comment" : "Accessibility label for the button that clears the current text in a search field.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear search"
+          }
+        }
+      }
+    },
     "Close" : {
       "comment" : "Accessibility label for the dismiss/close button in sheets and modal presentations.",
       "extractionState" : "manual",
@@ -49,6 +61,18 @@
         }
       }
     },
+    "Next page" : {
+      "comment" : "Accessibility action label for advancing the paged view to the next page.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next page"
+          }
+        }
+      }
+    },
     "Opens a picker to change the selected value" : {
       "comment" : "Accessibility hint describing that activating the menu picker opens a selection interface.",
       "extractionState" : "manual",
@@ -61,14 +85,38 @@
         }
       }
     },
-    "Typing" : {
-      "comment" : "Accessibility label for the animated three-dot indicator shown while a response is being composed.",
+    "Page %lld of %lld, %@" : {
+      "comment" : "Accessibility value announced for the page indicator. The first %lld is the 1-based page number, the second %lld is the total page count, and %@ is the title of the current page.",
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Typing"
+            "value" : "Page %1$lld of %2$lld, %3$@"
+          }
+        }
+      }
+    },
+    "Page indicator" : {
+      "comment" : "Accessibility label for the page-position indicator of a paged view.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Page indicator"
+          }
+        }
+      }
+    },
+    "Previous page" : {
+      "comment" : "Accessibility action label for moving the paged view to the previous page.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Previous page"
           }
         }
       }
@@ -81,6 +129,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Selected option: %@"
+          }
+        }
+      }
+    },
+    "Typing" : {
+      "comment" : "Accessibility label for the animated three-dot indicator shown while a response is being composed.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Typing"
           }
         }
       }

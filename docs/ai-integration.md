@@ -170,6 +170,12 @@ Use the showcase for reference, not reuse:
     // Good: copy interaction patterns from ComponentShowcase into app code using Components APIs.
     // Avoid: importing ComponentShowcase into the app target.
 
+### Accessibility & Localization
+
+- Components include VoiceOver support out of the box (labels, traits, hidden decorations, Reduce Motion, adjustable/scroll actions on paged + segmented controls).
+- The package localizes only its own chrome (dismiss button, loading/typing announcements, error prefix, paginator + clear-search labels) via a String Catalog in `Bundle.module`; English is the only bundled locale today.
+- Content you pass in is rendered verbatim and is your app's responsibility to localize: `ThemeButton` titles, `SearchBar` placeholder, `SelectionNode` titles, `ConfirmToolbarButton` accessibility label. Pass already-localized values (e.g. `String(localized:)`).
+
 ### Do Not
 
 - Don't import only `DesignSystem` when you need views — `Components` is a separate SPM product.
@@ -179,6 +185,7 @@ Use the showcase for reference, not reuse:
 - Don't conform `MenuPickerItem` items with only `Identifiable` — `Hashable` is also required.
 - Don't put reusable shipping components in the showcase target — promote them into `Components` first.
 - Don't pass a String literal to ThemeButton's @ViewBuilder init — use the String convenience init.
+- Don't pass unlocalized literals as component content (titles, placeholders, accessibility labels) — these are rendered verbatim, so localize them on your side.
 ```
 
 ---

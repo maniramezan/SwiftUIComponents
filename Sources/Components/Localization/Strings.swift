@@ -27,6 +27,14 @@ enum Strings {
         }
     }
 
+    enum Search {
+        static let clearButton = LocalizedStringResource(
+            "Clear search",
+            bundle: .atURL(Bundle.module.bundleURL),
+            comment: "Accessibility label for the button that clears the current text in a search field."
+        )
+    }
+
     enum Chat {
         static let typingIndicator = LocalizedStringResource(
             "Typing",
