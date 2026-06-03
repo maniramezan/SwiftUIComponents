@@ -33,6 +33,7 @@ open Package.swift   # Opens in Xcode — select the ComponentShowcase scheme an
 - ``MenuPicker``
 - ``MenuPickerItem``
 - ``SelectionSheetView``
+- ``SelectionSheetContentView``
 - ``SelectionNode``
 - ``PillChip``
 

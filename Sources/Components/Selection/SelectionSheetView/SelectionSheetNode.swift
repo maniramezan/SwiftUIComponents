@@ -1,6 +1,6 @@
 import Foundation
 
-/// A node in a one- or two-level ``SelectionSheet`` hierarchy.
+/// A node in a one- or two-level ``SelectionSheetView`` hierarchy.
 ///
 /// A node with no ``children`` is a **leaf** that selects directly when tapped.
 /// A node with children is an **expandable parent**: tapping it reveals its
@@ -9,7 +9,7 @@ import Foundation
 /// for a two-level picker (for example, languages whose pluricentric entries
 /// expand into regional variants).
 public struct SelectionNode<ID: Hashable>: Identifiable {
-    /// Stable identifier for the node. Leaf and child identifiers are the values reported by ``SelectionSheet`` selection.
+    /// Stable identifier for the node. Leaf and child identifiers are the values reported by ``SelectionSheetView`` selection.
     public let id: ID
     /// Primary text shown for the row (e.g. an autonym such as "Español" or a region name such as "Mexico").
     public let title: String
