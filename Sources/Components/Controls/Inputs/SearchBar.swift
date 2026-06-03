@@ -59,7 +59,7 @@ public struct SearchBar: View {
                         .foregroundStyle(theme.colors.textTertiary)
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel(Text("Clear search"))
+                .accessibilityLabel(Text(Strings.Search.clearButton))
             }
         }
         .padding(.horizontal, theme.spacing.oneAndHalfUnits)

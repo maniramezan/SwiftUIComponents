@@ -5,6 +5,7 @@ import PackageDescription
 
 let package = Package(
     name: "SwiftUIComponents",
+    defaultLocalization: "en",
     platforms: [.macOS(.v15), .iOS(.v18), .macCatalyst(.v18)],
     products: [
         .library(

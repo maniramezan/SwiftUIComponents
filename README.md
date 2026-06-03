@@ -61,6 +61,22 @@ struct ContentView: View {
 }
 ```
 
+## Accessibility & Localization
+
+Components ship with VoiceOver support built in — labels, traits, hidden decorative
+elements, Reduce Motion handling, and adjustable/scroll actions on the paged and
+segmented controls. The package localizes its **own** chrome (the dismiss button,
+loading/typing announcements, error prefixes, paginator and clear-search labels)
+through a String Catalog resolved from `Bundle.module`; currently only English (`en`)
+is provided, and additional translations can be contributed to
+`Sources/Components/Resources/Localizable.xcstrings`.
+
+**Content you pass in is your responsibility to localize.** Strings such as a
+`ThemeButton` title, a `SearchBar` placeholder, `SelectionNode` titles, or a
+`ConfirmToolbarButton` accessibility label are rendered verbatim — pass already-localized
+values (e.g. `String(localized:)`) so they read correctly in every language and to
+VoiceOver.
+
 ## AI-Assisted Integration
 
 When using Claude Code or another AI assistant to build with SwiftUIComponents, add a project-level `CLAUDE.md` so the AI understands the library's current API surface and package architecture. A ready-made snippet covering imports, theme setup, package layering, reusable component usage, and anti-patterns is available in [`docs/ai-integration.md`](docs/ai-integration.md).

@@ -305,6 +305,12 @@ if isLoading {
 }
 ```
 
+## Accessibility & Localization
+
+- Components include VoiceOver support out of the box: accessibility labels, traits, hidden decorative elements, Reduce Motion handling, and adjustable/scroll actions on the paged and segmented controls.
+- The package localizes only its **own** chrome — the dismiss button, loading/typing announcements, error prefix, and paginator/clear-search labels — via a String Catalog resolved from `Bundle.module`. English (`en`) is the only bundled locale today.
+- **Content you pass in is rendered verbatim and is your app's responsibility to localize**: `ThemeButton` titles, `SearchBar` placeholder, `SelectionNode` titles, and the `ConfirmToolbarButton` accessibility label. Pass already-localized values (e.g. `String(localized:)`).
+
 ## Do Not
 
 - **Do not** import only `DesignSystem` and then use views — `Components` is a separate SPM product and must be added to your target explicitly.
@@ -315,3 +321,4 @@ if isLoading {
 - **Do not** put reusable production UI in `ComponentShowcase` — move it into `Components`.
 - **Do not** pass a `String` literal to the `ThemeButton` `@ViewBuilder` initializer — use the convenience `init(_ title: String, role:isLoading:action:)` for text-only buttons.
 - **Do not** wrap `SegmentedPicker` in a parent that constrains its width to the segments' intrinsic size (an `HStack` next to a non-flexible sibling, a `Form` row). The scroll-and-fade behavior requires a parent that proposes a finite, potentially-narrower width — otherwise the picker just grows to fit every segment and never scrolls.
+- **Do not** pass unlocalized literals as component content (titles, placeholders, accessibility labels) — these are rendered verbatim, so localize them on your side before passing them in.
