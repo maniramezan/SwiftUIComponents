@@ -137,7 +137,14 @@ public struct SelectionSheetContentView<ID: Hashable>: View {
                 }
             }
         }
-        .listStyle(.plain)
+        #if os(iOS) || targetEnvironment(macCatalyst)
+            // Inset-grouped renders rows on a distinct grouped surface, so the list
+            // separates from the page background (and adapts correctly in dark mode)
+            // instead of blending into it like `.plain` does.
+            .listStyle(.insetGrouped)
+        #else
+            .listStyle(.plain)
+        #endif
         .overlay { emptyState }
     }
 
