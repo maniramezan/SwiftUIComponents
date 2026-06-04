@@ -4,15 +4,18 @@ import SwiftUI
 /// A single themed row inside ``SelectionSheet``.
 ///
 /// Renders an optional leading glyph, a title with optional subtitle, and a trailing
-/// checkmark when selected. When `action` is `nil` the row is a static label (used as
-/// an expandable parent's label, whose tap is handled by its `DisclosureGroup`);
-/// otherwise it is a button that reports taps.
+/// accessory. Selected rows show a checkmark; expandable parent rows show a chevron
+/// that rotates to reflect ``disclosure``. The row is always a button that reports
+/// taps through `action` — a leaf selects, a parent toggles its disclosure.
 struct SelectionRow: View {
     let title: String
     let subtitle: String?
     let leadingGlyph: String?
     let isSelected: Bool
     let isIndented: Bool
+    /// Disclosure state for an expandable parent row: `true` when expanded, `false`
+    /// when collapsed, `nil` for leaf and child rows that show no chevron.
+    let disclosure: Bool?
     let action: (() -> Void)?
     @Environment(\.designTheme) private var theme
 
@@ -21,8 +24,18 @@ struct SelectionRow: View {
             Button(action: action) { content }
                 .buttonStyle(.plain)
                 .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
+                .accessibilityValue(disclosureAccessibilityValue)
         } else {
             content
+        }
+    }
+
+    /// Announces the parent's disclosure state to VoiceOver; empty for leaf/child rows.
+    private var disclosureAccessibilityValue: Text {
+        switch disclosure {
+        case true: Text("Expanded", bundle: .module)
+        case false: Text("Collapsed", bundle: .module)
+        case nil: Text(verbatim: "")
         }
     }
 
@@ -49,6 +62,13 @@ struct SelectionRow: View {
                 Image(systemName: "checkmark")
                     .font(theme.typography.headline)
                     .foregroundStyle(theme.colors.primary)
+                    .accessibilityHidden(true)
+            } else if let disclosure {
+                Image(systemName: "chevron.forward")
+                    .font(theme.typography.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(theme.colors.textSecondary)
+                    .rotationEffect(.degrees(disclosure ? 90 : 0))
                     .accessibilityHidden(true)
             }
         }

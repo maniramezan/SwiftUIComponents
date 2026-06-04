@@ -1,6 +1,19 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "" : {
+
+    },
+    "%@, %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, %2$@"
+          }
+        }
+      }
+    },
     "Clear search" : {
       "comment" : "Accessibility label for the button that clears the current text in a search field.",
       "extractionState" : "manual",
@@ -25,6 +38,18 @@
         }
       }
     },
+    "Collapsed" : {
+      "comment" : "Accessibility value announced on an expandable selection-sheet row when its children are hidden.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Collapsed"
+          }
+        }
+      }
+    },
     "Error" : {
       "comment" : "Default section header title for error sections.",
       "extractionState" : "manual",
@@ -45,6 +70,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Error: %@"
+          }
+        }
+      }
+    },
+    "Expanded" : {
+      "comment" : "Accessibility value announced on an expandable selection-sheet row when its children are visible.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Expanded"
           }
         }
       }
