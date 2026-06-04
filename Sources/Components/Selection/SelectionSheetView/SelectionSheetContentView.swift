@@ -101,6 +101,12 @@ public struct SelectionSheetContentView<ID: Hashable>: View {
     // MARK: - Subviews
 
     private var list: some View {
+        // Each expandable parent is a single `ExpandableNodeRow` cell that owns its
+        // children and animates its own height from a 0…1 progress. Driving the cell
+        // height through `Animatable` lets the `List` interpolate it every frame, so the
+        // rows below slide up in lockstep with the children clipping and fading away —
+        // unlike a `DisclosureGroup` (or flat rows removed by `List` diffing), which
+        // drop the children instantly and then close the gap, reading as a jump.
         List {
             ForEach(visibleNodes) { node in
                 if node.isLeaf {
@@ -110,29 +116,22 @@ public struct SelectionSheetContentView<ID: Hashable>: View {
                         leadingGlyph: node.leadingGlyph,
                         isSelected: selectedIDs.contains(node.id),
                         isIndented: false,
+                        disclosure: nil,
                         action: { onSelect(node.id) }
                     )
                 } else {
-                    DisclosureGroup(isExpanded: expansionBinding(for: node.id)) {
-                        ForEach(node.children) { child in
-                            SelectionRow(
-                                title: child.title,
-                                subtitle: child.subtitle,
-                                leadingGlyph: child.leadingGlyph,
-                                isSelected: selectedIDs.contains(child.id),
-                                isIndented: true,
-                                action: { onSelect(child.id) }
-                            )
-                        }
-                    } label: {
+                    ExpandableNodeRow(progress: expansionProgress(for: node.id)) {
                         SelectionRow(
                             title: node.title,
                             subtitle: selectedChildrenSummary(in: node) ?? node.subtitle,
                             leadingGlyph: node.leadingGlyph,
                             isSelected: false,
                             isIndented: false,
-                            action: nil
+                            disclosure: isExpanded(node.id),
+                            action: { toggleExpansion(node.id) }
                         )
+                    } children: {
+                        childRows(for: node)
                     }
                 }
             }
@@ -169,6 +168,36 @@ public struct SelectionSheetContentView<ID: Hashable>: View {
         filteredSelectionNodes(nodes, query: isSearchable ? query : "")
     }
 
+    /// Whether `id`'s parent is currently disclosed — explicitly expanded, or force-expanded while searching.
+    private func isExpanded(_ id: ID) -> Bool {
+        isSearching || expandedIDs.contains(id)
+    }
+
+    /// The disclosure progress (`1` expanded, `0` collapsed) handed to ``ExpandableNodeRow`` for `id`'s parent.
+    private func expansionProgress(for id: ID) -> CGFloat {
+        isExpanded(id) ? 1 : 0
+    }
+
+    /// The indented child rows shown beneath an expanded parent, separated by hairline dividers.
+    @ViewBuilder
+    private func childRows(for node: SelectionNode<ID>) -> some View {
+        VStack(spacing: 0) {
+            ForEach(node.children) { child in
+                Divider()
+                    .padding(.leading, theme.spacing.twoUnits)
+                SelectionRow(
+                    title: child.title,
+                    subtitle: child.subtitle,
+                    leadingGlyph: child.leadingGlyph,
+                    isSelected: selectedIDs.contains(child.id),
+                    isIndented: true,
+                    disclosure: nil,
+                    action: { onSelect(child.id) }
+                )
+            }
+        }
+    }
+
     private func selectedChildrenSummary(in node: SelectionNode<ID>) -> String? {
         let titles = node.children
             .filter { selectedIDs.contains($0.id) }
@@ -176,17 +205,18 @@ public struct SelectionSheetContentView<ID: Hashable>: View {
         return titles.isEmpty ? nil : titles.joined(separator: ", ")
     }
 
-    private func expansionBinding(for id: ID) -> Binding<Bool> {
-        Binding(
-            get: { isSearching || expandedIDs.contains(id) },
-            set: { expanded in
-                if expanded {
-                    expandedIDs.insert(id)
-                } else {
-                    expandedIDs.remove(id)
-                }
+    /// Toggles a parent's expansion, animating its ``ExpandableNodeRow`` height so the
+    /// children and the rows below them slide smoothly. Ignored while searching, where
+    /// every parent is force-expanded.
+    private func toggleExpansion(_ id: ID) {
+        guard !isSearching else { return }
+        withAnimation(theme.motion.standardAnimation) {
+            if expandedIDs.contains(id) {
+                expandedIDs.remove(id)
+            } else {
+                expandedIDs.insert(id)
             }
-        )
+        }
     }
 
     /// Expands every parent containing a selected child once, so selections are visible on first appearance.
