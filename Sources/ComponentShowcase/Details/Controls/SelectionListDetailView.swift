@@ -44,15 +44,19 @@ struct SelectionListDetailView: View {
 
     /// Two-level data: expandable parents plus a directly selectable leaf.
     private static let categories: [SelectionNode<String>] = [
-        .init(id: "fruit", title: "Fruit", leadingGlyph: "🍎", children: [
-            .init(id: "apple", title: "Apple"),
-            .init(id: "banana", title: "Banana"),
-            .init(id: "mango", title: "Mango"),
-        ]),
-        .init(id: "vegetable", title: "Vegetable", leadingGlyph: "🥦", children: [
-            .init(id: "carrot", title: "Carrot"),
-            .init(id: "spinach", title: "Spinach"),
-        ]),
+        .init(
+            id: "fruit", title: "Fruit", leadingGlyph: "🍎",
+            children: [
+                .init(id: "apple", title: "Apple"),
+                .init(id: "banana", title: "Banana"),
+                .init(id: "mango", title: "Mango"),
+            ]),
+        .init(
+            id: "vegetable", title: "Vegetable", leadingGlyph: "🥦",
+            children: [
+                .init(id: "carrot", title: "Carrot"),
+                .init(id: "spinach", title: "Spinach"),
+            ]),
         .init(id: "water", title: "Water", leadingGlyph: "💧"),
     ]
 

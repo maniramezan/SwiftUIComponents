@@ -11,11 +11,13 @@ private func leaf(_ id: String, _ title: String, subtitle: String? = nil) -> Sel
 private let sampleNodes: [SelectionNode<String>] = [
     leaf("water", "Water", subtitle: "still"),
     leaf("juice", "Juice"),
-    SelectionNode(id: "fruit", title: "Fruit", children: [
-        leaf("apple", "Apple", subtitle: "green"),
-        leaf("banana", "Banana", subtitle: "yellow"),
-        leaf("mango", "Mango", subtitle: "ripe"),
-    ]),
+    SelectionNode(
+        id: "fruit", title: "Fruit",
+        children: [
+            leaf("apple", "Apple", subtitle: "green"),
+            leaf("banana", "Banana", subtitle: "yellow"),
+            leaf("mango", "Mango", subtitle: "ripe"),
+        ]),
 ]
 
 // MARK: - filtered: passthrough
@@ -99,7 +101,8 @@ func nodeDefaults() {
 
 @Test("replacingChildren keeps identity and metadata")
 func replacingChildrenKeepsMetadata() {
-    let parent = SelectionNode(id: "fruit", title: "Fruit", subtitle: "sub", leadingGlyph: "🍎", children: [leaf("apple", "Apple")])
+    let parent = SelectionNode(
+        id: "fruit", title: "Fruit", subtitle: "sub", leadingGlyph: "🍎", children: [leaf("apple", "Apple")])
     let replaced = parent.replacingChildren([leaf("banana", "Banana")])
     #expect(replaced.id == "fruit")
     #expect(replaced.title == "Fruit")
