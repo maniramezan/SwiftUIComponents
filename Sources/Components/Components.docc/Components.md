@@ -71,6 +71,7 @@ open Package.swift   # Opens in Xcode — select the ComponentShowcase scheme an
 - ``PaginationStyle``
 - ``TitledPageSwipeHintConfig``
 - ``SegmentedPicker``
+- ``SegmentSizing``
 
 ### Feedback
 
