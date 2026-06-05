@@ -5,8 +5,10 @@ import SwiftUI
 public enum SegmentSizing {
     /// Each segment sizes to fit its content (default).
     case fit
-    /// Segments expand equally to fill the available width.
-    case fill
+    /// All segments expand to an equal width, together filling the available space.
+    case fillEqually
+    /// Segments fill the available width while remaining proportional to their intrinsic content sizes.
+    case fillProportionally
 }
 
 /// A horizontally laid-out, single-selection picker that renders each segment
@@ -70,8 +72,8 @@ public struct SegmentedPicker<Item: MenuPickerItem, Label: View>: View {
     ///   - items: The selectable items. Must be non-empty and must contain
     ///     `selection`.
     ///   - selection: Two-way binding to the currently selected item.
-    ///   - sizing: Controls how segments are sized. `.fit` (default) hugs each
-    ///     segment's content; `.fill` expands segments equally to fill available width.
+    ///   - sizing: Controls how segments are sized along the horizontal axis.
+    ///     See ``SegmentSizing`` for available options. Defaults to `.fit`.
     ///   - badge: Optional closure returning a badge string for an item.
     ///     Return a non-empty string for a labeled badge, `""` for a dot
     ///     indicator, or `nil` for no badge.
@@ -123,8 +125,8 @@ public extension SegmentedPicker where Label == Text {
     ///   - items: The selectable items. Must be non-empty and must contain
     ///     `selection`.
     ///   - selection: Two-way binding to the currently selected item.
-    ///   - sizing: Controls how segments are sized. `.fit` (default) hugs each
-    ///     segment's content; `.fill` expands segments equally to fill available width.
+    ///   - sizing: Controls how segments are sized along the horizontal axis.
+    ///     See ``SegmentSizing`` for available options. Defaults to `.fit`.
     ///   - badge: Optional closure returning a badge string for an item.
     ///     Return a non-empty string for a labeled badge, `""` for a dot
     ///     indicator, or `nil` for no badge.
@@ -210,7 +212,7 @@ private extension SegmentedPicker {
                 .font(theme.typography.control)
                 .lineLimit(1)
                 .fixedSize(horizontal: sizing == .fit, vertical: false)
-                .frame(maxWidth: sizing == .fill ? .infinity : nil)
+                .frame(maxWidth: sizing == .fillEqually ? .infinity : nil)
                 .padding(.horizontal, theme.spacing.oneAndHalfUnits)
                 .padding(.vertical, theme.spacing.oneUnit)
                 .overlay(alignment: .topTrailing) {
@@ -397,9 +399,9 @@ private struct ScrollGeometrySnapshot: Equatable {
                 .designTextStyle(.headline)
             SegmentedPicker(items: 1...4, selection: $compactSelection)
 
-            Text("Fill (equal widths)")
+            Text("Fill equally")
                 .designTextStyle(.headline)
-            SegmentedPicker(items: 1...4, selection: $fullWidthSelection, sizing: .fill)
+            SegmentedPicker(items: 1...4, selection: $fullWidthSelection, sizing: .fillEqually)
 
             Text("Scrolls horizontally")
                 .designTextStyle(.headline)
