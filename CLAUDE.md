@@ -193,8 +193,11 @@ The active segment auto-scrolls into view when `selection` changes.
 // Item must conform to MenuPickerItem (same as MenuPicker).
 SegmentedPicker(items: Filter.allCases, selection: $filter)
 
-// Fill — segments expand equally to fill available width (default is .fit, which hugs content).
-SegmentedPicker(items: Filter.allCases, selection: $filter, sizing: .fill)
+// fillEqually — all segments same width, filling available space.
+SegmentedPicker(items: Filter.allCases, selection: $filter, sizing: .fillEqually)
+
+// fillProportionally — fills available width, segments proportional to intrinsic content size.
+SegmentedPicker(items: Filter.allCases, selection: $filter, sizing: .fillProportionally)
 
 // Badge overlay — pass a closure returning a String? per item.
 // Non-empty string → labeled badge; "" → dot indicator; nil → no badge.
