@@ -1,6 +1,14 @@
 import DesignSystem
 import SwiftUI
 
+/// Controls how a ``SegmentedPicker`` sizes its segments along the horizontal axis.
+public enum SegmentSizing {
+    /// Each segment sizes to fit its content (default).
+    case fit
+    /// Segments expand equally to fill the available width.
+    case fill
+}
+
 /// A horizontally laid-out, single-selection picker that renders each segment
 /// using a caller-supplied view builder.
 ///
@@ -46,7 +54,7 @@ public struct SegmentedPicker<Item: MenuPickerItem, Label: View>: View {
     @Binding private var selection: Item
     private let badge: ((Item) -> String?)?
     private let label: (Item, Bool) -> Label
-    private let isFullWidth: Bool
+    private let sizing: SegmentSizing
 
     @State private var geometry = ScrollGeometrySnapshot()
 
@@ -62,8 +70,8 @@ public struct SegmentedPicker<Item: MenuPickerItem, Label: View>: View {
     ///   - items: The selectable items. Must be non-empty and must contain
     ///     `selection`.
     ///   - selection: Two-way binding to the currently selected item.
-    ///   - isFullWidth: When `true`, each segment expands equally to fill the
-    ///     available width instead of sizing to its content. Defaults to `false`.
+    ///   - sizing: Controls how segments are sized. `.fit` (default) hugs each
+    ///     segment's content; `.fill` expands segments equally to fill available width.
     ///   - badge: Optional closure returning a badge string for an item.
     ///     Return a non-empty string for a labeled badge, `""` for a dot
     ///     indicator, or `nil` for no badge.
@@ -76,7 +84,7 @@ public struct SegmentedPicker<Item: MenuPickerItem, Label: View>: View {
     public init(
         items: some RandomAccessCollection<Item>,
         selection: Binding<Item>,
-        isFullWidth: Bool = false,
+        sizing: SegmentSizing = .fit,
         badge: ((Item) -> String?)? = nil,
         @ViewBuilder label: @escaping (Item, Bool) -> Label
     ) {
@@ -88,7 +96,7 @@ public struct SegmentedPicker<Item: MenuPickerItem, Label: View>: View {
         )
         self.items = items
         self._selection = selection
-        self.isFullWidth = isFullWidth
+        self.sizing = sizing
         self.badge = badge
         self.label = label
     }
@@ -115,18 +123,18 @@ public extension SegmentedPicker where Label == Text {
     ///   - items: The selectable items. Must be non-empty and must contain
     ///     `selection`.
     ///   - selection: Two-way binding to the currently selected item.
-    ///   - isFullWidth: When `true`, each segment expands equally to fill the
-    ///     available width instead of sizing to its content. Defaults to `false`.
+    ///   - sizing: Controls how segments are sized. `.fit` (default) hugs each
+    ///     segment's content; `.fill` expands segments equally to fill available width.
     ///   - badge: Optional closure returning a badge string for an item.
     ///     Return a non-empty string for a labeled badge, `""` for a dot
     ///     indicator, or `nil` for no badge.
     init(
         items: some RandomAccessCollection<Item>,
         selection: Binding<Item>,
-        isFullWidth: Bool = false,
+        sizing: SegmentSizing = .fit,
         badge: ((Item) -> String?)? = nil
     ) {
-        self.init(items: items, selection: selection, isFullWidth: isFullWidth, badge: badge) { item, isActive in
+        self.init(items: items, selection: selection, sizing: sizing, badge: badge) { item, isActive in
             Text(item.title)
                 .fontWeight(isActive ? .semibold : .regular)
         }
@@ -201,8 +209,8 @@ private extension SegmentedPicker {
             label(item, isActive)
                 .font(theme.typography.control)
                 .lineLimit(1)
-                .fixedSize(horizontal: !isFullWidth, vertical: false)
-                .frame(maxWidth: isFullWidth ? .infinity : nil)
+                .fixedSize(horizontal: sizing == .fit, vertical: false)
+                .frame(maxWidth: sizing == .fill ? .infinity : nil)
                 .padding(.horizontal, theme.spacing.oneAndHalfUnits)
                 .padding(.vertical, theme.spacing.oneUnit)
                 .overlay(alignment: .topTrailing) {
@@ -389,9 +397,9 @@ private struct ScrollGeometrySnapshot: Equatable {
                 .designTextStyle(.headline)
             SegmentedPicker(items: 1...4, selection: $compactSelection)
 
-            Text("Full width")
+            Text("Fill (equal widths)")
                 .designTextStyle(.headline)
-            SegmentedPicker(items: 1...4, selection: $fullWidthSelection, isFullWidth: true)
+            SegmentedPicker(items: 1...4, selection: $fullWidthSelection, sizing: .fill)
 
             Text("Scrolls horizontally")
                 .designTextStyle(.headline)
