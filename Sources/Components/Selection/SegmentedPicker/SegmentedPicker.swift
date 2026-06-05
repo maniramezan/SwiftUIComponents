@@ -46,6 +46,7 @@ public struct SegmentedPicker<Item: MenuPickerItem, Label: View>: View {
     @Binding private var selection: Item
     private let badge: ((Item) -> String?)?
     private let label: (Item, Bool) -> Label
+    private let isFullWidth: Bool
 
     @State private var geometry = ScrollGeometrySnapshot()
 
@@ -61,6 +62,8 @@ public struct SegmentedPicker<Item: MenuPickerItem, Label: View>: View {
     ///   - items: The selectable items. Must be non-empty and must contain
     ///     `selection`.
     ///   - selection: Two-way binding to the currently selected item.
+    ///   - isFullWidth: When `true`, each segment expands equally to fill the
+    ///     available width instead of sizing to its content. Defaults to `false`.
     ///   - badge: Optional closure returning a badge string for an item.
     ///     Return a non-empty string for a labeled badge, `""` for a dot
     ///     indicator, or `nil` for no badge.
@@ -73,6 +76,7 @@ public struct SegmentedPicker<Item: MenuPickerItem, Label: View>: View {
     public init(
         items: some RandomAccessCollection<Item>,
         selection: Binding<Item>,
+        isFullWidth: Bool = false,
         badge: ((Item) -> String?)? = nil,
         @ViewBuilder label: @escaping (Item, Bool) -> Label
     ) {
@@ -84,6 +88,7 @@ public struct SegmentedPicker<Item: MenuPickerItem, Label: View>: View {
         )
         self.items = items
         self._selection = selection
+        self.isFullWidth = isFullWidth
         self.badge = badge
         self.label = label
     }
@@ -110,15 +115,18 @@ public extension SegmentedPicker where Label == Text {
     ///   - items: The selectable items. Must be non-empty and must contain
     ///     `selection`.
     ///   - selection: Two-way binding to the currently selected item.
+    ///   - isFullWidth: When `true`, each segment expands equally to fill the
+    ///     available width instead of sizing to its content. Defaults to `false`.
     ///   - badge: Optional closure returning a badge string for an item.
     ///     Return a non-empty string for a labeled badge, `""` for a dot
     ///     indicator, or `nil` for no badge.
     init(
         items: some RandomAccessCollection<Item>,
         selection: Binding<Item>,
+        isFullWidth: Bool = false,
         badge: ((Item) -> String?)? = nil
     ) {
-        self.init(items: items, selection: selection, badge: badge) { item, isActive in
+        self.init(items: items, selection: selection, isFullWidth: isFullWidth, badge: badge) { item, isActive in
             Text(item.title)
                 .fontWeight(isActive ? .semibold : .regular)
         }
@@ -193,7 +201,8 @@ private extension SegmentedPicker {
             label(item, isActive)
                 .font(theme.typography.control)
                 .lineLimit(1)
-                .fixedSize(horizontal: true, vertical: false)
+                .fixedSize(horizontal: !isFullWidth, vertical: false)
+                .frame(maxWidth: isFullWidth ? .infinity : nil)
                 .padding(.horizontal, theme.spacing.oneAndHalfUnits)
                 .padding(.vertical, theme.spacing.oneUnit)
                 .overlay(alignment: .topTrailing) {
@@ -372,12 +381,17 @@ private struct ScrollGeometrySnapshot: Equatable {
 #Preview("Segmented Picker") {
     @Previewable @State var compactSelection: Int = 2
     @Previewable @State var overflowSelection: Int = 5
+    @Previewable @State var fullWidthSelection: Int = 2
 
     PreviewContent { theme in
         VStack(alignment: .leading, spacing: theme.spacing.threeUnits) {
             Text("Fits in the row")
                 .designTextStyle(.headline)
             SegmentedPicker(items: 1...4, selection: $compactSelection)
+
+            Text("Full width")
+                .designTextStyle(.headline)
+            SegmentedPicker(items: 1...4, selection: $fullWidthSelection, isFullWidth: true)
 
             Text("Scrolls horizontally")
                 .designTextStyle(.headline)
