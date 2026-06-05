@@ -113,7 +113,7 @@ func replacingChildrenKeepsMetadata() {
 @Test("single-choice init succeeds with a selected id")
 @MainActor
 func singleChoiceInitSucceeds() {
-    _ = SelectionSheetView(
+    _ = SelectionListView(
         title: "Category",
         nodes: sampleNodes,
         selectedID: "banana",
@@ -125,7 +125,7 @@ func singleChoiceInitSucceeds() {
 @Test("multiple-choice init succeeds with a selection set")
 @MainActor
 func multipleChoiceInitSucceeds() {
-    _ = SelectionSheetView(
+    _ = SelectionListView(
         title: "Categories",
         nodes: sampleNodes,
         selectedIDs: ["apple", "water"],

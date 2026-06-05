@@ -2,7 +2,7 @@ import Components
 import DesignSystem
 import SwiftUI
 
-struct SelectionSheetViewDetailView: View {
+struct SelectionListDetailView: View {
     @State private var isSinglePresented = false
     @State private var isMultiPresented = false
     @State private var category = "banana"
@@ -20,7 +20,7 @@ struct SelectionSheetViewDetailView: View {
             }
         }
         .sheet(isPresented: $isSinglePresented) {
-            SelectionSheetView(
+            SelectionListView(
                 title: "Category",
                 nodes: Self.categories,
                 selectedID: category,
@@ -32,7 +32,7 @@ struct SelectionSheetViewDetailView: View {
         }
         .sheet(isPresented: $isMultiPresented) {
             // `isSearchable` defaults to false — short lists can omit the search field.
-            SelectionSheetView(
+            SelectionListView(
                 title: "Tags",
                 nodes: Self.tags,
                 selectedIDs: tags
@@ -68,7 +68,7 @@ struct SelectionSheetViewDetailView: View {
 
 #Preview {
     ScrollView {
-        SelectionSheetViewDetailView()
+        SelectionListDetailView()
             .padding()
     }
 }
