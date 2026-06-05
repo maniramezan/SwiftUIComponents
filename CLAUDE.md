@@ -137,9 +137,9 @@ MenuPicker(items: allItems, currentValue: $selected, onWidthChange: { newWidth i
 })
 ```
 
-### Selection Sheet
+### Selection List
 
-A themed selection list for presenting inside a `.sheet` or drawer, with optional
+A themed selection list for presenting inside a `.sheet` or drawer, or inline, with optional
 search and inline two-level disclosure. Supports single-choice and multiple-choice.
 Rows come from a `SelectionNode` tree: a node with no children is a leaf that selects
 on tap; a node with children expands inline to reveal them. Controlled and
@@ -159,7 +159,7 @@ let nodes: [SelectionNode<String>] = [
 
 // Single choice — replace selection and dismiss in the callback
 .sheet(isPresented: $isPresented) {
-    SelectionSheetView(title: "Category", nodes: nodes, selectedID: choice, isSearchable: true) { id in
+    SelectionListView(title: "Category", nodes: nodes, selectedID: choice, isSearchable: true) { id in
         choice = id
         isPresented = false
     }
@@ -167,7 +167,7 @@ let nodes: [SelectionNode<String>] = [
 
 // Multiple choice — toggle membership; the sheet stays open
 .sheet(isPresented: $isPresented) {
-    SelectionSheetView(title: "Categories", nodes: nodes, selectedIDs: choices) { id in
+    SelectionListView(title: "Categories", nodes: nodes, selectedIDs: choices) { id in
         choices.formSymmetricDifference([id])
     }
 }
@@ -175,10 +175,10 @@ let nodes: [SelectionNode<String>] = [
 
 To embed the same list inline in your own screen (no NavigationStack / dismiss button —
 e.g. a full-screen onboarding step with its own header and button), use
-`SelectionSheetContentView` with the same params minus `title`:
+`SelectionListContentView` with the same params minus `title`:
 
 ```swift
-SelectionSheetContentView(nodes: nodes, selectedID: choice, isSearchable: true) { choice = $0 }
+SelectionListContentView(nodes: nodes, selectedID: choice, isSearchable: true) { choice = $0 }
 ```
 
 ### Segmented Picker

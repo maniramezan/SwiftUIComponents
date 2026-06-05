@@ -22,7 +22,7 @@ private extension SelectionNode where ID == String {
 #Preview("Single choice, two-level") {
     @Previewable @State var selected = "banana"
     PreviewContent { _ in
-        SelectionSheetView(
+        SelectionListView(
             title: "Category",
             nodes: SelectionNode<String>.sampleCategories,
             selectedID: selected,
@@ -36,7 +36,7 @@ private extension SelectionNode where ID == String {
 #Preview("Multiple choice") {
     @Previewable @State var selected: Set<String> = ["apple", "spinach"]
     PreviewContent { _ in
-        SelectionSheetView(
+        SelectionListView(
             title: "Categories",
             nodes: SelectionNode<String>.sampleCategories,
             selectedIDs: selected,

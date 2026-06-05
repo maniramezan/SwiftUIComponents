@@ -28,7 +28,7 @@ struct ShowcaseDetailView: View {
         case .searchBar: SearchBarDetailView()
         case .toggle: ToggleDetailView()
         case .menuPicker: MenuPickerDetailView()
-        case .selectionSheet: SelectionSheetViewDetailView()
+        case .selectionList: SelectionListDetailView()
         case .pillChips: PillChipsDetailView()
         case .segmentedPicker: SegmentedPickerDetailView()
         case .badges: BadgesDetailView()

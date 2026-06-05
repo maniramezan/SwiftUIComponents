@@ -1,13 +1,13 @@
 import DesignSystem
 import SwiftUI
 
-/// The embeddable body of ``SelectionSheetView`` — an inline searchable selection list
+/// The embeddable body of ``SelectionListView`` — an inline searchable selection list
 /// with two-level disclosure, without any surrounding `NavigationStack`, navigation
 /// title, or dismiss control.
 ///
 /// Use this directly when you want the selection list inside your own screen (for
 /// example a full-screen onboarding step that already has its own header and primary
-/// button). Use ``SelectionSheetView`` instead when presenting in a `.sheet`.
+/// button). Use ``SelectionListView`` instead when presenting in a `.sheet`.
 ///
 /// Rows come from a ``SelectionNode`` tree: leaf nodes are selectable, while parent
 /// nodes expand inline to reveal their children. The view is **controlled** — it reflects
@@ -18,7 +18,7 @@ import SwiftUI
 /// ```swift
 /// VStack {
 ///     header
-///     SelectionSheetContentView(
+///     SelectionListContentView(
 ///         nodes: nodes,
 ///         selectedID: choice,
 ///         isSearchable: true,
@@ -27,7 +27,7 @@ import SwiftUI
 ///     continueButton
 /// }
 /// ```
-public struct SelectionSheetContentView<ID: Hashable>: View {
+public struct SelectionListContentView<ID: Hashable>: View {
 
     // MARK: - Configuration
 

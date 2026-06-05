@@ -1,7 +1,7 @@
 import DesignSystem
 import SwiftUI
 
-/// A single themed row inside ``SelectionSheet``.
+/// A single themed row inside ``SelectionListView``.
 ///
 /// Renders an optional leading glyph, a title with optional subtitle, and a trailing
 /// accessory. Selected rows show a checkmark; expandable parent rows show a chevron
