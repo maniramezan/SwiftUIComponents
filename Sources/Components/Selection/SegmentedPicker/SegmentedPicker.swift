@@ -11,6 +11,16 @@ public enum SegmentSizing {
     case fillProportionally
 }
 
+/// Controls the vertical density (height) of a ``SegmentedPicker``.
+public enum SegmentDensity {
+    /// Standard height with a 44pt minimum tap target (default).
+    case regular
+    /// Reduced height (~32pt), matching the platform's native segmented control.
+    /// The tap target shrinks with the control, so prefer ``regular`` where a
+    /// generous tap area matters.
+    case compact
+}
+
 /// A horizontally laid-out, single-selection picker that renders each segment
 /// using a caller-supplied view builder.
 ///
@@ -57,6 +67,7 @@ public struct SegmentedPicker<Item: MenuPickerItem, Label: View>: View {
     private let badge: ((Item) -> String?)?
     private let label: (Item, Bool) -> Label
     private let sizing: SegmentSizing
+    private let density: SegmentDensity
 
     @State private var geometry = ScrollGeometrySnapshot()
 
@@ -74,6 +85,8 @@ public struct SegmentedPicker<Item: MenuPickerItem, Label: View>: View {
     ///   - selection: Two-way binding to the currently selected item.
     ///   - sizing: Controls how segments are sized along the horizontal axis.
     ///     See ``SegmentSizing`` for available options. Defaults to `.fit`.
+    ///   - density: Controls the vertical height of the segments. See
+    ///     ``SegmentDensity``. Defaults to `.regular`.
     ///   - badge: Optional closure returning a badge string for an item.
     ///     Return a non-empty string for a labeled badge, `""` for a dot
     ///     indicator, or `nil` for no badge.
@@ -87,6 +100,7 @@ public struct SegmentedPicker<Item: MenuPickerItem, Label: View>: View {
         items: some RandomAccessCollection<Item>,
         selection: Binding<Item>,
         sizing: SegmentSizing = .fit,
+        density: SegmentDensity = .regular,
         badge: ((Item) -> String?)? = nil,
         @ViewBuilder label: @escaping (Item, Bool) -> Label
     ) {
@@ -99,6 +113,7 @@ public struct SegmentedPicker<Item: MenuPickerItem, Label: View>: View {
         self.items = items
         self._selection = selection
         self.sizing = sizing
+        self.density = density
         self.badge = badge
         self.label = label
     }
@@ -127,6 +142,8 @@ public extension SegmentedPicker where Label == Text {
     ///   - selection: Two-way binding to the currently selected item.
     ///   - sizing: Controls how segments are sized along the horizontal axis.
     ///     See ``SegmentSizing`` for available options. Defaults to `.fit`.
+    ///   - density: Controls the vertical height of the segments. See
+    ///     ``SegmentDensity``. Defaults to `.regular`.
     ///   - badge: Optional closure returning a badge string for an item.
     ///     Return a non-empty string for a labeled badge, `""` for a dot
     ///     indicator, or `nil` for no badge.
@@ -134,9 +151,16 @@ public extension SegmentedPicker where Label == Text {
         items: some RandomAccessCollection<Item>,
         selection: Binding<Item>,
         sizing: SegmentSizing = .fit,
+        density: SegmentDensity = .regular,
         badge: ((Item) -> String?)? = nil
     ) {
-        self.init(items: items, selection: selection, sizing: sizing, badge: badge) { item, isActive in
+        self.init(
+            items: items,
+            selection: selection,
+            sizing: sizing,
+            density: density,
+            badge: badge
+        ) { item, isActive in
             Text(item.title)
                 .fontWeight(isActive ? .semibold : .regular)
         }
@@ -214,12 +238,12 @@ private extension SegmentedPicker {
                 .fixedSize(horizontal: sizing == .fit, vertical: false)
                 .frame(maxWidth: sizing == .fillEqually ? .infinity : nil)
                 .padding(.horizontal, theme.spacing.oneAndHalfUnits)
-                .padding(.vertical, theme.spacing.oneUnit)
+                .padding(.vertical, density == .compact ? theme.spacing.halfUnit : theme.spacing.oneUnit)
                 .overlay(alignment: .topTrailing) {
                     segmentBadgeView(for: item)
                         .padding([.top, .trailing], theme.spacing.halfUnit)
                 }
-                .frame(minHeight: theme.motion.minimumHitTarget)
+                .frame(minHeight: density == .compact ? theme.spacing.fourUnits : theme.motion.minimumHitTarget)
                 .foregroundStyle(isActive ? theme.colors.onPrimary : theme.colors.textPrimary)
                 .background {
                     Capsule(style: .continuous)
