@@ -43,6 +43,7 @@ struct SegmentedPickerDetailView: View {
     @State private var filter: Filter = .all
     @State private var genre: Genre = .all
     @State private var tab: Tab
+    @State private var compact: Filter = .all
 
     @Environment(\.designTheme) private var theme
 
@@ -72,6 +73,12 @@ struct SegmentedPickerDetailView: View {
                     }
                 }
                 Text("Selected: \(tab.title)")
+                    .designTextStyle(.caption)
+            }
+
+            ShowcaseSection("Compact density") {
+                SegmentedPicker(items: Filter.allCases, selection: $compact, density: .compact)
+                Text("Shorter control (~32pt) for tight headers; tap target shrinks with it.")
                     .designTextStyle(.caption)
             }
         }
