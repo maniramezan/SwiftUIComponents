@@ -35,6 +35,7 @@ public struct SelectionListContentView<ID: Hashable>: View {
     private let selectedIDs: Set<ID>
     private let isSearchable: Bool
     private let searchPlaceholder: String
+    private let showsContainerBackground: Bool
     private let onSelect: (ID) -> Void
 
     // MARK: - State
@@ -50,18 +51,21 @@ public struct SelectionListContentView<ID: Hashable>: View {
     ///   - selectedID: Identifier of the currently selected leaf or child, marked with a checkmark. Pass `nil` for no selection.
     ///   - isSearchable: When `true`, shows an inline search field that filters across both levels. Defaults to `false`.
     ///   - searchPlaceholder: Hint shown in the search field when it is empty. Defaults to `"Search"`.
+    ///   - showsContainerBackground: When `false`, hides the grouped list background and uses a plain full-width style. Use this when embedding the list inside a screen that provides its own background (e.g. an onboarding step). Defaults to `true`.
     ///   - onSelect: Closure invoked with the chosen leaf or child identifier.
     public init(
         nodes: some RandomAccessCollection<SelectionNode<ID>>,
         selectedID: ID? = nil,
         isSearchable: Bool = false,
         searchPlaceholder: String = "Search",
+        showsContainerBackground: Bool = true,
         onSelect: @escaping (ID) -> Void
     ) {
         self.nodes = Array(nodes)
         self.selectedIDs = selectedID.map { [$0] } ?? []
         self.isSearchable = isSearchable
         self.searchPlaceholder = searchPlaceholder
+        self.showsContainerBackground = showsContainerBackground
         self.onSelect = onSelect
     }
 
@@ -71,18 +75,21 @@ public struct SelectionListContentView<ID: Hashable>: View {
     ///   - selectedIDs: Identifiers of the currently selected leaves or children, each marked with a checkmark.
     ///   - isSearchable: When `true`, shows an inline search field that filters across both levels. Defaults to `false`.
     ///   - searchPlaceholder: Hint shown in the search field when it is empty. Defaults to `"Search"`.
+    ///   - showsContainerBackground: When `false`, hides the grouped list background and uses a plain full-width style. Defaults to `true`.
     ///   - onToggle: Closure invoked with the tapped leaf or child identifier. Toggle its membership in your selection.
     public init(
         nodes: some RandomAccessCollection<SelectionNode<ID>>,
         selectedIDs: Set<ID>,
         isSearchable: Bool = false,
         searchPlaceholder: String = "Search",
+        showsContainerBackground: Bool = true,
         onToggle: @escaping (ID) -> Void
     ) {
         self.nodes = Array(nodes)
         self.selectedIDs = selectedIDs
         self.isSearchable = isSearchable
         self.searchPlaceholder = searchPlaceholder
+        self.showsContainerBackground = showsContainerBackground
         self.onSelect = onToggle
     }
 
@@ -137,10 +144,8 @@ public struct SelectionListContentView<ID: Hashable>: View {
             }
         }
         #if os(iOS) || targetEnvironment(macCatalyst)
-            // Inset-grouped renders rows on a distinct grouped surface, so the list
-            // separates from the page background (and adapts correctly in dark mode)
-            // instead of blending into it like `.plain` does.
-            .listStyle(.insetGrouped)
+            .listStyle(showsContainerBackground ? .insetGrouped : .plain)
+            .scrollContentBackground(showsContainerBackground ? .automatic : .hidden)
         #else
             .listStyle(.plain)
         #endif
