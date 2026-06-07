@@ -143,12 +143,7 @@ public struct SelectionListContentView<ID: Hashable>: View {
                 }
             }
         }
-        #if os(iOS) || targetEnvironment(macCatalyst)
-            .listStyle(showsContainerBackground ? .insetGrouped : .plain)
-            .scrollContentBackground(showsContainerBackground ? .automatic : .hidden)
-        #else
-            .listStyle(.plain)
-        #endif
+        .selectionListStyle(grouped: showsContainerBackground)
         .overlay { emptyState }
     }
 
@@ -232,5 +227,29 @@ public struct SelectionListContentView<ID: Hashable>: View {
         for node in nodes where node.children.contains(where: { selectedIDs.contains($0.id) }) {
             expandedIDs.insert(node.id)
         }
+    }
+}
+
+private extension View {
+    /// Applies the grouped or plain list style based on `grouped`.
+    ///
+    /// Split into a `@ViewBuilder` branch rather than a ternary because `.insetGrouped`
+    /// and `.plain` are distinct `ListStyle` types — a `grouped ? .insetGrouped : .plain`
+    /// expression fails to type-check. When grouped, the inset-grouped surface is kept;
+    /// when not, the list goes plain with a hidden scroll background so it blends into a
+    /// caller-provided background (e.g. an onboarding step).
+    @ViewBuilder
+    func selectionListStyle(grouped: Bool) -> some View {
+        #if os(iOS) || targetEnvironment(macCatalyst)
+            if grouped {
+                listStyle(.insetGrouped)
+                    .scrollContentBackground(.automatic)
+            } else {
+                listStyle(.plain)
+                    .scrollContentBackground(.hidden)
+            }
+        #else
+            listStyle(.plain)
+        #endif
     }
 }
