@@ -30,6 +30,7 @@ enum ShowcaseComponent: String, CaseIterable, Identifiable {
     case loading = "Loading"
     case ghostLoading = "Ghost Loading"
     case emptyState = "Empty State"
+    case toast = "Toast"
 
     // MARK: - Pagination
     case pagedView = "Paged View"
@@ -62,6 +63,7 @@ enum ShowcaseComponent: String, CaseIterable, Identifiable {
         case .loading: return "arrow.2.circlepath"
         case .ghostLoading: return "rectangle.dashed"
         case .emptyState: return "tray"
+        case .toast: return "bell.badge.fill"
         case .pagedView: return "rectangle.split.3x1"
         case .chatBubble: return "bubble.left.and.bubble.right"
         case .typingIndicator: return "ellipsis.message"
@@ -79,7 +81,7 @@ enum ShowcaseComponent: String, CaseIterable, Identifiable {
             return "Display"
         case .surfaces, .adaptiveSurface, .selectableCard, .containers:
             return "Surfaces"
-        case .errorBanner, .errorSection, .loading, .ghostLoading, .emptyState:
+        case .errorBanner, .errorSection, .loading, .ghostLoading, .emptyState, .toast:
             return "Feedback"
         case .pagedView, .segmentedPicker:
             return "Pagination"

@@ -35,6 +35,43 @@ enum Strings {
         )
     }
 
+    enum Toast {
+        /// Accessibility label for a toast, prefixed with its role so VoiceOver
+        /// users perceive the semantic nature that the color tint conveys visually.
+        static func accessibilityLabel(role: ToastRole, message: String) -> LocalizedStringResource {
+            switch role {
+            case .info:
+                return LocalizedStringResource(
+                    "Information: \(message)",
+                    bundle: .atURL(Bundle.module.bundleURL),
+                    comment:
+                        "Accessibility label for an informational toast. The interpolated value is the message; the \"Information\" prefix conveys the role to VoiceOver users, who cannot perceive the tint."
+                )
+            case .success:
+                return LocalizedStringResource(
+                    "Success: \(message)",
+                    bundle: .atURL(Bundle.module.bundleURL),
+                    comment:
+                        "Accessibility label for a success toast. The interpolated value is the message; the \"Success\" prefix conveys the role to VoiceOver users, who cannot perceive the tint."
+                )
+            case .warning:
+                return LocalizedStringResource(
+                    "Warning: \(message)",
+                    bundle: .atURL(Bundle.module.bundleURL),
+                    comment:
+                        "Accessibility label for a warning toast. The interpolated value is the message; the \"Warning\" prefix conveys the role to VoiceOver users, who cannot perceive the tint."
+                )
+            case .error:
+                return LocalizedStringResource(
+                    "Error: \(message)",
+                    bundle: .atURL(Bundle.module.bundleURL),
+                    comment:
+                        "Accessibility label for an error toast. The interpolated value is the message; the \"Error\" prefix conveys the role to VoiceOver users, who cannot perceive the tint."
+                )
+            }
+        }
+    }
+
     enum Chat {
         static let typingIndicator = LocalizedStringResource(
             "Typing",

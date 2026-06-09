@@ -42,6 +42,7 @@ struct ShowcaseDetailView: View {
         case .loading: LoadingDetailView()
         case .ghostLoading: GhostLoadingDetailView()
         case .emptyState: EmptyStateDetailView()
+        case .toast: ToastDetailView()
         case .pagedView: PagedViewDetailView()
         case .chatBubble: ChatBubbleDetailView()
         case .typingIndicator: TypingIndicatorDetailView()
