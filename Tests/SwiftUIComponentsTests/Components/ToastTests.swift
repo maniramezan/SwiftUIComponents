@@ -47,6 +47,17 @@ struct ToastTests {
         )
     }
 
+    @Test("convenience toast modifier treats action toasts as persistent")
+    func toastModifierActionIgnoresDuration() {
+        _ = Text("Host").toast(
+            "Item deleted",
+            role: .info,
+            isPresented: .constant(true),
+            duration: .seconds(3),
+            action: .init("Undo") {}
+        )
+    }
+
     @Test("ViewBuilder toast modifier constructs with custom content")
     func toastModifierCustomContent() {
         _ = Text("Host").toast(isPresented: .constant(true), edge: .bottom, duration: .seconds(5)) {

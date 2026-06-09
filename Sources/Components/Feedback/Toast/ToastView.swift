@@ -69,7 +69,7 @@ public struct ToastView: View {
                         .foregroundStyle(accentColor)
                 }
                 .buttonStyle(.plain)
-                .frame(minHeight: theme.motion.minimumHitTarget)
+                .frame(minWidth: theme.motion.minimumHitTarget, minHeight: theme.motion.minimumHitTarget)
             }
         }
         .padding(.vertical, theme.spacing.oneAndHalfUnits)

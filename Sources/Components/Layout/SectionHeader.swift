@@ -52,6 +52,7 @@ public struct SectionHeader: View {
                 Button(actionLabel, action: onAction)
                     .font(theme.typography.subheadline)
                     .foregroundStyle(theme.colors.primary)
+                    .frame(minHeight: theme.motion.minimumHitTarget)
             }
         }
         .padding(.horizontal, theme.spacing.twoUnits)

@@ -263,11 +263,12 @@ TypingIndicatorBubbleView()
 A transient, role-tinted notification. `ToastView` is the standalone card;
 `.toast(...)` presents it as an overlay anchored to the top or bottom edge, with a
 slide-and-fade transition (plain fade under Reduce Motion) and swipe-to-dismiss. Pass a
-`duration` to auto-dismiss, or `nil` to persist until the user dismisses. An optional
-trailing `ToastAction` runs its handler and then dismisses. Roles: `.info` | `.success`
-| `.warning` | `.error`. The `.toast(...)` overlay announces itself to VoiceOver on
-appear and supports the escape (two-finger scrub) gesture to dismiss, so it stays
-accessible even when only swipe-to-dismiss is available.
+`duration` to auto-dismiss, or `nil` to persist until the user dismisses. Toasts with
+an optional trailing `ToastAction` always persist until explicit dismissal; tapping the
+action runs its handler and then dismisses. Roles: `.info` | `.success` | `.warning` |
+`.error`. The `.toast(...)` overlay announces itself to VoiceOver on appear and supports
+the escape (two-finger scrub) gesture to dismiss, so it stays accessible even when only
+swipe-to-dismiss is available.
 
 ```swift
 // Standalone card
@@ -281,7 +282,7 @@ ToastView("Item deleted", role: .info, action: .init("Undo") { restore() })
 
 // Persist until the user taps the action or swipes it away
 .toast("Item deleted", role: .info, isPresented: $showToast,
-       duration: nil, action: .init("Undo") { restore() })
+       action: .init("Undo") { restore() })
 
 // Custom content
 .toast(isPresented: $showToast, edge: .bottom) {
