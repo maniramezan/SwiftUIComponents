@@ -265,7 +265,9 @@ A transient, role-tinted notification. `ToastView` is the standalone card;
 slide-and-fade transition (plain fade under Reduce Motion) and swipe-to-dismiss. Pass a
 `duration` to auto-dismiss, or `nil` to persist until the user dismisses. An optional
 trailing `ToastAction` runs its handler and then dismisses. Roles: `.info` | `.success`
-| `.warning` | `.error`.
+| `.warning` | `.error`. The `.toast(...)` overlay announces itself to VoiceOver on
+appear and supports the escape (two-finger scrub) gesture to dismiss, so it stays
+accessible even when only swipe-to-dismiss is available.
 
 ```swift
 // Standalone card

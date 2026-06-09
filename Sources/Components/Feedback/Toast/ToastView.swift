@@ -4,7 +4,7 @@ import SwiftUI
 /// A transient, role-tinted notification card — the visual content of a toast.
 ///
 /// `ToastView` is the standalone card shown by the
-/// ``SwiftUICore/View/toast(_:role:systemImage:isPresented:edge:duration:action:)`` modifier,
+/// `.toast(_:role:systemImage:isPresented:edge:duration:action:)` modifier,
 /// but it can also be rendered directly anywhere a self-contained status message
 /// is useful. It pairs a role-tinted SF Symbol with a message and an optional
 /// trailing ``ToastAction``.
@@ -76,10 +76,10 @@ public struct ToastView: View {
         .padding(.horizontal, theme.spacing.twoUnits)
         .background(
             theme.colors.container,
-            in: RoundedRectangle(cornerRadius: theme.radius.twoUnits, style: .continuous)
+            in: RoundedRectangle(cornerRadius: theme.radius.oneAndHalfUnits, style: .continuous)
         )
         .overlay {
-            RoundedRectangle(cornerRadius: theme.radius.twoUnits, style: .continuous)
+            RoundedRectangle(cornerRadius: theme.radius.oneAndHalfUnits, style: .continuous)
                 .strokeBorder(theme.colors.border, lineWidth: theme.stroke.hairline)
         }
     }
