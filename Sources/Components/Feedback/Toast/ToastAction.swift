@@ -5,7 +5,7 @@
 /// ToastView("Item deleted", role: .info, action: .init("Undo") { restore() })
 /// ```
 ///
-/// When presented via the ``SwiftUICore/View/toast(_:role:systemImage:isPresented:edge:duration:action:)``
+/// When presented via the `.toast(_:role:systemImage:isPresented:edge:duration:action:)`
 /// modifier, tapping the action runs ``handler`` and then dismisses the toast.
 public struct ToastAction {
     /// The button title rendered to the user. Pass an already-localized value.

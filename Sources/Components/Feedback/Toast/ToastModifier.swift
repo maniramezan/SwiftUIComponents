@@ -4,14 +4,15 @@ import SwiftUI
 /// Presents a ``ToastView`` (or custom content) as a transient overlay anchored
 /// to the top or bottom edge of the modified view.
 ///
-/// Use the ``SwiftUICore/View/toast(_:role:systemImage:isPresented:edge:duration:action:)``
-/// and ``SwiftUICore/View/toast(isPresented:edge:duration:content:)`` helpers rather than
+/// Use the `.toast(_:role:systemImage:isPresented:edge:duration:action:)`
+/// and `.toast(isPresented:edge:duration:content:)` helpers rather than
 /// applying this modifier directly.
 struct ToastModifier<ToastContent: View>: ViewModifier {
 
     @Binding var isPresented: Bool
     let edge: VerticalEdge
     let duration: Duration?
+    let announcement: LocalizedStringResource?
     let toastContent: ToastContent
 
     @Environment(\.designTheme) private var theme
@@ -22,11 +23,13 @@ struct ToastModifier<ToastContent: View>: ViewModifier {
         isPresented: Binding<Bool>,
         edge: VerticalEdge,
         duration: Duration?,
+        announcement: LocalizedStringResource? = nil,
         @ViewBuilder content: () -> ToastContent
     ) {
         self._isPresented = isPresented
         self.edge = edge
         self.duration = duration
+        self.announcement = announcement
         self.toastContent = content()
     }
 
@@ -38,7 +41,11 @@ struct ToastModifier<ToastContent: View>: ViewModifier {
                         .padding(theme.spacing.twoUnits)
                         .offset(y: dragOffset)
                         .gesture(dismissGesture)
+                        // Lets VoiceOver / switch users dismiss without the swipe
+                        // gesture (the two-finger "escape" scrub triggers this).
+                        .accessibilityAction(.escape) { dismiss() }
                         .transition(transition)
+                        .onAppear(perform: announce)
                         .task {
                             guard let duration else { return }
                             try? await Task.sleep(for: duration)
@@ -48,6 +55,16 @@ struct ToastModifier<ToastContent: View>: ViewModifier {
                 }
             }
             .animation(theme.motion.standardAnimation, value: isPresented)
+    }
+
+    /// Speaks the toast to VoiceOver when it appears, so the transient message
+    /// is not missed before it auto-dismisses. No-op for custom content that
+    /// supplies no announcement text.
+    private func announce() {
+        guard let announcement else { return }
+        var spoken = AttributedString(String(localized: announcement))
+        spoken.accessibilitySpeechAnnouncementPriority = .high
+        AccessibilityNotification.Announcement(spoken).post()
     }
 
     /// Slide-and-fade normally; fade only under Reduce Motion.
@@ -124,7 +141,12 @@ public extension View {
             }
         }
         return modifier(
-            ToastModifier(isPresented: isPresented, edge: edge, duration: duration) {
+            ToastModifier(
+                isPresented: isPresented,
+                edge: edge,
+                duration: duration,
+                announcement: Strings.Toast.accessibilityLabel(role: role, message: message)
+            ) {
                 ToastView(message, role: role, systemImage: systemImage, action: wrappedAction)
             }
         )
