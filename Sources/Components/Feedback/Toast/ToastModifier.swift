@@ -108,8 +108,11 @@ public extension View {
     /// The toast is anchored to `edge`, animates in with a slide-and-fade (a
     /// plain fade under Reduce Motion), and can always be swiped away. Pass a
     /// `duration` to auto-dismiss after it, or `nil` to keep the toast until the
-    /// user taps the action or swipes it away. On dismissal — by timer, swipe,
-    /// or action tap — `isPresented` is set back to `false`.
+    /// user taps the action or swipes it away. Toasts with actions ignore
+    /// `duration` and remain visible until explicit dismissal, giving assistive
+    /// technology and motor-control users enough time to reach the action. On
+    /// dismissal — by timer, swipe, or action tap — `isPresented` is set back to
+    /// `false`.
     ///
     /// ```swift
     /// .toast("Saved", role: .success, isPresented: $showToast)
@@ -144,7 +147,7 @@ public extension View {
             ToastModifier(
                 isPresented: isPresented,
                 edge: edge,
-                duration: duration,
+                duration: wrappedAction == nil ? duration : nil,
                 announcement: Strings.Toast.accessibilityLabel(role: role, message: message)
             ) {
                 ToastView(message, role: role, systemImage: systemImage, action: wrappedAction)

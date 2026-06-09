@@ -66,6 +66,7 @@ public struct CompactActionButton: View {
                 .foregroundStyle(theme.colors.onPrimary)
                 .padding(.horizontal, theme.spacing.oneAndHalfUnits)
                 .padding(.vertical, theme.spacing.oneUnit)
+                .frame(minHeight: theme.motion.minimumHitTarget)
         }
         .buttonStyle(.borderedProminent)
         .buttonBorderShape(.capsule)

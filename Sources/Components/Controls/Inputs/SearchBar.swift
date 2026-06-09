@@ -59,6 +59,7 @@ public struct SearchBar: View {
                         .foregroundStyle(theme.colors.textTertiary)
                 }
                 .buttonStyle(.plain)
+                .frame(minWidth: theme.motion.minimumHitTarget, minHeight: theme.motion.minimumHitTarget)
                 .accessibilityLabel(Text(Strings.Search.clearButton))
             }
         }

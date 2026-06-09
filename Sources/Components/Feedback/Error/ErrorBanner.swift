@@ -21,7 +21,6 @@ public struct ErrorBanner: View {
                 .font(theme.typography.footnote)
                 .accessibilityHidden(true)
             Text(message)
-                .lineLimit(2)
                 .font(theme.typography.footnote)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }

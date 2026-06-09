@@ -29,6 +29,7 @@ public struct PillChip: View {
                 .font(theme.typography.subheadline.weight(isSelected ? .semibold : .regular))
                 .padding(.horizontal, theme.spacing.twoUnits)
                 .padding(.vertical, theme.spacing.oneUnit)
+                .frame(minHeight: theme.motion.minimumHitTarget)
                 .designCapsuleSurface(isSelected: isSelected)
         }
         .buttonStyle(.plain)

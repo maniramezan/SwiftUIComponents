@@ -35,27 +35,32 @@ public struct EmptyStateView<Action: View>: View {
 
     public var body: some View {
         VStack(spacing: theme.spacing.oneAndHalfUnits) {
-            if let systemImage {
-                Image(systemName: systemImage)
-                    .font(theme.typography.title)
-                    .foregroundStyle(theme.colors.textTertiary)
-            }
-            Text(title)
-                .font(theme.typography.headline)
-                .foregroundStyle(theme.colors.textPrimary)
-                .multilineTextAlignment(.center)
-            if let message {
-                Text(message)
-                    .font(theme.typography.body)
-                    .foregroundStyle(theme.colors.textSecondary)
+            VStack(spacing: theme.spacing.oneAndHalfUnits) {
+                if let systemImage {
+                    Image(systemName: systemImage)
+                        .font(theme.typography.title)
+                        .foregroundStyle(theme.colors.textTertiary)
+                        .accessibilityHidden(true)
+                }
+                Text(title)
+                    .font(theme.typography.headline)
+                    .foregroundStyle(theme.colors.textPrimary)
                     .multilineTextAlignment(.center)
+                if let message {
+                    Text(message)
+                        .font(theme.typography.body)
+                        .foregroundStyle(theme.colors.textSecondary)
+                        .multilineTextAlignment(.center)
+                }
             }
+            .accessibilityElement(children: .combine)
+
             action
                 .padding(.top, theme.spacing.oneUnit)
         }
         .frame(maxWidth: .infinity)
         .padding(theme.spacing.threeUnits)
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: .contain)
     }
 }
 
