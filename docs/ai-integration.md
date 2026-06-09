@@ -119,6 +119,16 @@ Feedback:
     ErrorBanner("Something went wrong.")
     ErrorSection(message: "Could not load data.")
 
+Toast (transient overlay; roles: .info | .success | .warning | .error):
+    ToastView("Saved", role: .success)               // standalone card
+    ToastView("Item deleted", role: .info, action: .init("Undo") { restore() })
+    .toast("Saved", role: .success, isPresented: $showToast)            // bottom, auto-dismiss 3s
+    .toast("Upload failed", role: .error, isPresented: $showError, edge: .top, duration: .seconds(5))
+    .toast("Item deleted", role: .info, isPresented: $showToast,
+           duration: nil, action: .init("Undo") { restore() })          // duration nil → persist until dismissed
+    .toast(isPresented: $showToast) { ToastView("Custom", role: .info) } // custom content
+    // Apply .toast to a full-bleed parent (it anchors an overlay); honors Reduce Motion; swipe-to-dismiss always on.
+
 Async state container:
     AsyncContentView(state: profileState) { profile in
         ProfileView(profile: profile)

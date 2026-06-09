@@ -81,6 +81,9 @@ open Package.swift   # Opens in Xcode — select the ComponentShowcase scheme an
 - ``AsyncContentView``
 - ``ErrorBanner``
 - ``ErrorSection``
+- ``ToastView``
+- ``ToastRole``
+- ``ToastAction``
 - ``ChatBubble``
 - ``ChatBubbleView``
 - ``ChatMessageRole``

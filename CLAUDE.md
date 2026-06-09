@@ -258,6 +258,35 @@ ChatBubbleView(role: .assistant, content: "Hello! How can I help?")
 TypingIndicatorBubbleView()
 ```
 
+### Toast
+
+A transient, role-tinted notification. `ToastView` is the standalone card;
+`.toast(...)` presents it as an overlay anchored to the top or bottom edge, with a
+slide-and-fade transition (plain fade under Reduce Motion) and swipe-to-dismiss. Pass a
+`duration` to auto-dismiss, or `nil` to persist until the user dismisses. An optional
+trailing `ToastAction` runs its handler and then dismisses. Roles: `.info` | `.success`
+| `.warning` | `.error`.
+
+```swift
+// Standalone card
+ToastView("Saved to your library", role: .success)
+ToastView("Check your connection", role: .error, systemImage: "wifi.slash")
+ToastView("Item deleted", role: .info, action: .init("Undo") { restore() })
+
+// Presentation modifier (isPresented is set back to false on dismiss)
+.toast("Saved", role: .success, isPresented: $showToast)              // bottom, auto-dismiss 3s
+.toast("Upload failed", role: .error, isPresented: $showError, edge: .top, duration: .seconds(5))
+
+// Persist until the user taps the action or swipes it away
+.toast("Item deleted", role: .info, isPresented: $showToast,
+       duration: nil, action: .init("Undo") { restore() })
+
+// Custom content
+.toast(isPresented: $showToast, edge: .bottom) {
+    ToastView("Custom", role: .info)
+}
+```
+
 ### View Modifiers
 
 ```swift
@@ -328,3 +357,4 @@ if isLoading {
 - **Do not** pass a `String` literal to the `ThemeButton` `@ViewBuilder` initializer — use the convenience `init(_ title: String, role:isLoading:action:)` for text-only buttons.
 - **Do not** wrap `SegmentedPicker` in a parent that constrains its width to the segments' intrinsic size (an `HStack` next to a non-flexible sibling, a `Form` row). The scroll-and-fade behavior requires a parent that proposes a finite, potentially-narrower width — otherwise the picker just grows to fit every segment and never scrolls.
 - **Do not** pass unlocalized literals as component content (titles, placeholders, accessibility labels) — these are rendered verbatim, so localize them on your side before passing them in.
+- **Do not** apply `.toast(...)` to a view whose size is constrained to its content (a tight `HStack`/`VStack` cell, a zero-size container) — the toast is an `.overlay` anchored to an edge, so it needs a full-bleed parent (e.g. a screen-level container with `.frame(maxWidth: .infinity, maxHeight: .infinity)`) to position correctly.
