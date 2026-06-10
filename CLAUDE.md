@@ -58,7 +58,7 @@ struct MyTheme: Theme {
     var radius: any Radius           // oneUnit, oneAndHalfUnits, twoUnits, threeUnits, pill
     var stroke: any Stroke           // hairline, thin, regular, thick
     var motion: any Motion           // minimumHitTarget, disabledOpacity, standardAnimation
-    var colors: any ColorTheme       // background, container, primary, textPrimary, error, etc.
+    var colors: any ColorTheme       // background, container, primary, segmentUnselectedBackground, textPrimary, error, etc.
     var typography: any Typography   // largeTitle, title, title2, headline, body, field, badge, etc.
 }
 ```
@@ -71,6 +71,7 @@ struct MyTheme: Theme {
 // then in body:
 theme.spacing.twoUnits        // CGFloat
 theme.colors.primary          // Color  (@MainActor)
+theme.colors.segmentUnselectedBackground // Color (@MainActor)
 theme.typography.body         // Font   (@MainActor)
 ```
 

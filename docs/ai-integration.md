@@ -52,6 +52,7 @@ To create a custom theme, conform a struct to `Theme` and provide six properties
     @Environment(\.designTheme) var theme
     theme.spacing.twoUnits    // CGFloat
     theme.colors.primary      // Color  (@MainActor)
+    theme.colors.segmentUnselectedBackground // Color (@MainActor)
     theme.typography.body     // Font   (@MainActor)
 
 All `colors` and `typography` access is @MainActor — use only from View.body or @MainActor functions.

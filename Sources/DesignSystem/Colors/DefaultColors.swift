@@ -9,6 +9,8 @@ public struct DefaultColors: ColorTheme {
     @MainActor public var backgroundSecondary: Color { platformColor(systemBackground: .secondaryBackground) }
     @MainActor public var container: Color { platformColor(systemBackground: .secondaryBackground) }
     @MainActor public var containerSecondary: Color { platformColor(systemBackground: .tertiaryBackground) }
+    /// Unselected segmented-control trough fill matching native platform controls.
+    @MainActor public var segmentUnselectedBackground: Color { platformFill(.tertiary) }
     @MainActor public var primary: Color { .accentColor }
     @MainActor public var onPrimary: Color { .white }
     @MainActor public var textPrimary: Color { .primary }
@@ -27,6 +29,10 @@ private enum SystemBackground {
     case background
     case secondaryBackground
     case tertiaryBackground
+}
+
+private enum SystemFill {
+    case tertiary
 }
 
 @MainActor
@@ -57,6 +63,26 @@ private func platformColor(systemBackground: SystemBackground) -> Color {
             Color(.sRGB, white: 0.96, opacity: 1)
         case .tertiaryBackground:
             Color(.sRGB, white: 0.92, opacity: 1)
+        }
+    #endif
+}
+
+@MainActor
+private func platformFill(_ fill: SystemFill) -> Color {
+    #if canImport(UIKit)
+        switch fill {
+        case .tertiary:
+            Color(uiColor: .tertiarySystemFill)
+        }
+    #elseif canImport(AppKit)
+        switch fill {
+        case .tertiary:
+            Color(nsColor: .tertiaryLabelColor).opacity(0.12)
+        }
+    #else
+        switch fill {
+        case .tertiary:
+            Color(.sRGB, white: 0.46, opacity: 0.12)
         }
     #endif
 }

@@ -1,4 +1,5 @@
 import DesignSystem
+import SwiftUI
 import Testing
 
 @Test("Default spacing follows the approved 4/8-point scale")
@@ -43,6 +44,14 @@ func defaultThemeExposesTokenGroups() {
     #expect(theme.radius.oneAndHalfUnits == 12)
     #expect(theme.stroke.thin == 1)
     #expect(theme.motion.minimumHitTarget == 44)
+}
+
+@Test("Default colors expose segmented control unselected background")
+@MainActor
+func defaultColorsExposeSegmentUnselectedBackground() {
+    let colors = DefaultColors()
+
+    _ = colors.segmentUnselectedBackground
 }
 
 @Test("Typography can be initialized with custom font family")
