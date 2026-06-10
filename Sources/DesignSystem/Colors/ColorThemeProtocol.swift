@@ -10,6 +10,8 @@ public protocol ColorTheme: Sendable {
     @MainActor var container: Color { get }
     /// Secondary container fill for nested surfaces.
     @MainActor var containerSecondary: Color { get }
+    /// Unselected segmented-control trough fill, matching the platform native segmented control.
+    @MainActor var segmentUnselectedBackground: Color { get }
     /// Primary brand/accent color for prominent actions.
     @MainActor var primary: Color { get }
     /// Foreground color placed on top of `primary`.
@@ -34,4 +36,9 @@ public protocol ColorTheme: Sendable {
     @MainActor var warning: Color { get }
     /// Disabled fill or foreground color.
     @MainActor var disabled: Color { get }
+}
+
+public extension ColorTheme {
+    /// Unselected segmented-control trough fill used when a custom theme does not override it.
+    @MainActor var segmentUnselectedBackground: Color { containerSecondary }
 }

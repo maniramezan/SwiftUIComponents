@@ -173,7 +173,7 @@ private extension SegmentedPicker {
 
     var compactRow: some View {
         row
-            .background(theme.colors.containerSecondary, in: Capsule(style: .continuous))
+            .background(theme.colors.segmentUnselectedBackground, in: Capsule(style: .continuous))
             .overlay { troughBorder }
     }
 
@@ -192,7 +192,7 @@ private extension SegmentedPicker {
             } action: { _, new in
                 geometry = new
             }
-            .background(theme.colors.containerSecondary, in: Capsule(style: .continuous))
+            .background(theme.colors.segmentUnselectedBackground, in: Capsule(style: .continuous))
             .overlay { troughBorder }
             .overlay { edgeIndicators }
             .clipShape(Capsule(style: .continuous))
@@ -311,7 +311,7 @@ private extension SegmentedPicker {
     }
 
     func edgeBand(visible: Bool, isLeading: Bool) -> some View {
-        let trough = theme.colors.containerSecondary
+        let trough = theme.colors.segmentUnselectedBackground
         let colors: [Color] =
             isLeading
             ? [trough, trough.opacity(0)]

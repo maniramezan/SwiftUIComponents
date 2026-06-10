@@ -6,7 +6,7 @@ Themeable, cross-platform SwiftUI building blocks targeting **macOS 15**, **iOS 
 
 | Library | Purpose |
 |---|---|
-| **DesignSystem** | Spacing, radius, stroke, motion, color, and typography token protocols with sensible defaults. Inject a custom `Theme` to rebrand the entire component set. |
+| **DesignSystem** | Spacing, radius, stroke, motion, color, and typography token protocols with sensible defaults, including native-aligned segmented control colors. Inject a custom `Theme` to rebrand the entire component set. |
 | **Components** | Production-ready views and modifiers built on `DesignSystem` — buttons, inputs, badges, cards, containers, chat UI, and feedback states. |
 | **ComponentShowcase** | Internal showcase screens used to demonstrate and validate components in one place. Treat this as a demo/reference target, not a dependency for production app code. |
 
