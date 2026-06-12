@@ -1,7 +1,6 @@
 name: Documentation
 
 on:
-  pull_request:
   push:
     branches:
       - main
@@ -22,16 +21,26 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v6.0.3
 
       - name: Select Xcode
-        uses: maxim-lobanov/setup-xcode@v1
+        uses: maxim-lobanov/setup-xcode@v1.7.0
         with:
-          xcode-version: latest-stable
+          xcode-version: '26.3'
+
+      - name: Verify Swift toolchain
+        run: |
+          case "$(swift --version)" in
+            *"Apple Swift version 6.4"*) ;;
+            *)
+              echo "Expected Apple Swift 6.4 from Xcode 26.3."
+              exit 1
+              ;;
+          esac
 
       - name: Restore SwiftPM cache
         id: restore-swiftpm-cache
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@v5.0.5
         with:
           path: |
             .build
@@ -40,6 +49,9 @@ jobs:
           key: docs-${{ hashFiles('Package.swift') }}
           restore-keys: |
             docs-
+
+      - name: Prepare documentation scripts
+        run: chmod +x Scripts/render-docc-snapshots.sh Scripts/copy-snapshots-to-docc.sh
 
       - name: Build DesignSystem documentation
         run: |
@@ -51,6 +63,12 @@ jobs:
             --transform-for-static-hosting \
             --hosting-base-path SwiftUIComponents \
             --output-path .docs-output/designsystem
+
+      - name: Render component snapshots
+        run: ./Scripts/render-docc-snapshots.sh
+
+      - name: Copy snapshots into DocC resources
+        run: ./Scripts/copy-snapshots-to-docc.sh
 
       - name: Build Components documentation
         run: |
@@ -64,7 +82,7 @@ jobs:
 
       - name: Save SwiftPM cache
         if: always()
-        uses: actions/cache/save@v5
+        uses: actions/cache/save@v5.0.5
         with:
           path: |
             .build
@@ -285,7 +303,7 @@ jobs:
 
       - name: Upload Pages artifact
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5.0.0
         with:
           path: .docs-site
 
@@ -301,4 +319,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5.0.0

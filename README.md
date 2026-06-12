@@ -23,7 +23,7 @@ Add the package to your project via Xcode or `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/<org>/SwiftUIComponents.git", from: "1.0.0"),
+    .package(url: "https://github.com/maniramezan/SwiftUIComponents.git", from: "0.1.0"),
 ]
 ```
 
@@ -86,6 +86,7 @@ When using Claude Code or another AI assistant to build with SwiftUIComponents, 
 ```bash
 swift build -Xswiftc -warnings-as-errors   # compile with warnings as errors
 swift test --parallel                        # run the test suite
+swift test --enable-code-coverage            # generate coverage data
 swift format lint --strict Sources Tests     # check formatting
 ```
 
@@ -102,10 +103,14 @@ All public symbols must have `///` doc comments; CI enforces this via `--warning
 
 ## CI
 
-Two GitHub Actions workflows run on every PR and push to `main`:
+GitHub Actions run fast validation on every PR and deeper documentation publishing on `main`:
 
-- **CI** (`build.yml`) — format lint, build (warnings-as-errors), test, and DocC validation.
-- **Documentation** (`docs.yml`) — builds DocC for both targets; on `main` pushes, deploys to GitHub Pages.
+- **CI** (`build.yml`) — format lint, build (warnings-as-errors), test, DocC validation, and coverage checks on every PR and push to `main`.
+- **Documentation** (`docs.yml`) — on `main` pushes, renders component snapshots, builds DocC for both targets, and deploys to GitHub Pages.
+
+PRs must keep changed executable source lines at or above 80% coverage. Pushes to
+`main` also run the full source coverage baseline so the first public series does
+not regress below the current package-wide test signal while new behavior is added.
 
 ## Contributing
 

@@ -41,6 +41,7 @@ public struct FlowLayout: Layout {
         self.lineSpacing = lineSpacing
     }
 
+    /// Returns the size needed to place all subviews within the proposed width.
     public func sizeThatFits(
         proposal: ProposedViewSize,
         subviews: Subviews,
@@ -52,6 +53,7 @@ public struct FlowLayout: Layout {
         return arrangeViews(maxWidth: effectiveWidth, subviews: subviews).size
     }
 
+    /// Places subviews in wrapped rows inside the provided bounds.
     public func placeSubviews(
         in bounds: CGRect,
         proposal _: ProposedViewSize,

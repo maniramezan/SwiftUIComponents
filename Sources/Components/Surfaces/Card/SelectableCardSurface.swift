@@ -58,6 +58,9 @@ public struct SelectableCardSurface: ViewModifier {
 
 public extension View {
     /// Applies an interactive adaptive card surface with selection state.
+    /// - Parameters:
+    ///   - isSelected: Whether the card should render with the selected accent treatment.
+    ///   - cornerRadius: Optional corner radius override; defaults to the active theme radius.
     func designSelectableCardSurface(isSelected: Bool, cornerRadius: CGFloat? = nil) -> some View {
         modifier(SelectableCardSurface(isSelected: isSelected, cornerRadius: cornerRadius))
     }

@@ -16,10 +16,15 @@ public protocol Radius: Sendable {
 
 /// Default corner-radius tokens for shared components.
 public struct DefaultRadius: Radius {
+    /// 8 pt radius for compact controls.
     public let oneUnit: CGFloat
+    /// 12 pt radius for standard controls and cards.
     public let oneAndHalfUnits: CGFloat
+    /// 16 pt radius for larger containers.
     public let twoUnits: CGFloat
+    /// 24 pt radius for prominent sheets/cards.
     public let threeUnits: CGFloat
+    /// Large radius intended for capsule-like shapes.
     public let pill: CGFloat
 
     /// Creates a radius scale.

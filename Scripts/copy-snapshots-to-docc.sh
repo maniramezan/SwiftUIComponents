@@ -7,7 +7,7 @@
 # and BEFORE `swift package generate-documentation`.
 #
 # Usage:
-#   swift test --filter ComponentSnapshot
+#   ./Scripts/render-docc-snapshots.sh
 #   ./Scripts/copy-snapshots-to-docc.sh
 
 set -euo pipefail

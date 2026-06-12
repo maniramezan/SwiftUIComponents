@@ -25,7 +25,8 @@ import Testing
 ///
 /// ```bash
 /// # Render images and copy them into DocC Resources (for local preview):
-/// swift test --filter ComponentSnapshot && ./Scripts/copy-snapshots-to-docc.sh
+/// ./Scripts/render-docc-snapshots.sh
+/// ./Scripts/copy-snapshots-to-docc.sh
 ///
 /// # Then preview the docs:
 /// swift package --disable-sandbox preview-documentation --target Components
