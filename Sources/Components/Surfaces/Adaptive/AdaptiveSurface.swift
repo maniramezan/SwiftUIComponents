@@ -60,6 +60,10 @@ public struct AdaptiveSurface: ViewModifier {
 
 public extension View {
     /// Applies an adaptive surface — glass on iOS/macOS 26+, ultraThinMaterial below.
+    /// - Parameters:
+    ///   - tint: Optional tint color applied to the glass effect on supported systems.
+    ///   - interactive: Whether supported glass surfaces respond to pointer and press interaction.
+    ///   - cornerRadius: Optional corner radius override; defaults to the active theme radius.
     func designAdaptiveSurface(
         tint: Color? = nil,
         interactive: Bool = false,

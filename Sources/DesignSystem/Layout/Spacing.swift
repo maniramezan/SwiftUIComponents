@@ -24,14 +24,23 @@ public protocol Spacing: Sendable {
 
 /// Default spacing tokens for shared components.
 public struct DefaultSpacing: Spacing {
+    /// 4 pt spacing for tight inline gaps.
     public let halfUnit: CGFloat
+    /// 8 pt spacing for compact item gaps.
     public let oneUnit: CGFloat
+    /// 12 pt spacing for medium control padding.
     public let oneAndHalfUnits: CGFloat
+    /// 16 pt spacing for standard content padding.
     public let twoUnits: CGFloat
+    /// 20 pt spacing for roomy inline spacing.
     public let twoAndHalfUnits: CGFloat
+    /// 24 pt spacing for section padding.
     public let threeUnits: CGFloat
+    /// 32 pt spacing for large section breaks.
     public let fourUnits: CGFloat
+    /// 40 pt spacing for extra-large section breaks.
     public let fiveUnits: CGFloat
+    /// 48 pt spacing for maximum standard spacing.
     public let sixUnits: CGFloat
 
     /// Creates a spacing scale. Defaults follow a 4/8-point grid.
