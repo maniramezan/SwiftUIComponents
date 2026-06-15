@@ -37,6 +37,21 @@ struct FlipCardTests {
         }
     }
 
+    @Test("FlipCard accepts a custom flip animation override")
+    func customAnimationOverride() {
+        _ = FlipCard(animation: .spring(duration: 0.5)) {
+            Text("Front")
+        } back: {
+            Text("Back")
+        }
+
+        _ = FlipCard(isFaceUp: .constant(true), axis: .vertical, animation: .easeInOut(duration: 1)) {
+            Text("Front")
+        } back: {
+            Text("Back")
+        }
+    }
+
     @Test("Faces accept heterogeneous content types")
     func heterogeneousFaces() {
         _ = FlipCard {

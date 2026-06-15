@@ -252,6 +252,9 @@ FlipCard {
 // Self-managing, starting on the back face, flipping top-to-bottom
 FlipCard(initiallyFaceUp: false, axis: .vertical) { front } back: { back }
 
+// Override the flip timing for one card (defaults to theme.motion.standardAnimation)
+FlipCard(animation: .spring(duration: 0.5)) { front } back: { back }
+
 // Controlled — drive the visible face from your own state
 @State private var isFaceUp = true
 FlipCard(isFaceUp: $isFaceUp) {

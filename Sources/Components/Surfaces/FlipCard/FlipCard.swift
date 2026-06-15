@@ -7,9 +7,9 @@ import SwiftUI
 /// vertical axis when the visible face changes. Tapping the card flips it, and VoiceOver
 /// users get an equivalent "Flip" custom action.
 ///
-/// The card works in two modes. Use ``init(initiallyFaceUp:axis:front:back:)`` for a
+/// The card works in two modes. Use ``init(initiallyFaceUp:axis:animation:front:back:)`` for a
 /// self-managing card that tracks its own flipped state — ideal for simple flashcards.
-/// Use ``init(isFaceUp:axis:front:back:)`` to drive the visible face from your own
+/// Use ``init(isFaceUp:axis:animation:front:back:)`` to drive the visible face from your own
 /// `Binding<Bool>` when you need to read or change it externally (e.g. a "reveal answer"
 /// button elsewhere on screen).
 ///
@@ -33,11 +33,15 @@ import SwiftUI
 /// }
 /// ```
 ///
+/// The flip animation defaults to the active theme's `motion.standardAnimation`. Pass an
+/// `animation:` to override the timing for a single card (e.g. `.spring(duration: 0.5)`).
+///
 /// Under Reduce Motion the 3D rotation is replaced by a cross-fade between the two faces.
 public struct FlipCard<Front: View, Back: View>: View {
     @State private var internalIsFaceUp: Bool
     private let externalIsFaceUp: Binding<Bool>?
     private let axis: FlipAxis
+    private let animationOverride: Animation?
     private let front: Front
     private let back: Back
     @Environment(\.designTheme) private var theme
@@ -50,17 +54,21 @@ public struct FlipCard<Front: View, Back: View>: View {
     ///   - axis: Whether the card flips around its vertical axis (``FlipAxis/horizontal``,
     ///     the default — faces sweep left/right) or its horizontal axis
     ///     (``FlipAxis/vertical`` — faces sweep top/bottom).
+    ///   - animation: The animation used for the flip. When `nil` (the default) the active
+    ///     theme's `motion.standardAnimation` is used.
     ///   - front: The content of the front face.
     ///   - back: The content of the back face.
     public init(
         initiallyFaceUp: Bool = true,
         axis: FlipAxis = .horizontal,
+        animation: Animation? = nil,
         @ViewBuilder front: () -> Front,
         @ViewBuilder back: () -> Back
     ) {
         self._internalIsFaceUp = State(initialValue: initiallyFaceUp)
         self.externalIsFaceUp = nil
         self.axis = axis
+        self.animationOverride = animation
         self.front = front()
         self.back = back()
     }
@@ -72,17 +80,21 @@ public struct FlipCard<Front: View, Back: View>: View {
     ///   - axis: Whether the card flips around its vertical axis (``FlipAxis/horizontal``,
     ///     the default — faces sweep left/right) or its horizontal axis
     ///     (``FlipAxis/vertical`` — faces sweep top/bottom).
+    ///   - animation: The animation used for the flip. When `nil` (the default) the active
+    ///     theme's `motion.standardAnimation` is used.
     ///   - front: The content of the front face.
     ///   - back: The content of the back face.
     public init(
         isFaceUp: Binding<Bool>,
         axis: FlipAxis = .horizontal,
+        animation: Animation? = nil,
         @ViewBuilder front: () -> Front,
         @ViewBuilder back: () -> Back
     ) {
         self._internalIsFaceUp = State(initialValue: isFaceUp.wrappedValue)
         self.externalIsFaceUp = isFaceUp
         self.axis = axis
+        self.animationOverride = animation
         self.front = front()
         self.back = back()
     }
@@ -101,7 +113,7 @@ public struct FlipCard<Front: View, Back: View>: View {
                 .accessibilityHidden(isFaceUp.wrappedValue)
         }
         .rotation3DEffect(reduceMotion ? .zero : .degrees(isFaceUp.wrappedValue ? 0 : 180), axis: flipAxis)
-        .animation(theme.motion.standardAnimation, value: isFaceUp.wrappedValue)
+        .animation(animationOverride ?? theme.motion.standardAnimation, value: isFaceUp.wrappedValue)
         .contentShape(Rectangle())
         .onTapGesture { isFaceUp.wrappedValue.toggle() }
         .accessibilityElement(children: .contain)
