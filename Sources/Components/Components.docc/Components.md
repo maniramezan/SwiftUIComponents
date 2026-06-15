@@ -53,6 +53,8 @@ open Package.swift   # Opens in Xcode — select the ComponentShowcase scheme an
 - ``InputSurface``
 - ``AdaptiveSurface``
 - ``SelectableCardSurface``
+- ``FlipCard``
+- ``FlipAxis``
 
 ### Layout
 

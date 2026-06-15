@@ -110,6 +110,17 @@ Container:
     Container(style: .card) { content }
     // styles: .plain | .card (default) | .elevated (shadow) | .outlined
 
+Flip card (two-sided flashcard; tap or VoiceOver "Flip" action toggles it):
+    FlipCard {                               // self-managing — tracks its own flipped state
+        Text("Bonjour")
+    } back: {
+        Text("Hello")
+    }
+    FlipCard(initiallyFaceUp: false, axis: .vertical) { front } back: { back }
+    FlipCard(isFaceUp: $isFaceUp) { front } back: { back }   // controlled — drive the face externally
+    // axis: .horizontal (default, sweeps left/right) | .vertical (sweeps top/bottom)
+    // Each face is wrapped in a card surface; Reduce Motion replaces the 3D flip with a cross-fade.
+
 Feedback:
     LoadingView()
     LoadingView("Loading…")

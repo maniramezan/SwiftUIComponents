@@ -36,6 +36,7 @@ struct ShowcaseDetailView: View {
         case .surfaces: SurfacesDetailView()
         case .adaptiveSurface: AdaptiveSurfaceDetailView()
         case .selectableCard: SelectableCardDetailView()
+        case .flipCard: FlipCardDetailView()
         case .containers: ContainersDetailView()
         case .errorBanner: ErrorBannerDetailView()
         case .errorSection: ErrorSectionDetailView()
