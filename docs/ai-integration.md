@@ -118,7 +118,9 @@ Flip card (two-sided flashcard; tap or VoiceOver "Flip" action toggles it):
     }
     FlipCard(initiallyFaceUp: false, axis: .vertical) { front } back: { back }
     FlipCard(isFaceUp: $isFaceUp) { front } back: { back }   // controlled — drive the face externally
+    FlipCard(animation: .spring(duration: 0.5)) { front } back: { back }  // override flip timing
     // axis: .horizontal (default, sweeps left/right) | .vertical (sweeps top/bottom)
+    // animation: defaults to theme.motion.standardAnimation when omitted
     // Each face is wrapped in a card surface; Reduce Motion replaces the 3D flip with a cross-fade.
 
 Feedback:
