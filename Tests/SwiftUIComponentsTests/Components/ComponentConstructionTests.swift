@@ -30,6 +30,21 @@ func themedComponentsAreConstructible() {
     _ = Text("Adaptive Tinted").designAdaptiveSurface(tint: .blue.opacity(0.2))
     _ = Text("Selectable").designSelectableCardSurface(isSelected: false)
     _ = Text("Selectable On").designSelectableCardSurface(isSelected: true)
+    _ = FlipCard {
+        Text("Front")
+    } back: {
+        Text("Back")
+    }
+    _ = FlipCard(initiallyFaceUp: false, axis: .vertical) {
+        Text("Front")
+    } back: {
+        Text("Back")
+    }
+    _ = FlipCard(isFaceUp: .constant(true)) {
+        Text("Front")
+    } back: {
+        Text("Back")
+    }
     _ = Button("Action") {}.designAdaptiveButtonStyle()
     _ = Button("Prominent") {}.designAdaptiveButtonStyle(prominent: true)
     _ = NavigationStack {

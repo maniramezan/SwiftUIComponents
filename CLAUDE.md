@@ -229,6 +229,38 @@ Container(style: .card) { content }
 // styles: .plain | .card (default) | .elevated (shadow) | .outlined
 ```
 
+### Flip Card
+
+A two-sided card for flashcard-style UI. Tapping the card flips it, and VoiceOver users
+get an equivalent "Flip" custom action. Each face is wrapped in a card surface and sized
+to fill the available width so the card stays a stable size across the flip. The `axis`
+selects whether it flips around the vertical axis (`.horizontal`, default — faces sweep
+left/right) or the horizontal axis (`.vertical` — faces sweep top/bottom). Under Reduce
+Motion the 3D rotation is replaced by a cross-fade.
+
+Two modes: self-managing (it tracks its own flipped state) or controlled (you pass an
+`isFaceUp` binding when you need to read/change the face externally).
+
+```swift
+// Self-managing — simplest flashcard
+FlipCard {
+    Text("Bonjour").designTextStyle(.title)
+} back: {
+    Text("Hello").designTextStyle(.title)
+}
+
+// Self-managing, starting on the back face, flipping top-to-bottom
+FlipCard(initiallyFaceUp: false, axis: .vertical) { front } back: { back }
+
+// Controlled — drive the visible face from your own state
+@State private var isFaceUp = true
+FlipCard(isFaceUp: $isFaceUp) {
+    Text("Bonjour").designTextStyle(.title)
+} back: {
+    Text("Hello").designTextStyle(.title)
+}
+```
+
 ### Feedback States
 
 ```swift

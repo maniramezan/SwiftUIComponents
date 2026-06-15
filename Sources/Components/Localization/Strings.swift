@@ -107,6 +107,20 @@ enum Strings {
         )
     }
 
+    enum FlipCard {
+        static let flipAction = LocalizedStringResource(
+            "Flip",
+            bundle: .atURL(Bundle.module.bundleURL),
+            comment: "Accessibility custom action label for flipping a two-sided card to its other face."
+        )
+
+        static let flipHint = LocalizedStringResource(
+            "Double tap to flip the card",
+            bundle: .atURL(Bundle.module.bundleURL),
+            comment: "Accessibility hint describing that activating the card flips it to reveal the other face."
+        )
+    }
+
     enum Pagination {
         static let indicatorLabel = LocalizedStringResource(
             "Page indicator",

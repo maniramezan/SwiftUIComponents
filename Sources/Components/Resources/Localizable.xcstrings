@@ -1,223 +1,245 @@
 {
-  "sourceLanguage" : "en",
-  "strings" : {
-    "" : {
-
-    },
-    "%@, %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@, %2$@"
+  "sourceLanguage": "en",
+  "strings": {
+    "": {},
+    "%@, %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@, %2$@"
           }
         }
       }
     },
-    "Clear search" : {
-      "comment" : "Accessibility label for the button that clears the current text in a search field.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Clear search"
+    "Clear search": {
+      "comment": "Accessibility label for the button that clears the current text in a search field.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clear search"
           }
         }
       }
     },
-    "Close" : {
-      "comment" : "Accessibility label for the dismiss/close button in sheets and modal presentations.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Close"
+    "Close": {
+      "comment": "Accessibility label for the dismiss/close button in sheets and modal presentations.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Close"
           }
         }
       }
     },
-    "Collapsed" : {
-      "comment" : "Accessibility value announced on an expandable selection-sheet row when its children are hidden.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Collapsed"
+    "Collapsed": {
+      "comment": "Accessibility value announced on an expandable selection-sheet row when its children are hidden.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Collapsed"
           }
         }
       }
     },
-    "Error" : {
-      "comment" : "Default section header title for error sections.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Error"
+    "Double tap to flip the card": {
+      "comment": "Accessibility hint describing that activating the card flips it to reveal the other face.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Double tap to flip the card"
           }
         }
       }
     },
-    "Error: %@" : {
-      "comment" : "Accessibility label for an inline error banner. The %@ is the error message; the \"Error\" prefix conveys the error nature to VoiceOver users, who cannot perceive the red tint.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Error: %@"
+    "Error": {
+      "comment": "Default section header title for error sections.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Error"
           }
         }
       }
     },
-    "Expanded" : {
-      "comment" : "Accessibility value announced on an expandable selection-sheet row when its children are visible.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Expanded"
+    "Error: %@": {
+      "comment": "Accessibility label for an inline error banner. The %@ is the error message; the \"Error\" prefix conveys the error nature to VoiceOver users, who cannot perceive the red tint.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Error: %@"
           }
         }
       }
     },
-    "Information: %@" : {
-      "comment" : "Accessibility label for an informational toast. The %@ is the message; the \"Information\" prefix conveys the role to VoiceOver users, who cannot perceive the tint.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Information: %@"
+    "Expanded": {
+      "comment": "Accessibility value announced on an expandable selection-sheet row when its children are visible.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Expanded"
           }
         }
       }
     },
-    "Loading" : {
-      "comment" : "Accessibility value announced on a button while it is in its loading state and temporarily disabled.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Loading"
+    "Flip": {
+      "comment": "Accessibility custom action label for flipping a two-sided card to its other face.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Flip"
           }
         }
       }
     },
-    "Next page" : {
-      "comment" : "Accessibility action label for advancing the paged view to the next page.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Next page"
+    "Information: %@": {
+      "comment": "Accessibility label for an informational toast. The %@ is the message; the \"Information\" prefix conveys the role to VoiceOver users, who cannot perceive the tint.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Information: %@"
           }
         }
       }
     },
-    "Opens a picker to change the selected value" : {
-      "comment" : "Accessibility hint describing that activating the menu picker opens a selection interface.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Opens a picker to change the selected value"
+    "Loading": {
+      "comment": "Accessibility value announced on a button while it is in its loading state and temporarily disabled.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loading"
           }
         }
       }
     },
-    "Page %lld of %lld, %@" : {
-      "comment" : "Accessibility value announced for the page indicator. The first %lld is the 1-based page number, the second %lld is the total page count, and %@ is the title of the current page.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Page %1$lld of %2$lld, %3$@"
+    "Next page": {
+      "comment": "Accessibility action label for advancing the paged view to the next page.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next page"
           }
         }
       }
     },
-    "Page indicator" : {
-      "comment" : "Accessibility label for the page-position indicator of a paged view.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Page indicator"
+    "Opens a picker to change the selected value": {
+      "comment": "Accessibility hint describing that activating the menu picker opens a selection interface.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opens a picker to change the selected value"
           }
         }
       }
     },
-    "Previous page" : {
-      "comment" : "Accessibility action label for moving the paged view to the previous page.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Previous page"
+    "Page %lld of %lld, %@": {
+      "comment": "Accessibility value announced for the page indicator. The first %lld is the 1-based page number, the second %lld is the total page count, and %@ is the title of the current page.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Page %1$lld of %2$lld, %3$@"
           }
         }
       }
     },
-    "Selected option: %@" : {
-      "comment" : "Accessibility label showing the currently selected value in the menu picker. The %@ is replaced with the selected option text.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Selected option: %@"
+    "Page indicator": {
+      "comment": "Accessibility label for the page-position indicator of a paged view.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Page indicator"
           }
         }
       }
     },
-    "Success: %@" : {
-      "comment" : "Accessibility label for a success toast. The %@ is the message; the \"Success\" prefix conveys the role to VoiceOver users, who cannot perceive the tint.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Success: %@"
+    "Previous page": {
+      "comment": "Accessibility action label for moving the paged view to the previous page.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Previous page"
           }
         }
       }
     },
-    "Typing" : {
-      "comment" : "Accessibility label for the animated three-dot indicator shown while a response is being composed.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Typing"
+    "Selected option: %@": {
+      "comment": "Accessibility label showing the currently selected value in the menu picker. The %@ is replaced with the selected option text.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Selected option: %@"
           }
         }
       }
     },
-    "Warning: %@" : {
-      "comment" : "Accessibility label for a warning toast. The %@ is the message; the \"Warning\" prefix conveys the role to VoiceOver users, who cannot perceive the tint.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Warning: %@"
+    "Success: %@": {
+      "comment": "Accessibility label for a success toast. The %@ is the message; the \"Success\" prefix conveys the role to VoiceOver users, who cannot perceive the tint.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Success: %@"
+          }
+        }
+      }
+    },
+    "Typing": {
+      "comment": "Accessibility label for the animated three-dot indicator shown while a response is being composed.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Typing"
+          }
+        }
+      }
+    },
+    "Warning: %@": {
+      "comment": "Accessibility label for a warning toast. The %@ is the message; the \"Warning\" prefix conveys the role to VoiceOver users, who cannot perceive the tint.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Warning: %@"
           }
         }
       }
     }
   },
-  "version" : "1.0"
+  "version": "1.0"
 }

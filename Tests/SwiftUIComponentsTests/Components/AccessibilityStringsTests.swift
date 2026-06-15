@@ -28,4 +28,16 @@ struct AccessibilityStringsTests {
         let resolved = String(localized: Strings.Button.loading)
         #expect(resolved == "Loading")
     }
+
+    @Test("flip card action resolves to \"Flip\"")
+    func flipCardAction() {
+        let resolved = String(localized: Strings.FlipCard.flipAction)
+        #expect(resolved == "Flip")
+    }
+
+    @Test("flip card hint resolves to its full sentence")
+    func flipCardHint() {
+        let resolved = String(localized: Strings.FlipCard.flipHint)
+        #expect(resolved == "Double tap to flip the card")
+    }
 }
