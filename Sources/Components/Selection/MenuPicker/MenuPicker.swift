@@ -424,7 +424,12 @@ private extension MenuPicker {
     private extension MenuPicker {
         func measureWidth(for font: NSFont) -> CGFloat {
             let textWidth = (longestLabel as NSString).size(withAttributes: [.font: font]).width
-            return textWidth + (theme.spacing.oneAndHalfUnits * 2) + theme.spacing.halfUnit
+            return Self.appKitTriggerWidth(
+                textWidth: textWidth,
+                horizontalPadding: theme.spacing.oneAndHalfUnits,
+                edgeInset: theme.spacing.halfUnit,
+                popUpChrome: theme.spacing.threeUnits
+            )
         }
     }
 #endif
@@ -447,5 +452,20 @@ extension MenuPicker {
         items
             .map(\.title)
             .max(by: { $0.count < $1.count }) ?? ""
+    }
+
+    /// Computes the fixed trigger width for the AppKit `NSPopUpButton` bridge.
+    ///
+    /// The popup hosts its title at a fixed `.frame(width:)`, so the width must account not only for
+    /// the measured text and horizontal padding but also for the disclosure-arrow chrome the control
+    /// always reserves on its trailing edge. Omitting `popUpChrome` squeezes the title region and
+    /// clips short labels (a 4-digit year would render as "2…").
+    nonisolated static func appKitTriggerWidth(
+        textWidth: CGFloat,
+        horizontalPadding: CGFloat,
+        edgeInset: CGFloat,
+        popUpChrome: CGFloat
+    ) -> CGFloat {
+        textWidth + (horizontalPadding * 2) + edgeInset + popUpChrome
     }
 }

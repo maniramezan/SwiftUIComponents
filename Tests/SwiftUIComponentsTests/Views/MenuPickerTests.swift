@@ -81,3 +81,30 @@ func intConformsToMenuPickerItem() {
     #expect(value.id == 9)
     #expect(value.title == "AAAA 9")
 }
+
+// MARK: - AppKit trigger width
+
+@Test("appKitTriggerWidth sums text, padding, edge inset, and pop-up chrome")
+func appKitTriggerWidthSumsComponents() {
+    let width = MenuPicker<MenuPickerTestItem>.appKitTriggerWidth(
+        textWidth: 28,
+        horizontalPadding: 12,
+        edgeInset: 4,
+        popUpChrome: 24
+    )
+    // 28 + (12 * 2) + 4 + 24
+    #expect(width == 80)
+}
+
+@Test("appKitTriggerWidth reserves the disclosure-arrow chrome so short labels are not clipped")
+func appKitTriggerWidthReservesChrome() {
+    // A short label (e.g. a 4-digit year) must still leave room for the pop-up arrows.
+    let chrome: CGFloat = 24
+    let withChrome = MenuPicker<MenuPickerTestItem>.appKitTriggerWidth(
+        textWidth: 28, horizontalPadding: 12, edgeInset: 4, popUpChrome: chrome
+    )
+    let withoutChrome = MenuPicker<MenuPickerTestItem>.appKitTriggerWidth(
+        textWidth: 28, horizontalPadding: 12, edgeInset: 4, popUpChrome: 0
+    )
+    #expect(withChrome - withoutChrome == chrome)
+}
