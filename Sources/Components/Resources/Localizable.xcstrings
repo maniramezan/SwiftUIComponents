@@ -105,6 +105,12 @@
             "value": "%1$@, %2$@"
           }
         },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@, %2$@"
+          }
+        },
         "he": {
           "stringUnit": {
             "state": "translated",
@@ -361,6 +367,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Effacer la recherche"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "پاک کردن جستجو"
           }
         },
         "he": {
@@ -621,6 +633,12 @@
             "value": "Fermer"
           }
         },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "بستن"
+          }
+        },
         "he": {
           "stringUnit": {
             "state": "translated",
@@ -877,6 +895,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Réduit"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "جمع‌شده"
           }
         },
         "he": {
@@ -1137,6 +1161,12 @@
             "value": "Touchez deux fois pour retourner la carte"
           }
         },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "برای برگرداندن کارت دو بار ضربه بزنید"
+          }
+        },
         "he": {
           "stringUnit": {
             "state": "translated",
@@ -1393,6 +1423,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Erreur"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "خطا"
           }
         },
         "he": {
@@ -1653,6 +1689,12 @@
             "value": "Erreur : %@"
           }
         },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "خطا: %@"
+          }
+        },
         "he": {
           "stringUnit": {
             "state": "translated",
@@ -1909,6 +1951,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Développé"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "بازشده"
           }
         },
         "he": {
@@ -2169,6 +2217,12 @@
             "value": "Retourner"
           }
         },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "برگرداندن"
+          }
+        },
         "he": {
           "stringUnit": {
             "state": "translated",
@@ -2425,6 +2479,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Information : %@"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "اطلاعات: %@"
           }
         },
         "he": {
@@ -2685,6 +2745,12 @@
             "value": "Chargement"
           }
         },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "در حال بارگذاری"
+          }
+        },
         "he": {
           "stringUnit": {
             "state": "translated",
@@ -2941,6 +3007,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Page suivante"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "صفحه بعد"
           }
         },
         "he": {
@@ -3201,6 +3273,12 @@
             "value": "Ouvre un sélecteur pour modifier la valeur sélectionnée"
           }
         },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "انتخابگری را برای تغییر مقدار انتخاب‌شده باز می‌کند"
+          }
+        },
         "he": {
           "stringUnit": {
             "state": "translated",
@@ -3457,6 +3535,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Page %1$lld sur %2$lld, %3$@"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "صفحه %1$lld از %2$lld، %3$@"
           }
         },
         "he": {
@@ -3717,6 +3801,12 @@
             "value": "Indicateur de page"
           }
         },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "نشانگر صفحه"
+          }
+        },
         "he": {
           "stringUnit": {
             "state": "translated",
@@ -3973,6 +4063,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Page précédente"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "صفحه قبل"
           }
         },
         "he": {
@@ -4233,6 +4329,12 @@
             "value": "Option sélectionnée : %@"
           }
         },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "گزینه انتخاب‌شده: %@"
+          }
+        },
         "he": {
           "stringUnit": {
             "state": "translated",
@@ -4489,6 +4591,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Succès : %@"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "موفقیت: %@"
           }
         },
         "he": {
@@ -4749,6 +4857,12 @@
             "value": "Saisie en cours"
           }
         },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "در حال نوشتن"
+          }
+        },
         "he": {
           "stringUnit": {
             "state": "translated",
@@ -5005,6 +5119,12 @@
           "stringUnit": {
             "state": "translated",
             "value": "Avertissement : %@"
+          }
+        },
+        "fa": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "هشدار: %@"
           }
         },
         "he": {
