@@ -29,7 +29,7 @@ jobs:
             .build
             ~/Library/Caches/org.swift.swiftpm
             ~/Library/org.swift.swiftpm
-          key: swiftpm-${{ hashFiles('Package.swift', '.swift-format', 'Scripts/validate.sh') }}
+          key: swiftpm-${{ hashFiles('Package.swift', '.swift-format', 'Scripts/validate.sh', 'Scripts/check-localizations.py') }}
           restore-keys: |
             swiftpm-
 
@@ -47,7 +47,7 @@ jobs:
           esac
 
       - name: Prepare validation script
-        run: chmod +x Scripts/validate.sh Scripts/coverage.sh Scripts/check-coverage.py
+        run: chmod +x Scripts/validate.sh Scripts/coverage.sh Scripts/check-coverage.py Scripts/check-localizations.py
 
       - name: Run validation script
         run: ./Scripts/validate.sh
@@ -82,4 +82,4 @@ jobs:
             .build
             ~/Library/Caches/org.swift.swiftpm
             ~/Library/org.swift.swiftpm
-          key: swiftpm-${{ hashFiles('Package.swift', '.swift-format', 'Scripts/validate.sh') }}
+          key: swiftpm-${{ hashFiles('Package.swift', '.swift-format', 'Scripts/validate.sh', 'Scripts/check-localizations.py') }}

@@ -198,7 +198,7 @@ Use the showcase for reference, not reuse:
 ### Accessibility & Localization
 
 - Components include VoiceOver support out of the box (labels, traits, hidden decorations, Reduce Motion, adjustable/scroll actions on paged + segmented controls).
-- The package localizes only its own chrome (dismiss button, loading/typing announcements, error prefix, paginator + clear-search labels) via a String Catalog in `Bundle.module`; English is the only bundled locale today.
+- The package localizes only its own chrome (dismiss button, loading/typing announcements, error prefix, paginator + clear-search labels) via a String Catalog in `Bundle.module`; supported locales are translated and validated in CI.
 - Content you pass in is rendered verbatim and is your app's responsibility to localize: `ThemeButton` titles, `SearchBar` placeholder, `SelectionNode` titles, `ConfirmToolbarButton` accessibility label. Pass already-localized values (e.g. `String(localized:)`).
 
 ### Do Not
