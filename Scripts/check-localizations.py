@@ -24,6 +24,7 @@ REQUIRED_LOCALES = [
     "fi",
     "fr",
     "fr-CA",
+    "fa",
     "he",
     "hi",
     "hr",
