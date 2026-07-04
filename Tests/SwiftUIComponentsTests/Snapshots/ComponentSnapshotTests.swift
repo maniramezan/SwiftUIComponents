@@ -276,6 +276,51 @@ struct ComponentSnapshotTests {
 
         assertComponentSnapshot(view, size: CGSize(width: 320, height: 120))
     }
+
+    // MARK: - Carousel Row
+
+    @Test
+    @MainActor func designCarouselRow() {
+        let view = CarouselRow(1...6, id: \.self, sizing: .peek(visibleCount: 1)) { value in
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color.secondary.opacity(0.35))
+                .frame(height: 160)
+                .overlay {
+                    Text("Item \(value)")
+                        .designTextStyle(.headline)
+                }
+        }
+        .frame(width: 390)
+
+        assertComponentSnapshot(view, size: CGSize(width: 390, height: 200))
+    }
+
+    // MARK: - Shelves (Carousel Board)
+
+    @Test
+    @MainActor func designCarouselBoard() {
+        struct SnapshotApp: Identifiable {
+            let id: Int
+        }
+        let apps = (1...5).map(SnapshotApp.init)
+        let view = CarouselBoardContent {
+            CarouselShelf("Featured", items: apps) { app in
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(Color.secondary.opacity(0.35))
+                    .frame(height: 140)
+                    .overlay { Text("App \(app.id)").designTextStyle(.headline) }
+            }
+            CarouselShelf("Top Free", items: apps, actionLabel: "See All", sizing: .fixedWidth(96)) { app in
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(Color.secondary.opacity(0.35))
+                    .frame(width: 96, height: 96)
+                    .overlay { Text("\(app.id)").designTextStyle(.headline) }
+            }
+        }
+        .frame(width: 390)
+
+        assertComponentSnapshot(view, size: CGSize(width: 390, height: 360))
+    }
 }
 
 // MARK: - Helpers

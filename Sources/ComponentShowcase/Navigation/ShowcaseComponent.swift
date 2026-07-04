@@ -41,6 +41,10 @@ enum ShowcaseComponent: String, CaseIterable, Identifiable {
     case chatBubble = "Chat Bubble"
     case typingIndicator = "Typing Indicator"
 
+    // MARK: - Collections
+    case carouselRow = "Carousel Row"
+    case carouselBoard = "Shelves"
+
     var id: String { rawValue }
 
     var systemImage: String {
@@ -69,6 +73,8 @@ enum ShowcaseComponent: String, CaseIterable, Identifiable {
         case .pagedView: return "rectangle.split.3x1"
         case .chatBubble: return "bubble.left.and.bubble.right"
         case .typingIndicator: return "ellipsis.message"
+        case .carouselRow: return "rectangle.portrait.on.rectangle.portrait"
+        case .carouselBoard: return "rectangle.grid.1x2"
         }
     }
 
@@ -89,6 +95,8 @@ enum ShowcaseComponent: String, CaseIterable, Identifiable {
             return "Pagination"
         case .chatBubble, .typingIndicator:
             return "Chat"
+        case .carouselRow, .carouselBoard:
+            return "Collections"
         }
     }
 }

@@ -106,6 +106,24 @@ Segmented picker (horizontal, single-selection; scrolls with fading edges when o
         HStack { Image(systemName: tab.systemImage); Text(tab.title) }
     }
 
+Carousel row (horizontal, browse-only; reveals a sliver of the next item; edge-fade veil):
+    CarouselRow(apps) { app in FeaturedCard(app) }                     // Identifiable convenience
+    CarouselRow(values, id: \.self, sizing: .peek(visibleCount: 2)) { v in Card(v) }
+    CarouselRow(icons, sizing: .fixedWidth(120), snapping: .free) { i in Tile(i) }
+    // sizing: .peek(visibleCount:peek:) (default, one item + sliver) | .fixedWidth(_) | .fitContent
+    // snapping: .viewAligned (default, snaps + keeps peek) | .free (momentum only)
+
+Carousel board (App-Store-style two-directional layout: vertical shelves, each scrolls horizontally):
+    CarouselBoard {
+        CarouselShelf("Featured", items: apps) { app in FeaturedCard(app) }          // peeking
+        CarouselShelf("Top Free", items: apps, actionLabel: "See All",               // fixed tiles + action
+                      sizing: .fixedWidth(120), onSeeAll: { openAll() }) { app in IconTile(app) }
+        CarouselShelf("Top Stories", items: stories) { story in ArticleCard(story) }  // different item TYPE
+        CarouselShelf("Editor's Pick") { EditorsBanner() }                           // fully custom row
+    }
+    // Shelves are heterogeneous — each may carry its own item type and item view.
+    // Use CarouselBoardContent (no inner ScrollView) to embed shelves in a scroll you already own.
+
 Container:
     Container(style: .card) { content }
     // styles: .plain | .card (default) | .elevated (shadow) | .outlined
@@ -211,6 +229,8 @@ Use the showcase for reference, not reuse:
 - Don't put reusable shipping components in the showcase target — promote them into `Components` first.
 - Don't pass a String literal to ThemeButton's @ViewBuilder init — use the String convenience init.
 - Don't pass unlocalized literals as component content (titles, placeholders, accessibility labels) — these are rendered verbatim, so localize them on your side.
+- Don't nest `CarouselRow` inside another horizontal `ScrollView` — it measures its own finite width to size items, which an unbounded horizontal proposal can't provide. It works in any finite-width slot, including a flexible `HStack` slot next to fixed siblings.
+- Don't nest `CarouselBoard` inside another vertical `ScrollView` — it owns its own scroll. Use `CarouselBoardContent` to embed shelves in a scroll you already manage.
 ```
 
 ---
