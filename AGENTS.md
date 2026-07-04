@@ -18,7 +18,7 @@
 - `Components` depends on `DesignSystem` and owns reusable production-facing views, modifiers, and helper protocols.
 - `ComponentShowcase` depends on `Components` and `DesignSystem` and exists to demonstrate usage, not to define the package's public architecture.
 - Apply theming through `.designTheme(_:)` at the root of a hierarchy and read tokens from `@Environment(\.designTheme)` inside views.
-- When public APIs change, update `README.md`, `docs/ai-integration.md`, and `CLAUDE.md` in the same change so consumer docs and AI guidance stay aligned.
+- When public APIs change, update `docs/ai-integration.md` (the single consumer API reference) and the target's DocC landing page in the same change. Do not duplicate the API reference into `CLAUDE.md` or `README.md` — they link to `docs/ai-integration.md` instead.
 
 ## Build, Test, and Development Commands
 - `swift package resolve` updates dependencies whenever `Package.swift` changes.
@@ -32,7 +32,7 @@
 - Doc comments should describe behavior, inputs, and assumptions — not just restate the name.
 - CI runs `swift package generate-documentation --warnings-as-errors` for both `DesignSystem` and `Components` on every PR; undocumented public symbols will fail the build.
 - When adding a new public type, add it to the relevant `Topics` section in the target's DocC landing page (`DesignSystem.md` or `Components.md`).
-- Keep README examples, AI integration docs, and the consumer `CLAUDE.md` snippet on the current public API names and initializer signatures.
+- Keep `docs/ai-integration.md` (the consumer API reference and copy-paste snippet) on the current public API names and initializer signatures.
 
 ## Coding Style & Naming Conventions
 - Follow the Swift API Design Guidelines: UpperCamelCase for types, lowerCamelCase for functions and variables, protocols named for capabilities (`SelectableMenuItem`).
@@ -47,6 +47,14 @@
 - Target 80%+ coverage on new functionality and require at least one regression test for every bug fix.
 
 ## Commit & Pull Request Guidelines
-- Commit messages stay present tense and action-oriented ("Add MenuPicker selection badge"); group related files together.
+- Use **Conventional Commits** — the release workflow derives version bumps from them. Format: `type(scope): summary`, present tense and action-oriented (`feat(picker): add MenuPicker selection badge`). Group related files together.
+- Releasable types: `feat:` (minor), `fix:`/`perf:` (patch), and a `!` suffix or `BREAKING CHANGE:` footer (minor while pre-1.0, major after). Non-releasable: `docs:`, `chore:`, `refactor:`, `test:`, `ci:`, `build:`, `style:`.
+- When squash-merging a PR, make the squash commit subject a valid Conventional Commit — that subject is what the release workflow reads.
 - PRs should summarize the change, link issues, attach screenshots or videos for UI work, list external references consulted, and include `swift test` results.
 - Rebase frequently and rerun `swift test` before requesting review to prevent CI churn.
+
+## Releases
+- Releases are automated by `.github/workflows/release.yml`: after the **CI** workflow succeeds on `main`, it computes the next version from the Conventional Commits since the last tag, creates an annotated `vX.Y.Z` tag, and publishes a GitHub Release with auto-generated notes. There is **no `CHANGELOG.md`** — release notes live on the GitHub Release.
+- The first run (no existing tags) bootstraps `v0.1.0`. While pre-1.0, breaking changes bump the minor.
+- To cut a specific version manually, run the **Release** workflow via *workflow_dispatch* with a `force_version` input.
+- SwiftPM consumers pin these tags, e.g. `.package(url: "…/SwiftUIComponents", from: "0.1.0")`.
