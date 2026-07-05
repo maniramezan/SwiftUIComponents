@@ -5,6 +5,8 @@ name: Release
 # Conventional Commit subjects since the previous tag; no CHANGELOG.md is kept —
 # release notes live on the GitHub Release itself.
 #
+# Tags are bare SemVer with NO "v" prefix (e.g. 0.1.0, 0.2.0).
+#
 # Bump rules (0.x, pre-1.0):
 #   feat: / <type>! / BREAKING CHANGE  -> minor   (0.1.0 -> 0.2.0)
 #   fix: / perf:                       -> patch   (0.1.0 -> 0.1.1)
@@ -53,21 +55,22 @@ jobs:
         run: |
           set -euo pipefail
 
-          latest_tag="$(git tag --list 'v*' --sort=-v:refname | head -n1 || true)"
+          # Only consider bare SemVer tags (no "v" prefix).
+          latest_tag="$(git tag --list --sort=-v:refname | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | head -n1 || true)"
 
-          # Manual override wins.
+          # Manual override wins. Strip any accidental leading "v".
           if [ -n "${FORCE_VERSION:-}" ]; then
-            next="v${FORCE_VERSION#v}"
+            next="${FORCE_VERSION#v}"
             echo "Forcing version $next"
             echo "tag=$next" >> "$GITHUB_OUTPUT"
             echo "release=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
-          # First release — bootstrap at v0.1.0.
+          # First release — bootstrap at 0.1.0.
           if [ -z "$latest_tag" ]; then
-            echo "No existing tags; bootstrapping v0.1.0"
-            echo "tag=v0.1.0" >> "$GITHUB_OUTPUT"
+            echo "No existing tags; bootstrapping 0.1.0"
+            echo "tag=0.1.0" >> "$GITHUB_OUTPUT"
             echo "release=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
@@ -116,7 +119,7 @@ jobs:
             patch) patch=$((patch + 1)) ;;
           esac
 
-          next="v${major}.${minor}.${patch}"
+          next="${major}.${minor}.${patch}"
           echo "Bump: $bump -> $next"
           echo "tag=$next" >> "$GITHUB_OUTPUT"
           echo "release=true" >> "$GITHUB_OUTPUT"

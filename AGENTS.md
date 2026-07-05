@@ -54,7 +54,7 @@
 - Rebase frequently and rerun `swift test` before requesting review to prevent CI churn.
 
 ## Releases
-- Releases are automated by `.github/workflows/release.yml`: after the **CI** workflow succeeds on `main`, it computes the next version from the Conventional Commits since the last tag, creates an annotated `vX.Y.Z` tag, and publishes a GitHub Release with auto-generated notes. There is **no `CHANGELOG.md`** — release notes live on the GitHub Release.
-- The first run (no existing tags) bootstraps `v0.1.0`. While pre-1.0, breaking changes bump the minor.
-- To cut a specific version manually, run the **Release** workflow via *workflow_dispatch* with a `force_version` input.
+- Releases are automated by `.github/workflows/release.yml`: after the **CI** workflow succeeds on `main`, it computes the next version from the Conventional Commits since the last tag, creates an annotated **bare-SemVer** tag (e.g. `0.2.0` — **never a `v` prefix**), and publishes a GitHub Release with auto-generated notes. There is **no `CHANGELOG.md`** — release notes live on the GitHub Release.
+- The first release is `0.1.0`. While pre-1.0: `feat:`/breaking → minor, `fix:`/`perf:` → patch. After a manual bump to `1.0.0`, standard SemVer applies (breaking → major).
+- To cut a specific version manually, run the **Release** workflow via *workflow_dispatch* with a `force_version` input (bare, e.g. `0.4.0`).
 - SwiftPM consumers pin these tags, e.g. `.package(url: "…/SwiftUIComponents", from: "0.1.0")`.
