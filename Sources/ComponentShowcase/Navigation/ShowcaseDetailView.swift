@@ -47,6 +47,8 @@ struct ShowcaseDetailView: View {
         case .pagedView: PagedViewDetailView()
         case .chatBubble: ChatBubbleDetailView()
         case .typingIndicator: TypingIndicatorDetailView()
+        case .carouselRow: CarouselRowDetailView()
+        case .carouselBoard: CarouselBoardDetailView()
         }
     }
 }
