@@ -75,6 +75,17 @@ open Package.swift   # Opens in Xcode — select the ComponentShowcase scheme an
 - ``SegmentedPicker``
 - ``SegmentSizing``
 
+### Collections
+
+- ``CarouselRow``
+- ``CarouselItemSizing``
+- ``CarouselSnapping``
+- ``CarouselBoard``
+- ``CarouselBoardContent``
+- ``CarouselShelf``
+- ``CarouselShelfConvertible``
+- ``CarouselShelfBuilder``
+
 ### Feedback
 
 - ``EmptyStateView``
