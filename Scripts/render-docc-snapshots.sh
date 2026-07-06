@@ -5,7 +5,7 @@ set -euo pipefail
 snapshot_dir="Tests/SwiftUIComponentsTests/Snapshots/__Snapshots__/ComponentSnapshotTests"
 
 set +e
-swift test --filter ComponentSnapshot
+swift test --parallel --filter ComponentSnapshot
 test_status=$?
 set -e
 
