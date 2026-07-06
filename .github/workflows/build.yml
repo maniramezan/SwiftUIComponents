@@ -50,7 +50,7 @@ jobs:
         run: chmod +x Scripts/validate.sh Scripts/coverage.sh Scripts/check-coverage.py Scripts/check-localizations.py
 
       - name: Run validation script
-        run: ./Scripts/validate.sh
+        run: ./Scripts/validate.sh ${{ github.event_name == 'pull_request' && '--skip-tests' || '' }}
 
       - name: Check changed-line coverage
         if: github.event_name == 'pull_request'
@@ -59,6 +59,50 @@ jobs:
       - name: Check full coverage baseline
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: ./Scripts/coverage.sh full
+
+      - name: Save SwiftPM cache
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/cache/save@v5.0.5
+        with:
+          path: |
+            .build
+            ~/Library/Caches/org.swift.swiftpm
+            ~/Library/org.swift.swiftpm
+          key: swiftpm-${{ hashFiles('Package.swift', '.swift-format', 'Scripts/validate.sh', 'Scripts/check-localizations.py') }}
+
+  docc:
+    name: Validate DocC
+    runs-on: macos-15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6.0.3
+
+      - name: Select Xcode
+        uses: maxim-lobanov/setup-xcode@v1.7.0
+        with:
+          xcode-version: '26.3'
+
+      - name: Restore SwiftPM cache
+        id: restore-swiftpm-cache
+        uses: actions/cache/restore@v5.0.5
+        with:
+          path: |
+            .build
+            ~/Library/Caches/org.swift.swiftpm
+            ~/Library/org.swift.swiftpm
+          key: swiftpm-${{ hashFiles('Package.swift', '.swift-format', 'Scripts/validate.sh', 'Scripts/check-localizations.py') }}
+          restore-keys: |
+            swiftpm-
+
+      - name: Verify Swift toolchain
+        run: |
+          case "$(swift --version)" in
+            *"Apple Swift version 6.2"*) ;;
+            *)
+              echo "Expected Apple Swift 6.2 from Xcode 26.3."
+              exit 1
+              ;;
+          esac
 
       - name: Validate DocC (DesignSystem)
         run: |
@@ -73,13 +117,3 @@ jobs:
             --target Components \
             --warnings-as-errors \
             --exclude-extended-types
-
-      - name: Save SwiftPM cache
-        if: ${{ always() }}
-        uses: actions/cache/save@v5.0.5
-        with:
-          path: |
-            .build
-            ~/Library/Caches/org.swift.swiftpm
-            ~/Library/org.swift.swiftpm
-          key: swiftpm-${{ hashFiles('Package.swift', '.swift-format', 'Scripts/validate.sh', 'Scripts/check-localizations.py') }}
