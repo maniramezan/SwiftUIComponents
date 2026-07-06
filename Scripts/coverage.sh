@@ -20,7 +20,7 @@ elif [ "$mode" != "full" ]; then
     exit 2
 fi
 
-swift test --enable-code-coverage --skip ComponentSnapshot
+swift test --parallel --enable-code-coverage --skip ComponentSnapshot
 coverage_path=$(swift test --show-codecov-path)
 
 if [ "$mode" = "changed" ]; then
