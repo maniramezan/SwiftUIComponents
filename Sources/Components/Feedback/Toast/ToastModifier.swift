@@ -2,7 +2,7 @@ import DesignSystem
 import SwiftUI
 
 /// Presents a ``ToastView`` (or custom content) as a transient overlay anchored
-/// to the top or bottom edge of the modified view.
+/// to the top or bottom safe-area edge of the modified view.
 ///
 /// Use the `.toast(_:role:systemImage:isPresented:edge:duration:action:)`
 /// and `.toast(isPresented:edge:duration:content:)` helpers rather than
@@ -39,6 +39,7 @@ struct ToastModifier<ToastContent: View>: ViewModifier {
                 if isPresented {
                     toastContent
                         .padding(theme.spacing.twoUnits)
+                        .safeAreaPadding(safeAreaEdges)
                         .offset(y: dragOffset)
                         .gesture(dismissGesture)
                         // Lets VoiceOver / switch users dismiss without the swipe
@@ -74,6 +75,12 @@ struct ToastModifier<ToastContent: View>: ViewModifier {
         return .move(edge: moveEdge).combined(with: .opacity)
     }
 
+    /// Keeps the toast below the top safe area or above the bottom safe area,
+    /// while preserving the normal horizontal design-system spacing.
+    private var safeAreaEdges: Edge.Set {
+        edge == .top ? .top : .bottom
+    }
+
     /// Lets the user swipe the toast away toward its anchored edge.
     private var dismissGesture: some Gesture {
         DragGesture()
@@ -105,14 +112,14 @@ public extension View {
 
     /// Presents a role-tinted toast with an optional trailing action.
     ///
-    /// The toast is anchored to `edge`, animates in with a slide-and-fade (a
-    /// plain fade under Reduce Motion), and can always be swiped away. Pass a
-    /// `duration` to auto-dismiss after it, or `nil` to keep the toast until the
-    /// user taps the action or swipes it away. Toasts with actions ignore
-    /// `duration` and remain visible until explicit dismissal, giving assistive
-    /// technology and motor-control users enough time to reach the action. On
-    /// dismissal — by timer, swipe, or action tap — `isPresented` is set back to
-    /// `false`.
+    /// The toast is anchored to `edge`, inset from that edge's safe area,
+    /// animates in with a slide-and-fade (a plain fade under Reduce Motion), and
+    /// can always be swiped away. Pass a `duration` to auto-dismiss after it, or
+    /// `nil` to keep the toast until the user taps the action or swipes it away.
+    /// Toasts with actions ignore `duration` and remain visible until explicit
+    /// dismissal, giving assistive technology and motor-control users enough time
+    /// to reach the action. On dismissal — by timer, swipe, or action tap —
+    /// `isPresented` is set back to `false`.
     ///
     /// ```swift
     /// .toast("Saved", role: .success, isPresented: $showToast)
@@ -158,9 +165,9 @@ public extension View {
     /// Presents fully custom toast content as a transient overlay.
     ///
     /// Use this when ``ToastView`` is not enough — for example a multi-line layout
-    /// or a custom control. The modifier owns positioning, the slide/fade
-    /// transition, swipe-to-dismiss, and (when `duration` is non-`nil`) the
-    /// auto-dismiss timer; it sets `isPresented` back to `false` on timer or
+    /// or a custom control. The modifier owns safe-area-aware positioning, the
+    /// slide/fade transition, swipe-to-dismiss, and (when `duration` is non-`nil`)
+    /// the auto-dismiss timer; it sets `isPresented` back to `false` on timer or
     /// swipe. Any action *inside* your content should flip `isPresented` itself.
     ///
     /// - Parameters:

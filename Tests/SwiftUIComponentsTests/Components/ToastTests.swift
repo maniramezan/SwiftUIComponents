@@ -64,4 +64,11 @@ struct ToastTests {
             ToastView("Custom", role: .warning)
         }
     }
+
+    @Test("toast modifier constructs on a full-bleed host")
+    func toastModifierFullBleedHost() {
+        _ = Color.clear
+            .ignoresSafeArea()
+            .toast("Saved", role: .success, isPresented: .constant(true), edge: .bottom)
+    }
 }
