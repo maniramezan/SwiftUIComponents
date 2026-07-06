@@ -2,6 +2,12 @@ import Components
 import SwiftUI
 import Testing
 
+#if canImport(UIKit)
+    import UIKit
+#elseif canImport(AppKit)
+    import AppKit
+#endif
+
 @MainActor
 @Suite("Toast")
 struct ToastTests {
@@ -63,5 +69,36 @@ struct ToastTests {
         _ = Text("Host").toast(isPresented: .constant(true), edge: .bottom, duration: .seconds(5)) {
             ToastView("Custom", role: .warning)
         }
+    }
+
+    @Test("toast modifier constructs on a full-bleed host")
+    func toastModifierFullBleedHost() {
+        render(
+            Color.clear
+                .ignoresSafeArea()
+                .toast("Saved", role: .success, isPresented: .constant(true), edge: .bottom)
+        )
+    }
+}
+
+// MARK: - Helpers
+
+extension ToastTests {
+
+    @MainActor
+    private func render<V: View>(_ view: V) {
+        #if canImport(UIKit)
+            let hostingController = UIHostingController(rootView: view)
+            hostingController.view.frame = CGRect(origin: .zero, size: CGSize(width: 320, height: 200))
+            hostingController.view.setNeedsLayout()
+            hostingController.view.layoutIfNeeded()
+        #elseif canImport(AppKit)
+            let hostingController = NSHostingController(rootView: view)
+            hostingController.view.frame = CGRect(origin: .zero, size: CGSize(width: 320, height: 200))
+            hostingController.view.needsLayout = true
+            hostingController.view.layoutSubtreeIfNeeded()
+        #else
+            _ = view
+        #endif
     }
 }
