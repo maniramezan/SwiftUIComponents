@@ -159,7 +159,7 @@ Toast (transient overlay; roles: .info | .success | .warning | .error):
     .toast("Item deleted", role: .info, isPresented: $showToast,
            action: .init("Undo") { restore() })                         // actions persist until dismissed
     .toast(isPresented: $showToast) { ToastView("Custom", role: .info) } // custom content
-    // Apply .toast to a full-bleed parent (it anchors an overlay); honors Reduce Motion; swipe-to-dismiss always on.
+    // Apply .toast to a full-bleed parent (it anchors an overlay); top/bottom placement is safe-area-aware; honors Reduce Motion; swipe-to-dismiss always on.
     // A11y: announces to VoiceOver on appear and supports the escape (two-finger scrub) gesture to dismiss.
 
 Async state container:
