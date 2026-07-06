@@ -4,6 +4,14 @@ on:
   push:
     branches:
       - main
+    paths:
+      - Package.swift
+      - Package.resolved
+      - Sources/**
+      - Tests/SwiftUIComponentsTests/Snapshots/**
+      - Scripts/render-docc-snapshots.sh
+      - Scripts/copy-snapshots-to-docc.sh
+      - .github/workflows/docs.yml
 
 permissions:
   contents: read
