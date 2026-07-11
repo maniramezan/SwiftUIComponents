@@ -4,7 +4,7 @@ import SwiftUI
 
 struct PagedViewDetailView: View {
 
-    private struct Page: Identifiable, Hashable {
+    fileprivate struct Page: Identifiable, Hashable {
         let id: Int
         let title: String
         let summary: String
@@ -33,17 +33,17 @@ struct PagedViewDetailView: View {
             // Live controls
             ShowcaseSection("Configuration") {
                 VStack(alignment: .leading, spacing: theme.spacing.oneUnit) {
-                    controlRow(label: "Indicator") {
+                    PagedViewControlRow(label: "Indicator") {
                         ForEach([PaginationIndicatorStyle.dots, .bar, .hidden], id: \.self) { s in
                             PillChip(indicatorLabel(s), isSelected: indicatorStyle == s) { indicatorStyle = s }
                         }
                     }
-                    controlRow(label: "Peek") {
+                    PagedViewControlRow(label: "Peek") {
                         ForEach(PaginationPeekDirection.allCases, id: \.self) { d in
                             PillChip(peekLabel(d), isSelected: peekDirection == d) { peekDirection = d }
                         }
                     }
-                    controlRow(label: "Title") {
+                    PagedViewControlRow(label: "Title") {
                         ForEach(
                             [TitledPageTitleAlignment.automatic, .leading, .center, .trailing, .hidden], id: \.self
                         ) { a in
@@ -64,39 +64,13 @@ struct PagedViewDetailView: View {
                     titleAlignment: titleAlignment,
                     indicatorStyle: indicatorStyle
                 ) { page in
-                    pageCard(page)
+                    PagedViewPageCard(page: page)
                 }
                 .designPaginationStyle(.init(peekDirection: peekDirection))
                 .frame(height: 220)
                 .environment(\.layoutDirection, isRTL ? .rightToLeft : .leftToRight)
             }
         }
-    }
-
-    @ViewBuilder
-    private func controlRow<Content: View>(label: String, @ViewBuilder chips: () -> Content) -> some View {
-        VStack(alignment: .leading, spacing: theme.spacing.halfUnit) {
-            Text(label)
-                .designTextStyle(.caption)
-                .foregroundStyle(theme.colors.textSecondary)
-            FlowLayout(spacing: theme.spacing.halfUnit) { chips() }
-        }
-    }
-
-    @ViewBuilder
-    private func pageCard(_ page: Page) -> some View {
-        VStack(spacing: theme.spacing.oneAndHalfUnits) {
-            Image(systemName: page.symbol)
-                .font(theme.typography.largeTitle)
-                .foregroundStyle(theme.colors.primary)
-            Text(page.summary)
-                .designTextStyle(.body)
-                .multilineTextAlignment(.center)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(theme.spacing.twoUnits)
-        .designCardSurface()
-        .padding(.horizontal, theme.spacing.oneUnit)
     }
 
     private func indicatorLabel(_ s: PaginationIndicatorStyle) -> String {
@@ -121,6 +95,52 @@ struct PagedViewDetailView: View {
         case .trailing: "Trailing"
         case .hidden: "Hidden"
         }
+    }
+}
+
+/// A labeled row of configuration chips, wrapped in a `FlowLayout` so it
+/// wraps onto multiple lines as needed.
+///
+/// A dedicated `View` type — rather than an inline `@ViewBuilder` method —
+/// so SwiftUI can diff and update each row independently.
+private struct PagedViewControlRow<Content: View>: View {
+    let label: String
+    @ViewBuilder let chips: Content
+
+    @Environment(\.designTheme) private var theme
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: theme.spacing.halfUnit) {
+            Text(label)
+                .designTextStyle(.caption)
+                .foregroundStyle(theme.colors.textSecondary)
+            FlowLayout(spacing: theme.spacing.halfUnit) { chips }
+        }
+    }
+}
+
+/// A single demo page card shown inside the `TitledPageView` preview.
+///
+/// A dedicated `View` type — rather than an inline `@ViewBuilder` method —
+/// so SwiftUI can diff and update each page independently.
+private struct PagedViewPageCard: View {
+    let page: PagedViewDetailView.Page
+
+    @Environment(\.designTheme) private var theme
+
+    var body: some View {
+        VStack(spacing: theme.spacing.oneAndHalfUnits) {
+            Image(systemName: page.symbol)
+                .font(theme.typography.largeTitle)
+                .foregroundStyle(theme.colors.primary)
+            Text(page.summary)
+                .designTextStyle(.body)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(theme.spacing.twoUnits)
+        .designCardSurface()
+        .padding(.horizontal, theme.spacing.oneUnit)
     }
 }
 

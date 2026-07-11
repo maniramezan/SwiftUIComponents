@@ -13,9 +13,9 @@ struct FlipCardDetailView: View {
                     Text("Horizontal (self-managing)")
                         .designTextStyle(.secondary)
                     FlipCard(axis: .horizontal) {
-                        flashcard("Bonjour", subtitle: "French")
+                        FlipCardDetailFlashcard(title: "Bonjour", subtitle: "French")
                     } back: {
-                        flashcard("Hello", subtitle: "English")
+                        FlipCardDetailFlashcard(title: "Hello", subtitle: "English")
                     }
                 }
 
@@ -23,9 +23,9 @@ struct FlipCardDetailView: View {
                     Text("Vertical (self-managing)")
                         .designTextStyle(.secondary)
                     FlipCard(axis: .vertical) {
-                        flashcard("Gracias", subtitle: "Spanish")
+                        FlipCardDetailFlashcard(title: "Gracias", subtitle: "Spanish")
                     } back: {
-                        flashcard("Thank you", subtitle: "English")
+                        FlipCardDetailFlashcard(title: "Thank you", subtitle: "English")
                     }
                 }
 
@@ -33,18 +33,28 @@ struct FlipCardDetailView: View {
                     Text("Controlled (external button)")
                         .designTextStyle(.secondary)
                     FlipCard(isFaceUp: $controlledFaceUp) {
-                        flashcard("Danke", subtitle: "German")
+                        FlipCardDetailFlashcard(title: "Danke", subtitle: "German")
                     } back: {
-                        flashcard("Thanks", subtitle: "English")
+                        FlipCardDetailFlashcard(title: "Thanks", subtitle: "English")
                     }
                     ThemeButton("Flip", role: .secondary) { controlledFaceUp.toggle() }
                 }
             }
         }
     }
+}
 
-    @ViewBuilder
-    private func flashcard(_ title: String, subtitle: String) -> some View {
+/// A single flashcard face shown inside ``FlipCardDetailView``.
+///
+/// A dedicated `View` type — rather than an inline `@ViewBuilder` method —
+/// so SwiftUI can diff and update each face independently.
+private struct FlipCardDetailFlashcard: View {
+    let title: String
+    let subtitle: String
+
+    @Environment(\.designTheme) private var theme
+
+    var body: some View {
         VStack(spacing: theme.spacing.halfUnit) {
             Text(title)
                 .designTextStyle(.title)

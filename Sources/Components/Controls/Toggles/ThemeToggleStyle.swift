@@ -29,7 +29,7 @@ public struct ThemeToggleStyle: ToggleStyle {
                     .font(theme.typography.body)
                     .foregroundStyle(theme.colors.textPrimary)
                 Spacer(minLength: theme.spacing.oneUnit)
-                capsule(isOn: configuration.isOn)
+                ThemeToggleCapsule(isOn: configuration.isOn)
             }
         }
         .buttonStyle(.plain)
@@ -40,8 +40,18 @@ public struct ThemeToggleStyle: ToggleStyle {
             }
         }
     }
+}
 
-    private func capsule(isOn: Bool) -> some View {
+/// The pill-shaped track and thumb for a ``ThemeToggleStyle`` toggle.
+///
+/// A dedicated `View` type — rather than an inline `@ViewBuilder` method —
+/// so SwiftUI can diff and update it independently of the surrounding label.
+private struct ThemeToggleCapsule: View {
+    let isOn: Bool
+
+    @Environment(\.designTheme) private var theme
+
+    var body: some View {
         RoundedRectangle(cornerRadius: theme.radius.pill, style: .continuous)
             .fill(isOn ? theme.colors.primary : theme.colors.containerSecondary)
             .frame(width: 52, height: 32)

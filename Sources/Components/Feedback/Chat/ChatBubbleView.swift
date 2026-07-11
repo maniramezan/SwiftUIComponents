@@ -40,11 +40,22 @@ public struct ChatBubbleView: View {
 
     public var body: some View {
         ChatBubble(role: role) {
-            bubbleContent
+            ChatBubbleContent(role: role, content: content, isTyping: isTyping)
         }
     }
+}
 
-    @ViewBuilder private var bubbleContent: some View {
+/// The text (or typing indicator) shown inside a ``ChatBubbleView``.
+///
+/// A dedicated `View` type — rather than an inline `@ViewBuilder` property —
+/// so SwiftUI can diff and update this subtree independently of the rest of
+/// `ChatBubbleView`.
+private struct ChatBubbleContent: View {
+    let role: ChatMessageRole
+    let content: String
+    let isTyping: Bool
+
+    var body: some View {
         if isTyping, content.isEmpty {
             TypingDotsView()
         } else if role == .assistant,

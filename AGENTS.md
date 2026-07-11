@@ -39,7 +39,19 @@
 - Prefer value semantics (`struct`, `enum`) and immutable `let` bindings; use four-space indentation and limit each file to one public type.
 - Document all public APIs with `///` comments that describe behavior, inputs, and assumptions.
 - Run `swift format --in-place Sources Tests` (or Xcode's formatter) before committing to keep diffs clean.
-- When a view introduces supporting private subviews or helpers, define them in `extension` blocks at the bottom of the file and separate sections with `// MARK:` comments to keep each entity focused.
+- When a view introduces supporting private subviews or helpers, define them as their own `View`/`ViewModifier`-conforming types (see **Performance & View Composition** below), organized in `extension` blocks or `// MARK:` sections at the bottom of the file.
+
+## Performance & View Composition
+- **Never split a view's body into `@ViewBuilder` computed properties or methods** (e.g. `@ViewBuilder private var rowContent: some View { ... }`, `private func item(_:) -> some View { ... }`). These are always inlined into the owning view's `body` and re-evaluated every time that body re-evaluates — they never get their own identity in the render tree, so SwiftUI cannot diff, skip, or animate them independently.
+- Instead, extract subviews into their own `View`-conforming `struct`s (and modifier-style helpers into `ViewModifier`-conforming `struct`s applied via `.modifier(_:)`). This gives SwiftUI a real type to diff against and lets it skip re-rendering a subtree when its inputs haven't changed.
+- This applies to internal/private decomposition of a single component's body. It does **not** apply to the standard `@ViewBuilder` *parameter* pattern used for caller-supplied content (e.g. `init(@ViewBuilder content: () -> Content)`), which is the correct, idiomatic way to accept child views from a caller.
+- When reviewing or writing SwiftUI code in this repo, treat this as a top-priority performance concern — flag any `@ViewBuilder`-decorated computed property/method used to decompose a view's own body, and replace it with a dedicated `View`/`ViewModifier` type before merging.
+
+## Design Tokens vs. Raw Values
+- Never hardcode a raw `CGFloat`/`Font`/`Color` magic number directly in a view body (`.padding(12)`, `.frame(width: 52)`, `.font(.system(size: 14))`). Always resolve spacing from `theme.spacing.*` (`Spacing` protocol: `halfUnit`…`sixUnits`) and typography from `theme.typography.*` (`Typography` protocol) or `.designTextStyle(_ role: TextRole)`.
+- The one accepted exception is a **documented, `nil`-defaults-to-theme override parameter** on a public API — e.g. `titleFont: Font? = nil` / `spacing: CGFloat? = nil` where the doc comment states the exact token used when `nil` (see `PaginationStyle.swift`, `SectionHeader.swift`, `CarouselRow.swift`). This is the established convention for letting callers customize per-call while still theming by default. A raw value is only a violation when it has **no** theme-derived fallback and no documented rationale (a bare magic number baked into behavior).
+- Before adding a new numeric/font literal to a view body, check whether an existing `Spacing`/`Typography` token already matches; if one doesn't, ask whether the value should become a new token rather than a one-off literal.
+- `#Preview` blocks are lower priority (dev-only, not shipped), but production view bodies must not bypass the theme.
 
 ## Testing Guidelines
 - Tests use Swift Testing (`@Test`); name methods descriptively and colocate helpers with the tests that need them.

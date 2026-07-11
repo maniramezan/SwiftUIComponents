@@ -113,3 +113,59 @@ func selectionBindingRoundTrips() {
     binding.wrappedValue = items[2]
     #expect(selected.id == items[2].id)
 }
+
+// MARK: - Rendering (compact + scrolling layouts, badges)
+
+@Test("Few items render the compact layout")
+@MainActor
+func compactLayoutRenders() {
+    let items = (1...3).map { MenuPickerTestItem(id: $0, title: "Option \($0)") }
+    let binding = Binding(get: { items[0] }, set: { _ in })
+    renderForCoverage(SegmentedPicker(items: items, selection: binding))
+}
+
+@Test("Many items render the scrolling layout with edge indicators")
+@MainActor
+func scrollingLayoutRenders() {
+    let items = (1...20).map { MenuPickerTestItem(id: $0, title: "Option \($0)") }
+    let binding = Binding(get: { items[10] }, set: { _ in })
+    renderForCoverage(SegmentedPicker(items: items, selection: binding), size: CGSize(width: 250, height: 80))
+}
+
+@Test("Badges render the dot, labeled, and empty branches")
+@MainActor
+func badgeVariantsRender() {
+    let items = (1...3).map { MenuPickerTestItem(id: $0, title: "Option \($0)") }
+    let binding = Binding(get: { items[0] }, set: { _ in })
+    let badgeValues: [Int: String] = [1: "", 2: "9"]
+    renderForCoverage(
+        SegmentedPicker(items: items, selection: binding) { item in
+            badgeValues[item.id]
+        }
+    )
+}
+
+@Test("step(by:) advances and clamps the selection")
+@MainActor
+func stepAdvancesSelection() {
+    let items = (1...3).map { MenuPickerTestItem(id: $0, title: "Option \($0)") }
+    var selected = items[0]
+    let binding = Binding(get: { selected }, set: { selected = $0 })
+    let row = SegmentedPickerScrollingRow(
+        items: items,
+        selection: binding,
+        badge: nil,
+        label: { item, _ in Text(item.title) },
+        sizing: .fit,
+        density: .regular
+    )
+
+    row.step(by: 1)
+    #expect(selected.id == items[1].id)
+
+    row.step(by: 10)
+    #expect(selected.id == items[2].id)
+
+    row.step(by: 0)
+    #expect(selected.id == items[2].id)
+}

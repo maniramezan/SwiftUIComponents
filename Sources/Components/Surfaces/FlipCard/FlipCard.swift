@@ -102,10 +102,10 @@ public struct FlipCard<Front: View, Back: View>: View {
     public var body: some View {
         let isFaceUp = externalIsFaceUp ?? $internalIsFaceUp
         ZStack {
-            cardFace(front)
+            FlipCardFace(content: front)
                 .opacity(isFaceUp.wrappedValue ? 1 : 0)
                 .accessibilityHidden(!isFaceUp.wrappedValue)
-            cardFace(back)
+            FlipCardFace(content: back)
                 // Pre-rotate the back face so its content reads correctly once the
                 // container has rotated 180°.
                 .rotation3DEffect(reduceMotion ? .zero : .degrees(180), axis: flipAxis)
@@ -128,9 +128,19 @@ public struct FlipCard<Front: View, Back: View>: View {
         case .vertical: (x: 1, y: 0, z: 0)
         }
     }
+}
 
-    @ViewBuilder
-    private func cardFace(_ content: some View) -> some View {
+/// One face of a ``FlipCard``: its content padded and wrapped in a themed
+/// ``CardSurface``.
+///
+/// A dedicated `View` type — rather than an inline `@ViewBuilder` method —
+/// so SwiftUI can diff and update each face independently.
+private struct FlipCardFace<Content: View>: View {
+    let content: Content
+
+    @Environment(\.designTheme) private var theme
+
+    var body: some View {
         content
             .padding(theme.spacing.twoUnits)
             .frame(maxWidth: .infinity)

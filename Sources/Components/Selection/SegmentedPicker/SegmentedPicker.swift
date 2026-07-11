@@ -123,8 +123,10 @@ public struct SegmentedPicker<Item: MenuPickerItem, Label: View>: View {
     /// The SwiftUI body for the segmented picker.
     public var body: some View {
         ViewThatFits(in: .horizontal) {
-            compactRow
-            scrollingRow
+            SegmentedPickerCompactRow(
+                items: items, selection: $selection, badge: badge, label: label, sizing: sizing, density: density)
+            SegmentedPickerScrollingRow(
+                items: items, selection: $selection, badge: badge, label: label, sizing: sizing, density: density)
         }
     }
 }
@@ -169,19 +171,68 @@ public extension SegmentedPicker where Label == Text {
 
 // MARK: - Layout branches
 
-private extension SegmentedPicker {
+/// The non-scrolling layout used when all segments fit the available width:
+/// the shared row over a themed capsule background and trough border.
+///
+/// A dedicated `View` type — rather than an inline `@ViewBuilder` property —
+/// so SwiftUI can diff and update it independently of the scrolling variant.
+private struct SegmentedPickerCompactRow<Item: MenuPickerItem, Label: View>: View {
+    let items: [Item]
+    @Binding var selection: Item
+    let badge: ((Item) -> String?)?
+    let label: (Item, Bool) -> Label
+    let sizing: SegmentSizing
+    let density: SegmentDensity
 
-    var compactRow: some View {
-        row
-            .background(theme.colors.segmentUnselectedBackground, in: Capsule(style: .continuous))
-            .overlay { troughBorder }
+    @Environment(\.designTheme) private var theme
+
+    var body: some View {
+        SegmentedPickerRow(
+            items: items,
+            selection: $selection,
+            badge: badge,
+            label: label,
+            sizing: sizing,
+            density: density
+        )
+        .background(theme.colors.segmentUnselectedBackground, in: Capsule(style: .continuous))
+        .overlay { SegmentedPickerTroughBorder() }
     }
+}
 
-    var scrollingRow: some View {
+/// The horizontally-scrolling layout used when segments overflow the
+/// available width: the shared row inside a `ScrollView`, with geometry
+/// tracking for the edge veil, auto-scroll-to-selection, and accessibility
+/// scrolling.
+///
+/// A dedicated `View` type — rather than an inline `@ViewBuilder` property —
+/// so SwiftUI can diff and update it independently of the compact variant.
+struct SegmentedPickerScrollingRow<Item: MenuPickerItem, Label: View>: View {
+    let items: [Item]
+    @Binding var selection: Item
+    let badge: ((Item) -> String?)?
+    let label: (Item, Bool) -> Label
+    let sizing: SegmentSizing
+    let density: SegmentDensity
+
+    @State private var geometry = ScrollGeometrySnapshot()
+
+    @Environment(\.designTheme) private var theme
+    @Environment(\.layoutDirection) private var layoutDirection
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
         ScrollViewReader { proxy in
             ScrollView(.horizontal, showsIndicators: false) {
-                row
-                    .scrollTargetLayout()
+                SegmentedPickerRow(
+                    items: items,
+                    selection: $selection,
+                    badge: badge,
+                    label: label,
+                    sizing: sizing,
+                    density: density
+                )
+                .scrollTargetLayout()
             }
             .onScrollGeometryChange(for: ScrollGeometrySnapshot.self) { scroll in
                 ScrollGeometrySnapshot(
@@ -193,12 +244,19 @@ private extension SegmentedPicker {
                 geometry = new
             }
             .background(theme.colors.segmentUnselectedBackground, in: Capsule(style: .continuous))
-            .overlay { troughBorder }
-            .overlay { edgeIndicators }
+            .overlay { SegmentedPickerTroughBorder() }
+            .overlay {
+                SegmentedPickerEdgeIndicators(
+                    geometry: geometry,
+                    animation: activeAnimation,
+                    troughColor: theme.colors.segmentUnselectedBackground,
+                    bandWidth: theme.spacing.fourUnits
+                )
+            }
             .clipShape(Capsule(style: .continuous))
             .accessibilityElement(children: .contain)
             .accessibilityScrollAction { edge in
-                step(by: Self.accessibilityStep(for: edge, layoutDirection: layoutDirection))
+                step(by: SegmentedPicker<Item, Label>.accessibilityStep(for: edge, layoutDirection: layoutDirection))
             }
             .onChange(of: selection) { _, newValue in
                 scrollTo(newValue, proxy: proxy)
@@ -210,23 +268,94 @@ private extension SegmentedPicker {
         }
     }
 
-    var row: some View {
+    private var activeAnimation: Animation {
+        reduceMotion ? .easeInOut(duration: 0.15) : theme.motion.standardAnimation
+    }
+
+    /// Scrolls the picker to the given item, positioning it near the trailing
+    /// edge so subsequent segments remain partially visible off-screen.
+    /// The last item is centered instead since nothing follows it.
+    private func scrollTo(_ item: Item, proxy: ScrollViewProxy) {
+        let isLast = item.id == items.last?.id
+        let anchor: UnitPoint = isLast ? .center : .init(x: 0.75, y: 0.5)
+        withAnimation(activeAnimation) {
+            proxy.scrollTo(item.id, anchor: anchor)
+        }
+    }
+
+    /// Not `private` so tests can drive it directly without simulating a
+    /// real VoiceOver accessibility scroll gesture.
+    func step(by delta: Int) {
+        guard delta != 0,
+            let currentIndex = items.firstIndex(where: { $0.id == selection.id })
+        else { return }
+        let target = max(0, min(items.count - 1, currentIndex + delta))
+        guard target != currentIndex else { return }
+        withAnimation(activeAnimation) {
+            selection = items[target]
+        }
+    }
+}
+
+/// The shared row of segment buttons, used by both the compact and scrolling
+/// layouts.
+private struct SegmentedPickerRow<Item: MenuPickerItem, Label: View>: View {
+    let items: [Item]
+    @Binding var selection: Item
+    let badge: ((Item) -> String?)?
+    let label: (Item, Bool) -> Label
+    let sizing: SegmentSizing
+    let density: SegmentDensity
+
+    @Environment(\.designTheme) private var theme
+
+    var body: some View {
         HStack(spacing: theme.spacing.halfUnit) {
             ForEach(items) { item in
-                segment(for: item)
+                SegmentedPickerSegment(
+                    item: item,
+                    selection: $selection,
+                    badge: badge,
+                    label: label,
+                    sizing: sizing,
+                    density: density
+                )
             }
         }
         .padding(theme.spacing.halfUnit)
     }
+}
 
-    var troughBorder: some View {
+/// The capsule stroke drawn around both the compact and scrolling layouts.
+private struct SegmentedPickerTroughBorder: View {
+    @Environment(\.designTheme) private var theme
+
+    var body: some View {
         Capsule(style: .continuous)
             .strokeBorder(theme.colors.border, lineWidth: theme.stroke.hairline)
     }
+}
 
-    @ViewBuilder
-    func segment(for item: Item) -> some View {
-        let isActive = item.id == selection.id
+/// A single tappable segment, with its active-state capsule background and
+/// optional badge overlay.
+private struct SegmentedPickerSegment<Item: MenuPickerItem, Label: View>: View {
+    let item: Item
+    @Binding var selection: Item
+    let badge: ((Item) -> String?)?
+    let label: (Item, Bool) -> Label
+    let sizing: SegmentSizing
+    let density: SegmentDensity
+
+    @Environment(\.designTheme) private var theme
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    private var isActive: Bool { item.id == selection.id }
+
+    private var activeAnimation: Animation {
+        reduceMotion ? .easeInOut(duration: 0.15) : theme.motion.standardAnimation
+    }
+
+    var body: some View {
         Button {
             withAnimation(activeAnimation) {
                 selection = item
@@ -240,7 +369,7 @@ private extension SegmentedPicker {
                 .padding(.horizontal, theme.spacing.oneAndHalfUnits)
                 .padding(.vertical, density == .compact ? theme.spacing.halfUnit : theme.spacing.oneUnit)
                 .overlay(alignment: .topTrailing) {
-                    segmentBadgeView(for: item)
+                    SegmentedPickerBadge(text: badge?(item))
                         .padding([.top, .trailing], theme.spacing.halfUnit)
                 }
                 .frame(minHeight: density == .compact ? theme.spacing.fourUnits : theme.motion.minimumHitTarget)
@@ -256,14 +385,28 @@ private extension SegmentedPicker {
         .buttonStyle(.plain)
         .id(item.id)
         .accessibilityAddTraits(isActive ? [.isSelected] : [])
-        .accessibilityLabel(segmentAccessibilityLabel(for: item))
+        .accessibilityLabel(accessibilityLabel)
     }
 
-    /// Badge view rendered at the top-trailing corner of a segment. Returns
-    /// `EmptyView` when no badge is configured for the item.
-    @ViewBuilder
-    func segmentBadgeView(for item: Item) -> some View {
-        if let text = badge?(item) {
+    /// Accessibility label that appends the badge value when present so
+    /// VoiceOver reads e.g. "Inbox, 3" instead of just "Inbox".
+    private var accessibilityLabel: Text {
+        guard let text = badge?(item), !text.isEmpty else {
+            return Text(item.title)
+        }
+        return Text("\(item.title), \(text)")
+    }
+}
+
+/// Badge shown at the top-trailing corner of a segment: a labeled capsule
+/// for non-empty text, a plain dot for empty text, or nothing for `nil`.
+private struct SegmentedPickerBadge: View {
+    let text: String?
+
+    @Environment(\.designTheme) private var theme
+
+    var body: some View {
+        if let text {
             if text.isEmpty {
                 Circle()
                     .fill(theme.colors.error)
@@ -279,82 +422,64 @@ private extension SegmentedPicker {
             }
         }
     }
-
-    /// Accessibility label that appends the badge value when present so
-    /// VoiceOver reads e.g. "Inbox, 3" instead of just "Inbox".
-    func segmentAccessibilityLabel(for item: Item) -> Text {
-        guard let text = badge?(item), !text.isEmpty else {
-            return Text(item.title)
-        }
-        return Text("\(item.title), \(text)")
-    }
 }
 
 // MARK: - Edge indicators
 
-private extension SegmentedPicker {
+/// The leading/trailing edge-fade veil overlaid on the scrolling layout.
+private struct SegmentedPickerEdgeIndicators: View {
+    let geometry: ScrollGeometrySnapshot
+    let animation: Animation
+    let troughColor: Color
+    let bandWidth: CGFloat
 
-    var edgeIndicators: some View {
-        let edges = Self.edgeFade(
+    var body: some View {
+        let edges = SegmentedPickerMath.edgeFade(
             contentOffsetX: geometry.offsetX,
             contentWidth: geometry.contentWidth,
             viewportWidth: geometry.viewportWidth
         )
-        return HStack(spacing: 0) {
-            edgeBand(visible: edges.leading, isLeading: true)
+        HStack(spacing: 0) {
+            SegmentedPickerEdgeBand(visible: edges.leading, isLeading: true, troughColor: troughColor, width: bandWidth)
             Spacer(minLength: 0)
-            edgeBand(visible: edges.trailing, isLeading: false)
+            SegmentedPickerEdgeBand(
+                visible: edges.trailing, isLeading: false, troughColor: troughColor, width: bandWidth)
         }
         .allowsHitTesting(false)
-        .animation(activeAnimation, value: edges.leading)
-        .animation(activeAnimation, value: edges.trailing)
+        .animation(animation, value: edges.leading)
+        .animation(animation, value: edges.trailing)
     }
+}
 
-    func edgeBand(visible: Bool, isLeading: Bool) -> some View {
-        let trough = theme.colors.segmentUnselectedBackground
+/// A single edge-fade gradient band used by ``SegmentedPickerEdgeIndicators``.
+private struct SegmentedPickerEdgeBand: View {
+    let visible: Bool
+    let isLeading: Bool
+    let troughColor: Color
+    let width: CGFloat
+
+    var body: some View {
         let colors: [Color] =
             isLeading
-            ? [trough, trough.opacity(0)]
-            : [trough.opacity(0), trough]
-        return LinearGradient(
+            ? [troughColor, troughColor.opacity(0)]
+            : [troughColor.opacity(0), troughColor]
+        LinearGradient(
             colors: colors,
             startPoint: UnitPoint(x: 0, y: 0.5),
             endPoint: UnitPoint(x: 1, y: 0.5)
         )
-        .frame(width: theme.spacing.fourUnits)
+        .frame(width: width)
         .opacity(visible ? 1 : 0)
-    }
-
-    var activeAnimation: Animation {
-        reduceMotion ? .easeInOut(duration: 0.15) : theme.motion.standardAnimation
-    }
-
-    /// Scrolls the picker to the given item, positioning it near the trailing
-    /// edge so subsequent segments remain partially visible off-screen.
-    /// The last item is centered instead since nothing follows it.
-    func scrollTo(_ item: Item, proxy: ScrollViewProxy) {
-        let isLast = item.id == items.last?.id
-        let anchor: UnitPoint = isLast ? .center : .init(x: 0.75, y: 0.5)
-        withAnimation(activeAnimation) {
-            proxy.scrollTo(item.id, anchor: anchor)
-        }
-    }
-
-    func step(by delta: Int) {
-        guard delta != 0,
-            let currentIndex = items.firstIndex(where: { $0.id == selection.id })
-        else { return }
-        let target = max(0, min(items.count - 1, currentIndex + delta))
-        guard target != currentIndex else { return }
-        withAnimation(activeAnimation) {
-            selection = items[target]
-        }
     }
 }
 
 // MARK: - Pure helpers
 
-extension SegmentedPicker {
+/// Pure geometry/accessibility math shared by ``SegmentedPicker``'s scrolling
+/// layout. Kept in a non-generic namespace so decorative subviews (like
+/// ``SegmentedPickerEdgeIndicators``) can call it without needing to know
+/// `SegmentedPicker`'s `Item`/`Label` generic parameters.
+enum SegmentedPickerMath {
 
     /// Determines which scrollable edges should fade based on the current
     /// scroll geometry. Returns `(false, false)` whenever the content fits
@@ -368,7 +493,7 @@ extension SegmentedPicker {
     ///     could otherwise trigger a fade as soon as the user lifts a finger.
     /// - Returns: A pair of booleans indicating whether the leading and
     ///   trailing edges, respectively, should render an indicator band.
-    nonisolated static func edgeFade(
+    static func edgeFade(
         contentOffsetX: CGFloat,
         contentWidth: CGFloat,
         viewportWidth: CGFloat,
@@ -383,7 +508,7 @@ extension SegmentedPicker {
     /// Converts an accessibility scroll edge into a logical selection delta.
     /// Leading/trailing edges flip in right-to-left layouts so VoiceOver users
     /// always advance forward through the items.
-    nonisolated static func accessibilityStep(
+    static func accessibilityStep(
         for edge: Edge,
         layoutDirection: LayoutDirection
     ) -> Int {
@@ -399,6 +524,32 @@ extension SegmentedPicker {
         @unknown default:
             return +1
         }
+    }
+}
+
+extension SegmentedPicker {
+
+    /// See ``SegmentedPickerMath/edgeFade(contentOffsetX:contentWidth:viewportWidth:threshold:)``.
+    nonisolated static func edgeFade(
+        contentOffsetX: CGFloat,
+        contentWidth: CGFloat,
+        viewportWidth: CGFloat,
+        threshold: CGFloat = 1
+    ) -> (leading: Bool, trailing: Bool) {
+        SegmentedPickerMath.edgeFade(
+            contentOffsetX: contentOffsetX,
+            contentWidth: contentWidth,
+            viewportWidth: viewportWidth,
+            threshold: threshold
+        )
+    }
+
+    /// See ``SegmentedPickerMath/accessibilityStep(for:layoutDirection:)``.
+    nonisolated static func accessibilityStep(
+        for edge: Edge,
+        layoutDirection: LayoutDirection
+    ) -> Int {
+        SegmentedPickerMath.accessibilityStep(for: edge, layoutDirection: layoutDirection)
     }
 }
 

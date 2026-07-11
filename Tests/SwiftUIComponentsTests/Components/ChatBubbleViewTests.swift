@@ -51,4 +51,31 @@ struct ChatBubbleViewTests {
     func typingDots() {
         _ = TypingDotsView()
     }
+
+    // MARK: - Rendering (exercises ChatBubbleContent's branches)
+
+    @Test("user role renders and lays out")
+    func userRoleRenders() {
+        renderForCoverage(ChatBubbleView(role: .user, content: "Hello there"))
+    }
+
+    @Test("assistant role with valid markdown renders the attributed branch")
+    func assistantMarkdownRenders() {
+        renderForCoverage(ChatBubbleView(role: .assistant, content: "This is **bold** and *italic*"))
+    }
+
+    @Test("system role renders the plain-text branch")
+    func systemRoleRenders() {
+        renderForCoverage(ChatBubbleView(role: .system, content: "Tool result"))
+    }
+
+    @Test("typing with empty content renders the TypingDotsView branch")
+    func typingEmptyRenders() {
+        renderForCoverage(ChatBubbleView(role: .assistant, content: "", isTyping: true))
+    }
+
+    @Test("typing with non-empty content renders text instead of the indicator")
+    func typingWithContentRenders() {
+        renderForCoverage(ChatBubbleView(role: .assistant, content: "Partial", isTyping: true))
+    }
 }
