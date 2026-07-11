@@ -38,9 +38,20 @@ struct TitledPageViewIndicator: View {
         Group {
             switch style {
             case .dots:
-                dotsBody
+                TitledPageViewDotsIndicator(
+                    resolved: resolved,
+                    count: count,
+                    activeIndex: activeIndex,
+                    minimumHitTarget: minimumHitTarget,
+                    onJump: onJump
+                )
             case .bar:
-                barBody
+                TitledPageViewBarIndicator(
+                    resolved: resolved,
+                    count: count,
+                    progress: progress,
+                    minimumHitTarget: minimumHitTarget
+                )
             case .hidden:
                 EmptyView()
             }
@@ -58,10 +69,26 @@ struct TitledPageViewIndicator: View {
             }
         }
     }
+}
 
-    // MARK: - Dots
+// MARK: - Dots
 
-    private var dotsBody: some View {
+/// A row of tappable dots, one per page, used by ``TitledPageViewIndicator``
+/// for ``PaginationIndicatorStyle/dots``.
+///
+/// A dedicated `View` type — rather than an inline `@ViewBuilder` property —
+/// so SwiftUI can diff and update it independently of the bar variant.
+private struct TitledPageViewDotsIndicator: View {
+    let resolved: ResolvedPaginationStyle
+    let count: Int
+    let activeIndex: Int
+    let minimumHitTarget: CGFloat
+    let onJump: (Int) -> Void
+
+    private var dotDiameter: CGFloat { 8 }
+    private var dotSpacing: CGFloat { 4 }
+
+    var body: some View {
         HStack(spacing: dotSpacing) {
             ForEach(0..<count, id: \.self) { index in
                 Button {
@@ -83,13 +110,25 @@ struct TitledPageViewIndicator: View {
         }
         .frame(maxWidth: .infinity)
     }
+}
 
-    private var dotDiameter: CGFloat { 8 }
-    private var dotSpacing: CGFloat { 4 }
+// MARK: - Bar
 
-    // MARK: - Bar
+/// A scrubbing progress bar used by ``TitledPageViewIndicator`` for
+/// ``PaginationIndicatorStyle/bar``.
+///
+/// A dedicated `View` type — rather than an inline `@ViewBuilder` property —
+/// so SwiftUI can diff and update it independently of the dots variant.
+private struct TitledPageViewBarIndicator: View {
+    let resolved: ResolvedPaginationStyle
+    let count: Int
+    let progress: CGFloat
+    let minimumHitTarget: CGFloat
 
-    private var barBody: some View {
+    private var barThickness: CGFloat { 3 }
+    private var minimumThumbWidth: CGFloat { 24 }
+
+    var body: some View {
         GeometryReader { proxy in
             let totalWidth = proxy.size.width
             let segmentWidth = count > 0 ? totalWidth / CGFloat(count) : totalWidth
@@ -110,9 +149,6 @@ struct TitledPageViewIndicator: View {
         }
         .frame(height: minimumHitTarget)
     }
-
-    private var barThickness: CGFloat { 3 }
-    private var minimumThumbWidth: CGFloat { 24 }
 }
 
 // MARK: - Previews

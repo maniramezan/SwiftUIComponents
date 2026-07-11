@@ -114,4 +114,28 @@ struct FlipCardTests {
         let axes: Set<FlipAxis> = [.horizontal, .vertical, .horizontal]
         #expect(axes == [.horizontal, .vertical])
     }
+
+    // MARK: - Rendering (exercises FlipCardFace)
+
+    @Test("Face-up card renders both faces via FlipCardFace")
+    func faceUpRenders() {
+        renderForCoverage(
+            FlipCard(isFaceUp: .constant(true)) {
+                Text("Front")
+            } back: {
+                Text("Back")
+            }
+        )
+    }
+
+    @Test("Face-down card renders both faces via FlipCardFace")
+    func faceDownRenders() {
+        renderForCoverage(
+            FlipCard(isFaceUp: .constant(false)) {
+                Text("Front")
+            } back: {
+                Text("Back")
+            }
+        )
+    }
 }

@@ -100,22 +100,87 @@ public struct SelectionListContentView<ID: Hashable>: View {
                 SearchBar(text: $query, placeholder: searchPlaceholder)
                     .padding(.horizontal, theme.spacing.twoUnits)
             }
-            list
+            // Each expandable parent is a single `ExpandableNodeRow` cell that owns its
+            // children and animates its own height from a 0…1 progress. Driving the cell
+            // height through `Animatable` lets the `List` interpolate it every frame, so the
+            // rows below slide up in lockstep with the children clipping and fading away —
+            // unlike a `DisclosureGroup` (or flat rows removed by `List` diffing), which
+            // drop the children instantly and then close the gap, reading as a jump.
+            SelectionListRows(
+                nodes: visibleNodes,
+                selectedIDs: selectedIDs,
+                expandedIDs: expandedIDs,
+                isSearching: isSearching,
+                onSelect: onSelect,
+                onToggleExpansion: toggleExpansion
+            )
+            .selectionListStyle(grouped: showsContainerBackground)
+            .overlay {
+                SelectionListEmptyState(shouldShow: visibleNodes.isEmpty && isSearching, query: query)
+            }
         }
         .onAppear(perform: prepareExpansionIfNeeded)
     }
 
-    // MARK: - Subviews
+    // MARK: - Derived state
 
-    private var list: some View {
-        // Each expandable parent is a single `ExpandableNodeRow` cell that owns its
-        // children and animates its own height from a 0…1 progress. Driving the cell
-        // height through `Animatable` lets the `List` interpolate it every frame, so the
-        // rows below slide up in lockstep with the children clipping and fading away —
-        // unlike a `DisclosureGroup` (or flat rows removed by `List` diffing), which
-        // drop the children instantly and then close the gap, reading as a jump.
+    private var trimmedQuery: String {
+        query.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private var isSearching: Bool {
+        isSearchable && !trimmedQuery.isEmpty
+    }
+
+    private var visibleNodes: [SelectionNode<ID>] {
+        filteredSelectionNodes(nodes, query: isSearchable ? query : "")
+    }
+
+    /// Toggles a parent's expansion, animating its ``ExpandableNodeRow`` height so the
+    /// children and the rows below them slide smoothly. Ignored while searching, where
+    /// every parent is force-expanded.
+    ///
+    /// Not `private` so tests can drive it directly rather than simulating a
+    /// real tap on the row's disclosure button.
+    func toggleExpansion(_ id: ID) {
+        guard !isSearching else { return }
+        withAnimation(theme.motion.standardAnimation) {
+            if expandedIDs.contains(id) {
+                expandedIDs.remove(id)
+            } else {
+                expandedIDs.insert(id)
+            }
+        }
+    }
+
+    /// Expands every parent containing a selected child once, so selections are visible on first appearance.
+    private func prepareExpansionIfNeeded() {
+        guard !didPrepareExpansion else { return }
+        didPrepareExpansion = true
+        guard !selectedIDs.isEmpty else { return }
+        for node in nodes where node.children.contains(where: { selectedIDs.contains($0.id) }) {
+            expandedIDs.insert(node.id)
+        }
+    }
+}
+
+// MARK: - Rows
+
+/// The `List` of top-level rows: selectable leaves and expandable parents.
+///
+/// A dedicated `View` type — rather than an inline `@ViewBuilder` property —
+/// so SwiftUI can diff and update it independently of the search field above it.
+private struct SelectionListRows<ID: Hashable>: View {
+    let nodes: [SelectionNode<ID>]
+    let selectedIDs: Set<ID>
+    let expandedIDs: Set<ID>
+    let isSearching: Bool
+    let onSelect: (ID) -> Void
+    let onToggleExpansion: (ID) -> Void
+
+    var body: some View {
         List {
-            ForEach(visibleNodes) { node in
+            ForEach(nodes) { node in
                 if node.isLeaf {
                     SelectionRow(
                         title: node.title,
@@ -135,37 +200,14 @@ public struct SelectionListContentView<ID: Hashable>: View {
                             isSelected: false,
                             isIndented: false,
                             disclosure: isExpanded(node.id),
-                            action: { toggleExpansion(node.id) }
+                            action: { onToggleExpansion(node.id) }
                         )
                     } children: {
-                        childRows(for: node)
+                        SelectionListChildRows(node: node, selectedIDs: selectedIDs, onSelect: onSelect)
                     }
                 }
             }
         }
-        .selectionListStyle(grouped: showsContainerBackground)
-        .overlay { emptyState }
-    }
-
-    @ViewBuilder
-    private var emptyState: some View {
-        if visibleNodes.isEmpty, isSearching {
-            ContentUnavailableView.search(text: query)
-        }
-    }
-
-    // MARK: - Derived state
-
-    private var trimmedQuery: String {
-        query.trimmingCharacters(in: .whitespacesAndNewlines)
-    }
-
-    private var isSearching: Bool {
-        isSearchable && !trimmedQuery.isEmpty
-    }
-
-    private var visibleNodes: [SelectionNode<ID>] {
-        filteredSelectionNodes(nodes, query: isSearchable ? query : "")
     }
 
     /// Whether `id`'s parent is currently disclosed — explicitly expanded, or force-expanded while searching.
@@ -178,9 +220,26 @@ public struct SelectionListContentView<ID: Hashable>: View {
         isExpanded(id) ? 1 : 0
     }
 
-    /// The indented child rows shown beneath an expanded parent, separated by hairline dividers.
-    @ViewBuilder
-    private func childRows(for node: SelectionNode<ID>) -> some View {
+    private func selectedChildrenSummary(in node: SelectionNode<ID>) -> String? {
+        let titles = node.children
+            .filter { selectedIDs.contains($0.id) }
+            .map(\.title)
+        return titles.isEmpty ? nil : titles.joined(separator: ", ")
+    }
+}
+
+/// The indented child rows shown beneath an expanded parent, separated by hairline dividers.
+///
+/// A dedicated `View` type — rather than an inline `@ViewBuilder` method —
+/// so SwiftUI can diff and update it independently of its parent row.
+private struct SelectionListChildRows<ID: Hashable>: View {
+    let node: SelectionNode<ID>
+    let selectedIDs: Set<ID>
+    let onSelect: (ID) -> Void
+
+    @Environment(\.designTheme) private var theme
+
+    var body: some View {
         VStack(spacing: 0) {
             ForEach(node.children) { child in
                 Divider()
@@ -197,35 +256,19 @@ public struct SelectionListContentView<ID: Hashable>: View {
             }
         }
     }
+}
 
-    private func selectedChildrenSummary(in node: SelectionNode<ID>) -> String? {
-        let titles = node.children
-            .filter { selectedIDs.contains($0.id) }
-            .map(\.title)
-        return titles.isEmpty ? nil : titles.joined(separator: ", ")
-    }
+/// The "no results" placeholder overlaid on the list while a search yields no matches.
+///
+/// A dedicated `View` type — rather than an inline `@ViewBuilder` property —
+/// so SwiftUI can diff and update it independently of the list beneath it.
+private struct SelectionListEmptyState: View {
+    let shouldShow: Bool
+    let query: String
 
-    /// Toggles a parent's expansion, animating its ``ExpandableNodeRow`` height so the
-    /// children and the rows below them slide smoothly. Ignored while searching, where
-    /// every parent is force-expanded.
-    private func toggleExpansion(_ id: ID) {
-        guard !isSearching else { return }
-        withAnimation(theme.motion.standardAnimation) {
-            if expandedIDs.contains(id) {
-                expandedIDs.remove(id)
-            } else {
-                expandedIDs.insert(id)
-            }
-        }
-    }
-
-    /// Expands every parent containing a selected child once, so selections are visible on first appearance.
-    private func prepareExpansionIfNeeded() {
-        guard !didPrepareExpansion else { return }
-        didPrepareExpansion = true
-        guard !selectedIDs.isEmpty else { return }
-        for node in nodes where node.children.contains(where: { selectedIDs.contains($0.id) }) {
-            expandedIDs.insert(node.id)
+    var body: some View {
+        if shouldShow {
+            ContentUnavailableView.search(text: query)
         }
     }
 }

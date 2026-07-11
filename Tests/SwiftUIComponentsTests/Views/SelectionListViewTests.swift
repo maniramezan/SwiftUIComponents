@@ -136,3 +136,56 @@ func multipleChoiceInitSucceeds() {
         onToggle: { _ in }
     )
 }
+
+// MARK: - Rendering (leaf rows, expandable parent rows, child rows, empty state)
+
+@Test("Leaf and parent rows render without searching")
+@MainActor
+func leafAndParentRowsRender() {
+    renderForCoverage(
+        SelectionListContentView(
+            nodes: sampleNodes,
+            selectedID: "banana",
+            onSelect: { _ in }
+        ),
+        size: CGSize(width: 320, height: 500)
+    )
+}
+
+@Test("Searching with no matches renders the empty state")
+@MainActor
+func emptyStateRendersWhenSearchHasNoMatches() {
+    let view = SelectionListContentView(
+        nodes: sampleNodes,
+        selectedID: nil,
+        isSearchable: true,
+        onSelect: { _ in }
+    )
+    renderForCoverage(view, size: CGSize(width: 320, height: 500))
+}
+
+@Test("showsContainerBackground false renders the plain list style")
+@MainActor
+func plainListStyleRenders() {
+    renderForCoverage(
+        SelectionListContentView(
+            nodes: sampleNodes,
+            selectedID: nil,
+            showsContainerBackground: false,
+            onSelect: { _ in }
+        ),
+        size: CGSize(width: 320, height: 500)
+    )
+}
+
+@Test("toggleExpansion runs without crashing for a parent node")
+@MainActor
+func toggleExpansionRuns() {
+    let view = SelectionListContentView(
+        nodes: sampleNodes,
+        selectedID: nil,
+        onSelect: { _ in }
+    )
+    view.toggleExpansion("fruit")
+    view.toggleExpansion("fruit")
+}

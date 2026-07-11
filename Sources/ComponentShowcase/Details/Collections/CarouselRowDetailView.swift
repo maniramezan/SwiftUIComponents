@@ -5,7 +5,7 @@ import SwiftUI
 /// Showcases ``CarouselRow`` across its sizing and snapping options.
 struct CarouselRowDetailView: View {
 
-    private struct Item: Identifiable {
+    fileprivate struct Item: Identifiable {
         let id: Int
         let title: String
     }
@@ -26,19 +26,19 @@ struct CarouselRowDetailView: View {
         VStack(alignment: .leading, spacing: theme.spacing.twoUnits) {
             ShowcaseSection("Peek — one item, next sliver visible") {
                 CarouselRow(items, sizing: .peek(visibleCount: 1)) { item in
-                    card(item, height: 160)
+                    CarouselRowDetailCard(item: item, height: 160)
                 }
             }
 
             ShowcaseSection("Peek — two items visible") {
                 CarouselRow(items, sizing: .peek(visibleCount: 2)) { item in
-                    card(item, height: 120)
+                    CarouselRowDetailCard(item: item, height: 120)
                 }
             }
 
             ShowcaseSection("Fixed width — free scroll, edge fade") {
                 CarouselRow(items, sizing: .fixedWidth(120), snapping: .free) { item in
-                    card(item, height: 120)
+                    CarouselRowDetailCard(item: item, height: 120)
                 }
             }
 
@@ -53,8 +53,15 @@ struct CarouselRowDetailView: View {
             }
         }
     }
+}
 
-    private func card(_ item: Item, height: CGFloat) -> some View {
+private struct CarouselRowDetailCard: View {
+    let item: CarouselRowDetailView.Item
+    let height: CGFloat
+
+    @Environment(\.designTheme) private var theme
+
+    var body: some View {
         RoundedRectangle(cornerRadius: theme.radius.oneAndHalfUnits, style: .continuous)
             .fill(theme.colors.containerSecondary)
             .frame(height: height)

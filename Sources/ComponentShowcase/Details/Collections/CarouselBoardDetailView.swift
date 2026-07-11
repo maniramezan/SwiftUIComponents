@@ -7,12 +7,12 @@ import SwiftUI
 /// detail screen already provides a vertical `ScrollView`.
 struct CarouselBoardDetailView: View {
 
-    private struct App: Identifiable {
+    fileprivate struct App: Identifiable {
         let id: Int
         let name: String
     }
 
-    private struct Story: Identifiable {
+    fileprivate struct Story: Identifiable {
         let id: Int
         let headline: String
     }
@@ -28,23 +28,29 @@ struct CarouselBoardDetailView: View {
             ShowcaseSection("Shelves — heterogeneous, each scrolls horizontally") {
                 CarouselBoardContent {
                     CarouselShelf("Featured", items: featured) { app in
-                        featuredCard(app)
+                        CarouselBoardFeaturedCard(app: app)
                     }
                     CarouselShelf("Top Free", items: topFree, actionLabel: "See All", sizing: .fixedWidth(96)) { app in
-                        iconTile(app)
+                        CarouselBoardIconTile(app: app)
                     }
                     CarouselShelf("Stories", items: stories, sizing: .peek(visibleCount: 1, peek: 48)) { story in
-                        storyBanner(story)
+                        CarouselBoardStoryBanner(story: story)
                     }
                     CarouselShelf("Editor's Pick") {
-                        editorsBanner
+                        CarouselBoardEditorsBanner()
                     }
                 }
             }
         }
     }
+}
 
-    private func featuredCard(_ app: App) -> some View {
+private struct CarouselBoardFeaturedCard: View {
+    let app: CarouselBoardDetailView.App
+
+    @Environment(\.designTheme) private var theme
+
+    var body: some View {
         RoundedRectangle(cornerRadius: theme.radius.twoUnits, style: .continuous)
             .fill(theme.colors.containerSecondary)
             .frame(height: 180)
@@ -54,8 +60,14 @@ struct CarouselBoardDetailView: View {
                     .padding(theme.spacing.twoUnits)
             }
     }
+}
 
-    private func iconTile(_ app: App) -> some View {
+private struct CarouselBoardIconTile: View {
+    let app: CarouselBoardDetailView.App
+
+    @Environment(\.designTheme) private var theme
+
+    var body: some View {
         VStack(spacing: theme.spacing.oneUnit) {
             RoundedRectangle(cornerRadius: theme.radius.oneAndHalfUnits, style: .continuous)
                 .fill(theme.colors.containerSecondary)
@@ -65,8 +77,14 @@ struct CarouselBoardDetailView: View {
                 .lineLimit(1)
         }
     }
+}
 
-    private func storyBanner(_ story: Story) -> some View {
+private struct CarouselBoardStoryBanner: View {
+    let story: CarouselBoardDetailView.Story
+
+    @Environment(\.designTheme) private var theme
+
+    var body: some View {
         RoundedRectangle(cornerRadius: theme.radius.twoUnits, style: .continuous)
             .fill(theme.colors.containerSecondary)
             .frame(height: 120)
@@ -75,8 +93,12 @@ struct CarouselBoardDetailView: View {
                     .designTextStyle(.title)
             }
     }
+}
 
-    private var editorsBanner: some View {
+private struct CarouselBoardEditorsBanner: View {
+    @Environment(\.designTheme) private var theme
+
+    var body: some View {
         RoundedRectangle(cornerRadius: theme.radius.twoUnits, style: .continuous)
             .fill(theme.colors.primary.opacity(0.15))
             .frame(height: 100)
