@@ -20,6 +20,14 @@ struct SelectionRow: View {
     @Environment(\.designTheme) private var theme
 
     var body: some View {
+        let content = SelectionRowContent(
+            title: title,
+            subtitle: subtitle,
+            leadingGlyph: leadingGlyph,
+            isSelected: isSelected,
+            isIndented: isIndented,
+            disclosure: disclosure
+        )
         if let action {
             Button(action: action) { content }
                 .buttonStyle(.plain)
@@ -38,8 +46,24 @@ struct SelectionRow: View {
         case nil: Text(verbatim: "")
         }
     }
+}
 
-    private var content: some View {
+/// The leading glyph, title/subtitle, and trailing checkmark/chevron for a
+/// ``SelectionRow``.
+///
+/// A dedicated `View` type — rather than an inline computed property — so
+/// SwiftUI can diff and update it independently of the enclosing `Button`.
+private struct SelectionRowContent: View {
+    let title: String
+    let subtitle: String?
+    let leadingGlyph: String?
+    let isSelected: Bool
+    let isIndented: Bool
+    let disclosure: Bool?
+
+    @Environment(\.designTheme) private var theme
+
+    var body: some View {
         HStack(spacing: theme.spacing.oneAndHalfUnits) {
             if let leadingGlyph {
                 Text(leadingGlyph)

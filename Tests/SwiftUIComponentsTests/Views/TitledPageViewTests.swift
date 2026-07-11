@@ -535,3 +535,209 @@ func paginationStyleTitleLeadingPaddingInitCompiles() {
     let styleNil = PaginationStyle()
     #expect(styleNil.titleLeadingPadding == nil)
 }
+
+// MARK: - Rendering (TitledPageViewPagedContent, TitledPageViewPagesScrollView, indicators)
+
+@Test("Multi-page view with dots renders the header, scroll view, and dots indicator")
+@MainActor
+func multiPageWithDotsRenders() {
+    let pages = makePages(3)
+    let binding = Binding(get: { pages[0].id }, set: { _ in })
+    renderForCoverage(
+        TitledPageView(pages, selection: binding, title: \PagedFixturePage.title, indicatorStyle: .dots) { page in
+            Text(page.title)
+        }
+    )
+}
+
+@Test("Multi-page view with a bar indicator renders the bar branch")
+@MainActor
+func multiPageWithBarRenders() {
+    let pages = makePages(3)
+    let binding = Binding(get: { pages[1].id }, set: { _ in })
+    renderForCoverage(
+        TitledPageView(pages, selection: binding, title: \PagedFixturePage.title, indicatorStyle: .bar) { page in
+            Text(page.title)
+        }
+    )
+}
+
+@Test("Single-page view renders the single-title branch and hidden indicator")
+@MainActor
+func singlePageRenders() {
+    let pages = makePages(1)
+    let binding = Binding(get: { pages[0].id }, set: { _ in })
+    renderForCoverage(
+        TitledPageView(pages, selection: binding, title: \PagedFixturePage.title) { page in
+            Text(page.title)
+        }
+    )
+}
+
+@Test("Unidirectional peek direction renders the trimmed visible-pages branch")
+@MainActor
+func unidirectionalPeekRenders() {
+    let pages = makePages(4)
+    let binding = Binding(get: { pages[1].id }, set: { _ in })
+    renderForCoverage(
+        TitledPageView(pages, selection: binding, title: \PagedFixturePage.title) { page in
+            Text(page.title)
+        }
+        .designPaginationStyle(.init(peekDirection: .unidirectional))
+    )
+}
+
+@Test("Custom title and footer builders render instead of the defaults")
+@MainActor
+func customTitleAndFooterRender() {
+    let pages = makePages(3)
+    let binding = Binding(get: { pages[0].id }, set: { _ in })
+    renderForCoverage(
+        TitledPageView(
+            pages,
+            selection: binding,
+            title: \PagedFixturePage.title
+        ) { context in
+            Text(context.currentTitle)
+        } footerContent: { context in
+            ProgressView(value: context.progress, total: Double(max(1, context.pageCount - 1)))
+        } content: { page in
+            Text(page.title)
+        }
+    )
+}
+
+@Test("Right-to-left layout direction renders the scroll view's mirrored branch")
+@MainActor
+func rightToLeftRenders() {
+    let pages = makePages(3)
+    let binding = Binding(get: { pages[0].id }, set: { _ in })
+    renderForCoverage(
+        TitledPageView(pages, selection: binding, title: \PagedFixturePage.title) { page in
+            Text(page.title)
+        }
+        .environment(\.layoutDirection, .rightToLeft)
+    )
+}
+
+// MARK: - TitledPageViewPagedContent direct behavior
+
+@Test("jump updates the selection binding to the target page")
+@MainActor
+func jumpUpdatesSelection() {
+    let pages = makePages(3)
+    var selected = pages[0].id
+    let selectionBinding = Binding(get: { selected }, set: { selected = $0 })
+    let content = TitledPageViewPagedContent(
+        pages: pages,
+        idKeyPath: \PagedFixturePage.id,
+        titleKeyPath: \PagedFixturePage.title,
+        titleAlignment: .automatic,
+        indicatorStyle: .dots,
+        customTitle: nil,
+        customFooter: nil,
+        content: { page in Text(page.title) },
+        selection: selectionBinding,
+        scrollOffsetX: .constant(0),
+        viewportWidth: .constant(300),
+        unidirectionalBaseIndex: .constant(0),
+        swipeHintOffset: .constant(0),
+        isSwipeHintPlaying: .constant(false)
+    )
+
+    content.jump(to: 2, reduceMotion: true)
+    #expect(selected == pages[2].id)
+}
+
+@Test("jump ignores an out-of-range index")
+@MainActor
+func jumpIgnoresOutOfRangeIndex() {
+    let pages = makePages(3)
+    var selected = pages[0].id
+    let selectionBinding = Binding(get: { selected }, set: { selected = $0 })
+    let content = TitledPageViewPagedContent(
+        pages: pages,
+        idKeyPath: \PagedFixturePage.id,
+        titleKeyPath: \PagedFixturePage.title,
+        titleAlignment: .automatic,
+        indicatorStyle: .dots,
+        customTitle: nil,
+        customFooter: nil,
+        content: { page in Text(page.title) },
+        selection: selectionBinding,
+        scrollOffsetX: .constant(0),
+        viewportWidth: .constant(300),
+        unidirectionalBaseIndex: .constant(0),
+        swipeHintOffset: .constant(0),
+        isSwipeHintPlaying: .constant(false)
+    )
+
+    content.jump(to: 99, reduceMotion: true)
+    #expect(selected == pages[0].id)
+}
+
+@Test("A selection with no matching page falls back to the progress-derived index")
+@MainActor
+func unmatchedSelectionRendersFallbackIndex() {
+    let pages = makePages(3)
+    // -1 never matches any page's id, forcing the `activeIndex` fallback branch.
+    let selectionBinding = Binding<Int>(get: { -1 }, set: { _ in })
+    renderForCoverage(
+        TitledPageViewPagedContent(
+            pages: pages,
+            idKeyPath: \PagedFixturePage.id,
+            titleKeyPath: \PagedFixturePage.title,
+            titleAlignment: .automatic,
+            indicatorStyle: .dots,
+            customTitle: nil,
+            customFooter: nil,
+            content: { page in Text(page.title) },
+            selection: selectionBinding,
+            scrollOffsetX: .constant(40),
+            viewportWidth: .constant(300),
+            unidirectionalBaseIndex: .constant(0),
+            swipeHintOffset: .constant(0),
+            isSwipeHintPlaying: .constant(false)
+        )
+    )
+}
+
+@Test("Swipe hint plays through its full animation when enabled")
+@MainActor
+func swipeHintPlaysWhenEnabled() async throws {
+    let pages = makePages(2)
+    let binding = Binding(get: { pages[0].id }, set: { _ in })
+    renderForCoverage(
+        TitledPageView(pages, selection: binding, title: \PagedFixturePage.title) { page in
+            Text(page.title)
+        }
+        .designSwipeHint(.init(delay: 0.01))
+    )
+    // Let the swipe-hint task run its delay → peek → spring-back → settle sequence.
+    try await Task.sleep(for: .seconds(1.2))
+}
+
+@Test("stepScroll advances the active page via onJump")
+@MainActor
+func stepScrollAdvancesActivePage() {
+    var jumpedTo: Int?
+    let scrollView = TitledPageViewPagesScrollView<PagedFixturePage, Int, Text>(
+        pages: makePages(3),
+        idKeyPath: \PagedFixturePage.id,
+        titleKeyPath: \PagedFixturePage.title,
+        content: { page in Text(page.title) },
+        peekDirection: .bidirectional,
+        selection: 0,
+        swipeHintOffset: 0,
+        isSwipeHintPlaying: false,
+        activeIndex: 0,
+        scrollOffsetX: .constant(0),
+        unidirectionalBaseIndex: .constant(0),
+        selectionBinding: .constant(0),
+        layoutDirection: .leftToRight,
+        onJump: { jumpedTo = $0 }
+    )
+
+    scrollView.stepScroll(edge: .trailing)
+    #expect(jumpedTo == 1)
+}

@@ -96,6 +96,21 @@ func themedComponentsAreConstructible() {
     }
 }
 
+// MARK: - Rendering (exercises ThemeToggleCapsule's isOn branches)
+
+@Test("ThemeToggleStyle renders both the on and off capsule states")
+@MainActor
+func themeToggleStyleRendersBothStates() {
+    renderForCoverage(
+        Toggle("Enabled", isOn: .constant(true))
+            .toggleStyle(ThemeToggleStyle())
+    )
+    renderForCoverage(
+        Toggle("Disabled", isOn: .constant(false))
+            .toggleStyle(ThemeToggleStyle())
+    )
+}
+
 private struct ConstructionPage: Identifiable {
     let id: Int
     let title: String
