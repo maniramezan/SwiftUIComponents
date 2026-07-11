@@ -75,6 +75,68 @@ func initAcceptsLongList() throws {
     _ = MenuPicker(items: items, currentValue: binding)
 }
 
+// MARK: - preferredStyle
+
+@Test("automatic style uses a menu at the long-list threshold")
+func automaticStyleUsesMenuAtThreshold() {
+    #expect(
+        MenuPicker<MenuPickerTestItem>.usesWheelSheet(for: .automatic, itemCount: 30) == false
+    )
+}
+
+@Test("automatic style uses a wheel sheet above the long-list threshold")
+func automaticStyleUsesWheelAboveThreshold() {
+    #expect(
+        MenuPicker<MenuPickerTestItem>.usesWheelSheet(for: .automatic, itemCount: 31)
+    )
+}
+
+@Test("menu style remains a menu above the long-list threshold")
+func menuStyleRemainsMenuAboveThreshold() {
+    #expect(
+        MenuPicker<MenuPickerTestItem>.usesWheelSheet(for: .menu, itemCount: 200) == false
+    )
+}
+
+@Test("init defaults preferredStyle to automatic")
+@MainActor
+func initDefaultsToAutomaticStyle() throws {
+    let items = makeItems(5)
+    var selected = items[0]
+    let binding = Binding(get: { selected }, set: { selected = $0 })
+    _ = MenuPicker(items: items, currentValue: binding)
+}
+
+@Test("init accepts an explicit .menu preferredStyle for a short list")
+@MainActor
+func initAcceptsMenuStyleForShortList() throws {
+    let items = makeItems(5)
+    var selected = items[0]
+    let binding = Binding(get: { selected }, set: { selected = $0 })
+    _ = MenuPicker(items: items, currentValue: binding, preferredStyle: .menu)
+}
+
+@Test("init accepts an explicit .menu preferredStyle for a list past longListThreshold")
+@MainActor
+func initAcceptsMenuStyleForLongList() throws {
+    // Regression test: `.menu` must force the native dropdown presentation even when the item
+    // count would otherwise fall back to the wheel-sheet under `.automatic` — e.g. a year picker
+    // with 100+ items that must stay visually consistent with a sibling month picker.
+    let items = makeItems(200)
+    var selected = items[0]
+    let binding = Binding(get: { selected }, set: { selected = $0 })
+    _ = MenuPicker(items: items, currentValue: binding, preferredStyle: .menu)
+}
+
+@Test("init accepts an explicit .automatic preferredStyle")
+@MainActor
+func initAcceptsExplicitAutomaticStyle() throws {
+    let items = makeItems(40)
+    var selected = items[0]
+    let binding = Binding(get: { selected }, set: { selected = $0 })
+    _ = MenuPicker(items: items, currentValue: binding, preferredStyle: .automatic)
+}
+
 @Test("Int conforms to MenuPickerItem for convenient picker usage")
 func intConformsToMenuPickerItem() {
     let value = 9
