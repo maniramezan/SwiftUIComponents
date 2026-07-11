@@ -39,4 +39,29 @@ struct LoadMoreFooterTests {
         footer.onTrigger()
         #expect(triggerCount == 2)
     }
+
+    // MARK: - Rendering (exercises the sentinel and spinner branches)
+
+    @Test("has more, idle renders the sentinel without a spinner and fires onTrigger")
+    func rendersSentinelIdleAndFires() {
+        var triggerCount = 0
+        renderForCoverage(
+            LoadMoreFooter(triggerID: "page-2", isLoadingMore: false) { triggerCount += 1 }
+        )
+        #expect(triggerCount == 1)
+    }
+
+    @Test("has more, loading renders the sentinel and spinner")
+    func rendersSentinelLoading() {
+        renderForCoverage(LoadMoreFooter(triggerID: "page-2", isLoadingMore: true) {})
+    }
+
+    @Test("no more content omits the sentinel and never fires onTrigger")
+    func rendersNoMoreContent() {
+        var triggerCount = 0
+        renderForCoverage(
+            LoadMoreFooter(triggerID: nil, isLoadingMore: false) { triggerCount += 1 }
+        )
+        #expect(triggerCount == 0)
+    }
 }
