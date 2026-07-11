@@ -3,6 +3,12 @@ import Testing
 
 @testable import Components
 
+#if canImport(UIKit)
+    import UIKit
+#elseif canImport(AppKit)
+    import AppKit
+#endif
+
 // MARK: - itemWidth
 
 @Test("itemWidth reserves the peek sliver and one spacing gap per visible item")
@@ -121,6 +127,24 @@ func carouselRowConstruction() {
     _ = CarouselRow([Int](), id: \.self) { Text("\($0)") }  // empty → EmptyView path
 }
 
+// MARK: - Rendering (rows / rowHeight)
+
+@MainActor
+@Test("CarouselRow with a single row renders the LazyHStack lane")
+func carouselRowSingleRowRendersLane() {
+    render(CarouselRow(1...6, id: \.self) { value in Text("\(value)") })
+}
+
+@MainActor
+@Test("CarouselRow with rows and rowHeight renders a bounded LazyHGrid lane")
+func carouselRowMultiRowRendersGridLane() {
+    render(
+        CarouselRow(1...6, id: \.self, rows: 2, rowHeight: 80) { value in
+            Text("\(value)")
+        }
+    )
+}
+
 // MARK: - Fixtures
 
 /// A minimal identifiable fixture reused across carousel tests.
@@ -133,4 +157,26 @@ struct CarouselTestItem: Identifiable, Hashable {
         CarouselTestItem(id: 2, title: "Two"),
         CarouselTestItem(id: 3, title: "Three"),
     ]
+}
+
+// MARK: - Helpers
+
+/// Hosts `view` in a real platform view hierarchy and forces layout, so
+/// container closures (e.g. `ScrollViewReader`, `GeometryReader`) actually run
+/// instead of merely being stored for later.
+@MainActor
+private func render<V: View>(_ view: V, size: CGSize = CGSize(width: 320, height: 200)) {
+    #if canImport(UIKit)
+        let hostingController = UIHostingController(rootView: view)
+        hostingController.view.frame = CGRect(origin: .zero, size: size)
+        hostingController.view.setNeedsLayout()
+        hostingController.view.layoutIfNeeded()
+    #elseif canImport(AppKit)
+        let hostingController = NSHostingController(rootView: view)
+        hostingController.view.frame = CGRect(origin: .zero, size: size)
+        hostingController.view.needsLayout = true
+        hostingController.view.layoutSubtreeIfNeeded()
+    #else
+        _ = view
+    #endif
 }
