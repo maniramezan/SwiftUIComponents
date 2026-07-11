@@ -52,9 +52,13 @@ private struct ThemeToggleCapsule: View {
     @Environment(\.designTheme) private var theme
 
     var body: some View {
+        // The track mimics the native platform toggle's ~51×31pt footprint.
+        // Height matches `fourUnits` on the 4/8pt scale exactly; width has no
+        // single matching token, so it's expressed as `sixUnits + halfUnit`
+        // (48 + 4 = 52pt) to keep it theme-derived rather than a bare literal.
         RoundedRectangle(cornerRadius: theme.radius.pill, style: .continuous)
             .fill(isOn ? theme.colors.primary : theme.colors.containerSecondary)
-            .frame(width: 52, height: 32)
+            .frame(width: theme.spacing.sixUnits + theme.spacing.halfUnit, height: theme.spacing.fourUnits)
             .overlay(alignment: isOn ? .trailing : .leading) {
                 Circle()
                     .fill(Color.white)

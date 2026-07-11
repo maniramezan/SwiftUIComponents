@@ -24,8 +24,6 @@ public struct TypingDotsView: View {
     @Environment(\.designTheme) private var theme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    private static let dotSize: CGFloat = 8
-
     /// Creates a typing indicator.
     public init() {}
 
@@ -34,7 +32,7 @@ public struct TypingDotsView: View {
             ForEach(0..<3, id: \.self) { index in
                 Circle()
                     .fill(theme.colors.textSecondary)
-                    .frame(width: Self.dotSize, height: Self.dotSize)
+                    .frame(width: theme.spacing.oneUnit, height: theme.spacing.oneUnit)
                     .opacity(opacity(for: index))
             }
         }

@@ -416,7 +416,7 @@ private struct SegmentedPickerBadge: View {
                     .font(theme.typography.badge)
                     .foregroundStyle(theme.colors.onError)
                     .padding(.horizontal, theme.spacing.halfUnit)
-                    .padding(.vertical, 2)
+                    .padding(.vertical, theme.spacing.halfUnit / 2)
                     .background(theme.colors.error, in: Capsule(style: .continuous))
                     .fixedSize()
             }
