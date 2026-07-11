@@ -32,12 +32,25 @@ public struct MenuPicker<Item: MenuPickerItem>: View {
     // MARK: - Styling Constants
 
     fileprivate static var triggerBorderOpacity: CGFloat { 0.25 }
-    private static var longListThreshold: Int { 30 }
+    nonisolated private static var longListThreshold: Int { 30 }
+
+    /// Controls which presentation `MenuPicker` uses on iOS.
+    public enum PresentationStyle: Sendable {
+        /// Uses a native dropdown menu for short lists and falls back to a compact wheel sheet
+        /// once the list exceeds an internal item-count threshold.
+        case automatic
+        /// Always uses the native dropdown menu, regardless of item count. Prefer this when a
+        /// picker must visually and behaviorally match a sibling `MenuPicker` (e.g. a month and
+        /// year picker shown side by side) so one doesn't silently diverge into a different
+        /// presentation once its list happens to cross the automatic threshold.
+        case menu
+    }
 
     // MARK: - Items
 
     private let items: [Item]
     private let longestLabel: String
+    private let preferredStyle: PresentationStyle
 
     // MARK: - Selection State
 
@@ -54,10 +67,12 @@ public struct MenuPicker<Item: MenuPickerItem>: View {
     /// - Parameters:
     ///   - items: The items to display. Must be non-empty and must contain `currentValue`.
     ///   - currentValue: The currently selected item. Must exist in `items`.
+    ///   - preferredStyle: Which iOS presentation to use. Defaults to `.automatic`.
     ///   - onWidthChange: Optional callback that receives the measured width so parents can react (e.g., switch layouts).
     public init(
         items: some RandomAccessCollection<Item>,
         currentValue: Binding<Item>,
+        preferredStyle: PresentationStyle = .automatic,
         onWidthChange: ((CGFloat) -> Void)? = nil
     ) {
         let items = Array(items)
@@ -69,6 +84,7 @@ public struct MenuPicker<Item: MenuPickerItem>: View {
         self.items = items
         self._currentValue = currentValue
         self.longestLabel = Self.longestLabel(in: items)
+        self.preferredStyle = preferredStyle
         self.onWidthChange = onWidthChange
     }
 
@@ -76,7 +92,7 @@ public struct MenuPicker<Item: MenuPickerItem>: View {
     public var body: some View {
         #if canImport(UIKit)
             let requiredWidth = measuredWidth > 0 ? measuredWidth : measureWidth(for: theme.typography.controlUIFont)
-            if items.count > Self.longListThreshold {
+            if Self.usesWheelSheet(for: preferredStyle, itemCount: items.count) {
                 WheelMenuPicker(
                     items: items,
                     currentValue: $currentValue,
@@ -200,6 +216,10 @@ public struct MenuPicker<Item: MenuPickerItem>: View {
             let button = UIButton(configuration: initialConfig)
             button.showsMenuAsPrimaryAction = true
             let constraint = button.widthAnchor.constraint(equalToConstant: width)
+            // One below `.required` so this can coexist with UIKit's own temporary/interim layout
+            // constraints (e.g. `_UITemporaryLayoutWidth == 0`) while a hosting SwiftUI parent is
+            // still negotiating sizes, instead of hard-conflicting and logging Auto Layout errors.
+            constraint.priority = UILayoutPriority(999)
             constraint.isActive = true
             context.coordinator.widthConstraint = constraint
             return button
@@ -209,6 +229,7 @@ public struct MenuPicker<Item: MenuPickerItem>: View {
             uiView.configuration = makeConfiguration()
             uiView.menu = makeMenu()
             uiView.invalidateIntrinsicContentSize()
+            guard context.coordinator.widthConstraint?.constant != width else { return }
             context.coordinator.widthConstraint?.constant = width
             uiView.layoutIfNeeded()
         }
@@ -452,6 +473,14 @@ extension MenuPicker {
         items
             .map(\.title)
             .max(by: { $0.count < $1.count }) ?? ""
+    }
+
+    /// Determines whether the iOS picker should use its compact wheel sheet.
+    nonisolated static func usesWheelSheet(
+        for style: PresentationStyle,
+        itemCount: Int
+    ) -> Bool {
+        style == .automatic && itemCount > longListThreshold
     }
 
     /// Computes the fixed trigger width for the AppKit `NSPopUpButton` bridge.
