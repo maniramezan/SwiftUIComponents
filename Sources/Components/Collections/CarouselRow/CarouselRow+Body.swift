@@ -15,12 +15,8 @@ extension CarouselRow {
     var scrollBody: some View {
         ScrollViewReader { proxy in
             let scroll = ScrollView(.horizontal, showsIndicators: false) {
-                LazyHStack(spacing: resolvedSpacing) {
-                    ForEach(items, id: idKeyPath) { element in
-                        sizedItem(element)
-                    }
-                }
-                .scrollTargetLayout()
+                lane
+                    .scrollTargetLayout()
             }
 
             snapped(scroll)
@@ -50,6 +46,33 @@ extension CarouselRow {
                 .accessibilityScrollAction { edge in
                     stepScroll(edge: edge, proxy: proxy)
                 }
+        }
+    }
+
+    /// The scrollable content: a single `LazyHStack` lane, or a `LazyHGrid`
+    /// flowing items top-to-bottom across ``rows`` stacked rows. The grid needs
+    /// a bounded height, so it is only used when a `rowHeight` is supplied.
+    @ViewBuilder
+    private var lane: some View {
+        if rows > 1, let rowHeight {
+            LazyHGrid(
+                rows: Array(
+                    repeating: GridItem(.fixed(rowHeight), spacing: resolvedSpacing),
+                    count: rows
+                ),
+                spacing: resolvedSpacing
+            ) {
+                ForEach(items, id: idKeyPath) { element in
+                    sizedItem(element)
+                }
+            }
+            .frame(height: rowHeight * CGFloat(rows) + resolvedSpacing * CGFloat(rows - 1))
+        } else {
+            LazyHStack(spacing: resolvedSpacing) {
+                ForEach(items, id: idKeyPath) { element in
+                    sizedItem(element)
+                }
+            }
         }
     }
 

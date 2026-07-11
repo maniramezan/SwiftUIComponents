@@ -21,6 +21,7 @@ public struct SectionHeader: View {
     private let title: String
     private let actionLabel: String?
     private let onAction: (() -> Void)?
+    private let titleFont: Font?
     @Environment(\.designTheme) private var theme
 
     /// Creates a section header.
@@ -31,20 +32,24 @@ public struct SectionHeader: View {
     ///     action button to appear.
     ///   - onAction: Optional closure invoked when the trailing button is
     ///     tapped. Required for the action button to appear.
+    ///   - titleFont: Optional override for the title's font. When `nil`
+    ///     (the default), the theme's `typography.headline` is used.
     public init(
         title: String,
         actionLabel: String? = nil,
-        onAction: (() -> Void)? = nil
+        onAction: (() -> Void)? = nil,
+        titleFont: Font? = nil
     ) {
         self.title = title
         self.actionLabel = actionLabel
         self.onAction = onAction
+        self.titleFont = titleFont
     }
 
     public var body: some View {
         HStack(spacing: theme.spacing.oneUnit) {
             Text(title)
-                .font(theme.typography.headline)
+                .font(titleFont ?? theme.typography.headline)
                 .foregroundStyle(theme.colors.textPrimary)
                 .accessibilityAddTraits(.isHeader)
             Spacer(minLength: 0)

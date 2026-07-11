@@ -39,6 +39,8 @@ where Data: RandomAccessCollection, ID: Hashable, Content: View {
     let sizing: CarouselItemSizing
     let explicitSpacing: CGFloat?
     let snapping: CarouselSnapping
+    let rows: Int
+    let rowHeight: CGFloat?
     let content: (Data.Element) -> Content
 
     @State var geometry = CarouselGeometry()
@@ -61,6 +63,12 @@ where Data: RandomAccessCollection, ID: Hashable, Content: View {
     ///     `nil` (the default), the theme's `spacing.twoUnits` is used.
     ///   - snapping: How the row settles after a drag. Defaults to
     ///     ``CarouselSnapping/viewAligned``.
+    ///   - rows: The number of stacked rows items flow into, filling
+    ///     top-to-bottom before advancing horizontally. Values below `1` are
+    ///     clamped to `1`. Defaults to a single row.
+    ///   - rowHeight: The height of one row. Required when `rows` is greater
+    ///     than `1` so the horizontal grid has a bounded height; ignored for a
+    ///     single row, which sizes to its tallest item.
     ///   - content: A view builder invoked for each item.
     public init(
         _ items: Data,
@@ -68,6 +76,8 @@ where Data: RandomAccessCollection, ID: Hashable, Content: View {
         sizing: CarouselItemSizing = .peek(),
         spacing: CGFloat? = nil,
         snapping: CarouselSnapping = .viewAligned,
+        rows: Int = 1,
+        rowHeight: CGFloat? = nil,
         @ViewBuilder content: @escaping (Data.Element) -> Content
     ) {
         self.items = items
@@ -75,6 +85,8 @@ where Data: RandomAccessCollection, ID: Hashable, Content: View {
         self.sizing = sizing
         self.explicitSpacing = spacing
         self.snapping = snapping
+        self.rows = max(1, rows)
+        self.rowHeight = rowHeight
         self.content = content
     }
 
@@ -104,12 +116,16 @@ public extension CarouselRow where Data.Element: Identifiable, ID == Data.Elemen
     ///     `nil` (the default), the theme's `spacing.twoUnits` is used.
     ///   - snapping: How the row settles after a drag. Defaults to
     ///     ``CarouselSnapping/viewAligned``.
+    ///   - rows: The number of stacked rows items flow into. Defaults to `1`.
+    ///   - rowHeight: The height of one row; required when `rows` > `1`.
     ///   - content: A view builder invoked for each item.
     init(
         _ items: Data,
         sizing: CarouselItemSizing = .peek(),
         spacing: CGFloat? = nil,
         snapping: CarouselSnapping = .viewAligned,
+        rows: Int = 1,
+        rowHeight: CGFloat? = nil,
         @ViewBuilder content: @escaping (Data.Element) -> Content
     ) {
         self.init(
@@ -118,6 +134,8 @@ public extension CarouselRow where Data.Element: Identifiable, ID == Data.Elemen
             sizing: sizing,
             spacing: spacing,
             snapping: snapping,
+            rows: rows,
+            rowHeight: rowHeight,
             content: content
         )
     }
