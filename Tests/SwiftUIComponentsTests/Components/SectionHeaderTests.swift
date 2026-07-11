@@ -34,4 +34,14 @@ struct SectionHeaderTests {
         let header = SectionHeader(title: "Test", actionLabel: "Tap", onAction: nil)
         _ = header
     }
+
+    @Test("titleFont override replaces the theme's default headline font")
+    func titleFontOverride() {
+        _ = SectionHeader(title: "Custom", titleFont: .largeTitle).body
+    }
+
+    @Test("nil titleFont falls back to the theme's headline font")
+    func titleFontDefault() {
+        _ = SectionHeader(title: "Default").body
+    }
 }

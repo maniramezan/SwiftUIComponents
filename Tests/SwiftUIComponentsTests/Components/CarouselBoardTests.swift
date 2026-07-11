@@ -20,6 +20,33 @@ func carouselShelfIDFromTitle() {
     #expect(shelf.shelfID == AnyHashable("Top Free"))
 }
 
+@MainActor
+@Test("CarouselShelf builds a multi-row grid with a custom title font")
+func carouselShelfMultiRowWithTitleFont() {
+    let shelf = CarouselShelf(
+        "Multi-row",
+        items: [1, 2, 3, 4],
+        id: \.self,
+        rows: 2,
+        rowHeight: 80,
+        titleFont: .largeTitle
+    ) { Text("\($0)") }
+    _ = shelf.makeShelf()
+}
+
+@MainActor
+@Test("Identifiable-based CarouselShelf initializer forwards rows and titleFont")
+func carouselShelfIdentifiableForwardsNewParameters() {
+    let shelf = CarouselShelf(
+        "Identifiable multi-row",
+        items: CarouselTestItem.samples,
+        rows: 2,
+        rowHeight: 80,
+        titleFont: .largeTitle
+    ) { Text($0.title) }
+    _ = shelf.makeShelf()
+}
+
 // MARK: - Result builder
 
 @MainActor
