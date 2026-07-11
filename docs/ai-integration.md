@@ -19,7 +19,7 @@ SwiftUIComponents currently ships three SwiftPM library products:
 
 - `DesignSystem`: design tokens and theming primitives.
 - `Components`: reusable SwiftUI views and modifiers. Depends on `DesignSystem`.
-- `ComponentShowcase`: demo/reference screens used by the package itself. Do not depend on this from production app targets.
+- `ComponentShowcase`: demo/reference screens exposed as a library product for previews and exploration. Do not depend on this from production app targets.
 
 For application code, import the first two:
 
