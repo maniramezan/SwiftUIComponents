@@ -77,6 +77,27 @@ func initAcceptsLongList() throws {
 
 // MARK: - preferredStyle
 
+@Test("automatic style uses a menu at the long-list threshold")
+func automaticStyleUsesMenuAtThreshold() {
+    #expect(
+        MenuPicker<MenuPickerTestItem>.usesWheelSheet(for: .automatic, itemCount: 30) == false
+    )
+}
+
+@Test("automatic style uses a wheel sheet above the long-list threshold")
+func automaticStyleUsesWheelAboveThreshold() {
+    #expect(
+        MenuPicker<MenuPickerTestItem>.usesWheelSheet(for: .automatic, itemCount: 31)
+    )
+}
+
+@Test("menu style remains a menu above the long-list threshold")
+func menuStyleRemainsMenuAboveThreshold() {
+    #expect(
+        MenuPicker<MenuPickerTestItem>.usesWheelSheet(for: .menu, itemCount: 200) == false
+    )
+}
+
 @Test("init defaults preferredStyle to automatic")
 @MainActor
 func initDefaultsToAutomaticStyle() throws {

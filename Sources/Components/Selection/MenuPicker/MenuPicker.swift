@@ -32,7 +32,7 @@ public struct MenuPicker<Item: MenuPickerItem>: View {
     // MARK: - Styling Constants
 
     fileprivate static var triggerBorderOpacity: CGFloat { 0.25 }
-    private static var longListThreshold: Int { 30 }
+    nonisolated private static var longListThreshold: Int { 30 }
 
     /// Controls which presentation `MenuPicker` uses on iOS.
     public enum PresentationStyle: Sendable {
@@ -92,7 +92,7 @@ public struct MenuPicker<Item: MenuPickerItem>: View {
     public var body: some View {
         #if canImport(UIKit)
             let requiredWidth = measuredWidth > 0 ? measuredWidth : measureWidth(for: theme.typography.controlUIFont)
-            if preferredStyle == .automatic && items.count > Self.longListThreshold {
+            if Self.usesWheelSheet(for: preferredStyle, itemCount: items.count) {
                 WheelMenuPicker(
                     items: items,
                     currentValue: $currentValue,
@@ -473,6 +473,14 @@ extension MenuPicker {
         items
             .map(\.title)
             .max(by: { $0.count < $1.count }) ?? ""
+    }
+
+    /// Determines whether the iOS picker should use its compact wheel sheet.
+    nonisolated static func usesWheelSheet(
+        for style: PresentationStyle,
+        itemCount: Int
+    ) -> Bool {
+        style == .automatic && itemCount > longListThreshold
     }
 
     /// Computes the fixed trigger width for the AppKit `NSPopUpButton` bridge.

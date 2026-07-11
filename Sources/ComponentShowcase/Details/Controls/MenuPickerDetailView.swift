@@ -17,6 +17,9 @@ struct MenuPickerDetailView: View {
         .init(id: 5, title: "Strawberry"),
         .init(id: 6, title: "Watermelon"),
     ]
+    private static let longFruits = (0...30).map { index in
+        FruitItem(id: index, title: "Fruit \(index + 1)")
+    }
 
     @State private var selected: FruitItem = Self.fruits[0]
     @State private var longSelected: FruitItem = Self.fruits[0]
@@ -28,17 +31,18 @@ struct MenuPickerDetailView: View {
                 MenuPicker(items: Self.fruits, currentValue: $selected)
             }
 
-            ShowcaseSection("Long list (searchable sheet)") {
+            ShowcaseSection("Long list (wheel sheet on iOS)") {
                 MenuPicker(
-                    items: Self.fruits + [
-                        .init(id: 7, title: "Blueberry"),
-                        .init(id: 8, title: "Kiwi"),
-                        .init(id: 9, title: "Lemon"),
-                        .init(id: 10, title: "Lime"),
-                        .init(id: 11, title: "Orange"),
-                        .init(id: 12, title: "Peach"),
-                    ],
+                    items: Self.longFruits,
                     currentValue: $longSelected
+                )
+            }
+
+            ShowcaseSection("Forced menu") {
+                MenuPicker(
+                    items: Self.longFruits,
+                    currentValue: $longSelected,
+                    preferredStyle: .menu
                 )
             }
 
