@@ -60,9 +60,12 @@ private struct ThemeToggleCapsule: View {
             .fill(isOn ? theme.colors.primary : theme.colors.containerSecondary)
             .frame(width: theme.spacing.sixUnits + theme.spacing.halfUnit, height: theme.spacing.fourUnits)
             .overlay(alignment: isOn ? .trailing : .leading) {
+                // The thumb is always white, matching the native platform
+                // toggle's thumb color in both light and dark appearances —
+                // not a themed surface color.
                 Circle()
                     .fill(Color.white)
-                    .shadow(color: .black.opacity(0.18), radius: 1, y: 1)
+                    .shadow(color: theme.colors.shadow.opacity(0.18), radius: 1, y: 1)
                     .padding(theme.spacing.halfUnit)
             }
     }
