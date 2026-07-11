@@ -23,7 +23,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/swiftlang/swift-docc-plugin", from: "1.4.3"),
-        .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", from: "1.19.2"),
+        .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", from: "1.19.3"),
     ],
     targets: [
         .target(
@@ -40,7 +40,8 @@ let package = Package(
                 "Components",
                 "DesignSystem",
                 .product(name: "SnapshotTesting", package: "swift-snapshot-testing"),
-            ]
+            ],
+            exclude: ["Snapshots/__Snapshots__"]
         ),
         .target(
             name: "ComponentShowcase",
