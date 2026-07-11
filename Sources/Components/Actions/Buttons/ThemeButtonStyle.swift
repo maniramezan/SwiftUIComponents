@@ -30,7 +30,9 @@ public struct ThemeButtonStyle: ButtonStyle {
                 RoundedRectangle(cornerRadius: theme.radius.oneAndHalfUnits, style: .continuous)
                     .strokeBorder(borderColor, lineWidth: borderWidth)
             }
-            .opacity(isEnabled ? (configuration.isPressed ? 0.82 : 1) : theme.motion.disabledOpacity)
+            .opacity(
+                isEnabled ? (configuration.isPressed ? theme.motion.pressedOpacity : 1) : theme.motion.disabledOpacity
+            )
             .animation(theme.motion.standardAnimation, value: configuration.isPressed)
     }
 }
