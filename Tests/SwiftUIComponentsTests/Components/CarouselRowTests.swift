@@ -145,6 +145,53 @@ func carouselRowMultiRowRendersGridLane() {
     )
 }
 
+@MainActor
+@Test("CarouselRow renders fixed-width items with free-scroll snapping")
+func carouselRowFixedWidthFreeSnappingRenders() {
+    render(
+        CarouselRow(1...6, id: \.self, sizing: .fixedWidth(120), snapping: .free) { value in
+            Text("\(value)")
+        }
+    )
+}
+
+@MainActor
+@Test("CarouselRow renders intrinsically-sized (fitContent) items")
+func carouselRowFitContentRenders() {
+    render(
+        CarouselRow(1...6, id: \.self, sizing: .fitContent) { value in
+            Text("\(value)")
+        }
+    )
+}
+
+@MainActor
+@Test("stepScroll advances to the target item via a real ScrollViewProxy")
+func stepScrollAdvancesToTarget() {
+    render(
+        ScrollViewReader { proxy in
+            let scrollContent = CarouselRowScrollContent(
+                items: Array(1...6),
+                idKeyPath: \Int.self,
+                sizing: .peek(visibleCount: 1),
+                spacing: 16,
+                snapping: .viewAligned,
+                rows: 1,
+                rowHeight: nil,
+                content: { value in Text("\(value)") },
+                viewportWidth: .constant(300),
+                geometry: .constant(CarouselGeometry(offsetX: 0, contentWidth: 900, viewportWidth: 300))
+            )
+            // `ScrollViewProxy` may only be used once the view hierarchy has
+            // finished updating, so drive `stepScroll` from `.onAppear`
+            // rather than inline during body evaluation.
+            return scrollContent.onAppear {
+                scrollContent.stepScroll(edge: .trailing, proxy: proxy)
+            }
+        }
+    )
+}
+
 // MARK: - Fixtures
 
 /// A minimal identifiable fixture reused across carousel tests.
@@ -163,19 +210,36 @@ struct CarouselTestItem: Identifiable, Hashable {
 
 /// Hosts `view` in a real platform view hierarchy and forces layout, so
 /// container closures (e.g. `ScrollViewReader`, `GeometryReader`) actually run
-/// instead of merely being stored for later.
+/// instead of merely being stored for later. Attaches to an offscreen window
+/// so lazy containers (`LazyHStack`/`LazyHGrid`) and draw-time modifiers
+/// (`.overlay`, `.background`) fully realize their content, not just layout.
 @MainActor
 private func render<V: View>(_ view: V, size: CGSize = CGSize(width: 320, height: 200)) {
     #if canImport(UIKit)
         let hostingController = UIHostingController(rootView: view)
         hostingController.view.frame = CGRect(origin: .zero, size: size)
+        let window = UIWindow(frame: hostingController.view.frame)
+        window.rootViewController = hostingController
+        window.isHidden = false
+        window.makeKeyAndVisible()
         hostingController.view.setNeedsLayout()
         hostingController.view.layoutIfNeeded()
+        RunLoop.current.run(until: Date())
     #elseif canImport(AppKit)
         let hostingController = NSHostingController(rootView: view)
         hostingController.view.frame = CGRect(origin: .zero, size: size)
+        let window = NSWindow(
+            contentRect: hostingController.view.frame,
+            styleMask: [.borderless],
+            backing: .buffered,
+            defer: false
+        )
+        window.contentViewController = hostingController
+        window.orderFront(nil)
         hostingController.view.needsLayout = true
         hostingController.view.layoutSubtreeIfNeeded()
+        hostingController.view.displayIfNeeded()
+        RunLoop.current.run(until: Date())
     #else
         _ = view
     #endif
