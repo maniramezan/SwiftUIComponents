@@ -20,7 +20,11 @@ struct GhostLoadingDetailView: View {
 
             ShowcaseSection("Profile row skeleton") {
                 HStack(spacing: theme.spacing.oneAndHalfUnits) {
-                    GhostLoadingBlock(width: 48, height: 48, cornerRadius: 24)
+                    GhostLoadingBlock(
+                        width: theme.spacing.sixUnits,
+                        height: theme.spacing.sixUnits,
+                        cornerRadius: theme.radius.threeUnits
+                    )
                     VStack(alignment: .leading, spacing: theme.spacing.halfUnit) {
                         GhostLoadingBlock(width: 140, height: 14)
                         GhostLoadingBlock(width: 90, height: 12)

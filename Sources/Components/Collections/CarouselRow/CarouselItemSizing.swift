@@ -35,7 +35,10 @@ public struct CarouselItemSizing: Equatable, Sendable {
     ///   - visibleCount: The number of items fully visible at once. Values
     ///     below `1` are clamped to `1`. Defaults to `1`.
     ///   - peek: The width, in points, of the revealed sliver of the next
-    ///     item. Defaults to `32`.
+    ///     item. Defaults to `32` — matching `theme.spacing.fourUnits` — since
+    ///     this static factory has no `Environment`/theme access to resolve a
+    ///     `nil` default against; pass an explicit value derived from
+    ///     `theme.spacing` at the call site to stay theme-driven.
     /// - Returns: A peeking sizing value.
     public static func peek(visibleCount: Int = 1, peek: CGFloat = 32) -> CarouselItemSizing {
         CarouselItemSizing(kind: .peek(visibleCount: max(1, visibleCount), peek: max(0, peek)))

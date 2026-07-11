@@ -33,6 +33,8 @@ struct TitledPageViewHeader: View {
     /// Called when the user taps a non-active title to navigate to that page.
     let onJump: (Int) -> Void
 
+    @Environment(\.designTheme) private var theme
+
     var body: some View {
         let layout = effectiveTitleLayout
         let metrics = TitledPageViewMetrics(
@@ -54,7 +56,7 @@ struct TitledPageViewHeader: View {
                             .font(resolved.titleFont)
                             .foregroundStyle(titleColor(for: index))
                             .opacity(titleOpacity(for: index))
-                            .animation(.easeInOut(duration: 0.2), value: activeIndex)
+                            .animation(theme.motion.standardAnimation, value: activeIndex)
                             .lineLimit(1)
                             .minimumScaleFactor(0.85)
                             .frame(width: metrics.slotWidth, alignment: slotAlignment(for: layout))
@@ -70,7 +72,7 @@ struct TitledPageViewHeader: View {
                         stride: metrics.slotStride
                     )
                 )
-                .animation(reduceMotion ? .easeInOut(duration: 0.15) : nil, value: activeIndex)
+                .animation(reduceMotion ? theme.motion.reducedMotionAnimation : nil, value: activeIndex)
                 .frame(width: viewportWidth, alignment: .leading)
                 .clipped()
             }

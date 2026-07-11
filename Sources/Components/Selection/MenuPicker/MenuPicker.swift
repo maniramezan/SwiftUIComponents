@@ -31,7 +31,6 @@ public struct MenuPicker<Item: MenuPickerItem>: View {
 
     // MARK: - Styling Constants
 
-    fileprivate static var triggerBorderOpacity: CGFloat { 0.25 }
     nonisolated private static var longListThreshold: Int { 30 }
 
     /// Controls which presentation `MenuPicker` uses on iOS.
@@ -312,6 +311,9 @@ public struct MenuPicker<Item: MenuPickerItem>: View {
                     }
                 }
                 .pickerStyle(.wheel)
+                // Tuned to comfortably fit a native wheel picker's fixed
+                // row height plus its drag indicator; not a spacing/size
+                // token value since it isn't a gap or a component metric.
                 .presentationDetents([.height(220)])
                 .presentationDragIndicator(.visible)
             }

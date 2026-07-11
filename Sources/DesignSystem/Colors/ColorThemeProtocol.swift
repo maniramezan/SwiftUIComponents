@@ -36,9 +36,15 @@ public protocol ColorTheme: Sendable {
     @MainActor var warning: Color { get }
     /// Disabled fill or foreground color.
     @MainActor var disabled: Color { get }
+    /// Tint used for drop shadows (typically combined with a low opacity at
+    /// the call site, e.g. `theme.colors.shadow.opacity(0.15)`).
+    @MainActor var shadow: Color { get }
 }
 
 public extension ColorTheme {
     /// Unselected segmented-control trough fill used when a custom theme does not override it.
     @MainActor var segmentUnselectedBackground: Color { containerSecondary }
+
+    /// Shadow tint used when a custom theme does not override it.
+    @MainActor var shadow: Color { .black }
 }

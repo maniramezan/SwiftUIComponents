@@ -34,6 +34,33 @@ func defaultShapeAndInteractionTokens() {
     #expect(stroke.thick == 4)
     #expect(motion.minimumHitTarget == 44)
     #expect(motion.disabledOpacity == 0.45)
+    #expect(motion.pressedOpacity == 0.82)
+}
+
+@Test("DefaultMotion supports custom reduced-motion and pressed-opacity overrides")
+@MainActor
+func defaultMotionSupportsOverrides() {
+    let motion = DefaultMotion(pressedOpacity: 0.5, reducedMotionDuration: 0.1)
+    #expect(motion.pressedOpacity == 0.5)
+
+    let defaults = DefaultMotion()
+    #expect(defaults.reducedMotionAnimation == .easeInOut(duration: 0.15))
+    #expect(motion.reducedMotionAnimation == .easeInOut(duration: 0.1))
+}
+
+@Test("A minimal Motion conformer inherits pressedOpacity and reducedMotionAnimation defaults")
+@MainActor
+func motionProtocolExtensionProvidesDefaults() {
+    let motion = MinimalMotion()
+    #expect(motion.pressedOpacity == 0.82)
+    #expect(motion.reducedMotionAnimation == .easeInOut(duration: 0.15))
+}
+
+@Test("A minimal ColorTheme conformer inherits the shadow default")
+@MainActor
+func colorThemeExtensionProvidesShadowDefault() {
+    let colors = MinimalColorTheme()
+    #expect(colors.shadow == .black)
 }
 
 @Test("Default theme exposes overrideable public token groups")
@@ -57,4 +84,37 @@ func defaultColorsExposeSegmentUnselectedBackground() {
 @Test("Typography can be initialized with custom font family")
 func typographySupportsCustomFamily() {
     _ = DefaultTypography(fontFamily: "Avenir Next")
+}
+
+// MARK: - Fixtures
+
+/// A `Motion` conformer supplying only the original three requirements, to
+/// prove `pressedOpacity` and `reducedMotionAnimation` fall back to the
+/// protocol extension's defaults for any pre-existing custom conformer.
+private struct MinimalMotion: Motion {
+    let minimumHitTarget: CGFloat = 44
+    let disabledOpacity: Double = 0.45
+    @MainActor var standardAnimation: Animation { .easeInOut(duration: 0.2) }
+}
+
+/// A `ColorTheme` conformer supplying only the required members, to prove
+/// `shadow` (and `segmentUnselectedBackground`) fall back to the protocol
+/// extension's defaults for any pre-existing custom conformer.
+private struct MinimalColorTheme: ColorTheme {
+    @MainActor var background: Color { .white }
+    @MainActor var backgroundSecondary: Color { .white }
+    @MainActor var container: Color { .white }
+    @MainActor var containerSecondary: Color { .white }
+    @MainActor var primary: Color { .blue }
+    @MainActor var onPrimary: Color { .white }
+    @MainActor var textPrimary: Color { .black }
+    @MainActor var textSecondary: Color { .gray }
+    @MainActor var textTertiary: Color { .gray }
+    @MainActor var border: Color { .gray }
+    @MainActor var separator: Color { .gray }
+    @MainActor var error: Color { .red }
+    @MainActor var onError: Color { .white }
+    @MainActor var success: Color { .green }
+    @MainActor var warning: Color { .orange }
+    @MainActor var disabled: Color { .gray }
 }

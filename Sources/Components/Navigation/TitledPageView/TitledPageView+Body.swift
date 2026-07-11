@@ -220,7 +220,7 @@ struct TitledPageViewPagedContent<Element, ID: Hashable, PageContent: View>: Vie
         }
         let newID = pages[index][keyPath: idKeyPath]
         let animation: Animation =
-            reduceMotion ? .easeInOut(duration: 0.15) : theme.motion.standardAnimation
+            reduceMotion ? theme.motion.reducedMotionAnimation : theme.motion.standardAnimation
         withAnimation(animation) {
             selection = newID
         }

@@ -85,11 +85,10 @@ private struct TitledPageViewDotsIndicator: View {
     let minimumHitTarget: CGFloat
     let onJump: (Int) -> Void
 
-    private var dotDiameter: CGFloat { 8 }
-    private var dotSpacing: CGFloat { 4 }
+    @Environment(\.designTheme) private var theme
 
     var body: some View {
-        HStack(spacing: dotSpacing) {
+        HStack(spacing: theme.spacing.halfUnit) {
             ForEach(0..<count, id: \.self) { index in
                 Button {
                     onJump(index)
@@ -100,7 +99,7 @@ private struct TitledPageViewDotsIndicator: View {
                                 ? resolved.indicatorActiveColor
                                 : resolved.indicatorInactiveColor
                         )
-                        .frame(width: dotDiameter, height: dotDiameter)
+                        .frame(width: theme.spacing.oneUnit, height: theme.spacing.oneUnit)
                         .frame(width: minimumHitTarget, height: minimumHitTarget)
                         .contentShape(Rectangle())
                 }
@@ -125,8 +124,12 @@ private struct TitledPageViewBarIndicator: View {
     let progress: CGFloat
     let minimumHitTarget: CGFloat
 
+    @Environment(\.designTheme) private var theme
+
+    // No spacing/stroke token matches 3pt exactly (`stroke.regular` is 2pt,
+    // `stroke.thick` is 4pt); changing this to the nearest token would
+    // visibly thicken or thin the bar, so it stays a documented literal.
     private var barThickness: CGFloat { 3 }
-    private var minimumThumbWidth: CGFloat { 24 }
 
     var body: some View {
         GeometryReader { proxy in
@@ -142,7 +145,7 @@ private struct TitledPageViewBarIndicator: View {
 
                 Capsule()
                     .fill(resolved.indicatorActiveColor)
-                    .frame(width: max(segmentWidth, minimumThumbWidth), height: barThickness)
+                    .frame(width: max(segmentWidth, theme.spacing.threeUnits), height: barThickness)
                     .offset(x: thumbX)
             }
             .frame(height: minimumHitTarget, alignment: .center)

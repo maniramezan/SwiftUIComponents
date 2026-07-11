@@ -66,7 +66,7 @@ public struct Container<Content: View>: View {
     }
 
     private var shadowColor: Color {
-        .black.opacity(0.08)
+        theme.colors.shadow.opacity(0.08)
     }
 }
 

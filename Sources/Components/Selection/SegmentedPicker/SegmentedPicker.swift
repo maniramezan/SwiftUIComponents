@@ -269,7 +269,7 @@ struct SegmentedPickerScrollingRow<Item: MenuPickerItem, Label: View>: View {
     }
 
     private var activeAnimation: Animation {
-        reduceMotion ? .easeInOut(duration: 0.15) : theme.motion.standardAnimation
+        reduceMotion ? theme.motion.reducedMotionAnimation : theme.motion.standardAnimation
     }
 
     /// Scrolls the picker to the given item, positioning it near the trailing
@@ -352,7 +352,7 @@ private struct SegmentedPickerSegment<Item: MenuPickerItem, Label: View>: View {
     private var isActive: Bool { item.id == selection.id }
 
     private var activeAnimation: Animation {
-        reduceMotion ? .easeInOut(duration: 0.15) : theme.motion.standardAnimation
+        reduceMotion ? theme.motion.reducedMotionAnimation : theme.motion.standardAnimation
     }
 
     var body: some View {
