@@ -3,6 +3,12 @@ import Testing
 
 @testable import Components
 
+#if canImport(UIKit)
+    import UIKit
+#elseif canImport(AppKit)
+    import AppKit
+#endif
+
 // MARK: - itemWidth
 
 @Test("itemWidth reserves the peek sliver and one spacing gap per visible item")
@@ -121,6 +127,71 @@ func carouselRowConstruction() {
     _ = CarouselRow([Int](), id: \.self) { Text("\($0)") }  // empty → EmptyView path
 }
 
+// MARK: - Rendering (rows / rowHeight)
+
+@MainActor
+@Test("CarouselRow with a single row renders the LazyHStack lane")
+func carouselRowSingleRowRendersLane() {
+    render(CarouselRow(1...6, id: \.self) { value in Text("\(value)") })
+}
+
+@MainActor
+@Test("CarouselRow with rows and rowHeight renders a bounded LazyHGrid lane")
+func carouselRowMultiRowRendersGridLane() {
+    render(
+        CarouselRow(1...6, id: \.self, rows: 2, rowHeight: 80) { value in
+            Text("\(value)")
+        }
+    )
+}
+
+@MainActor
+@Test("CarouselRow renders fixed-width items with free-scroll snapping")
+func carouselRowFixedWidthFreeSnappingRenders() {
+    render(
+        CarouselRow(1...6, id: \.self, sizing: .fixedWidth(120), snapping: .free) { value in
+            Text("\(value)")
+        }
+    )
+}
+
+@MainActor
+@Test("CarouselRow renders intrinsically-sized (fitContent) items")
+func carouselRowFitContentRenders() {
+    render(
+        CarouselRow(1...6, id: \.self, sizing: .fitContent) { value in
+            Text("\(value)")
+        }
+    )
+}
+
+@MainActor
+@Test("stepScroll advances to the target item via a real ScrollViewProxy")
+func stepScrollAdvancesToTarget() {
+    render(
+        ScrollViewReader { proxy in
+            let scrollContent = CarouselRowScrollContent(
+                items: Array(1...6),
+                idKeyPath: \Int.self,
+                sizing: .peek(visibleCount: 1),
+                spacing: 16,
+                snapping: .viewAligned,
+                rows: 1,
+                rowHeight: nil,
+                content: { value in Text("\(value)") },
+                viewportWidth: .constant(300),
+                geometry: .constant(CarouselGeometry(offsetX: 0, contentWidth: 900, viewportWidth: 300))
+            )
+            // `ScrollViewProxy` may only be used once the view hierarchy has
+            // finished updating, so drive `stepScroll` from `.onAppear`
+            // rather than inline during body evaluation.
+            return scrollContent.onAppear {
+                scrollContent.stepScroll(edge: .trailing, proxy: proxy)
+            }
+        }
+    )
+}
+
 // MARK: - Fixtures
 
 /// A minimal identifiable fixture reused across carousel tests.
@@ -133,4 +204,43 @@ struct CarouselTestItem: Identifiable, Hashable {
         CarouselTestItem(id: 2, title: "Two"),
         CarouselTestItem(id: 3, title: "Three"),
     ]
+}
+
+// MARK: - Helpers
+
+/// Hosts `view` in a real platform view hierarchy and forces layout, so
+/// container closures (e.g. `ScrollViewReader`, `GeometryReader`) actually run
+/// instead of merely being stored for later. Attaches to an offscreen window
+/// so lazy containers (`LazyHStack`/`LazyHGrid`) and draw-time modifiers
+/// (`.overlay`, `.background`) fully realize their content, not just layout.
+@MainActor
+private func render<V: View>(_ view: V, size: CGSize = CGSize(width: 320, height: 200)) {
+    #if canImport(UIKit)
+        let hostingController = UIHostingController(rootView: view)
+        hostingController.view.frame = CGRect(origin: .zero, size: size)
+        let window = UIWindow(frame: hostingController.view.frame)
+        window.rootViewController = hostingController
+        window.isHidden = false
+        window.makeKeyAndVisible()
+        hostingController.view.setNeedsLayout()
+        hostingController.view.layoutIfNeeded()
+        RunLoop.current.run(until: Date())
+    #elseif canImport(AppKit)
+        let hostingController = NSHostingController(rootView: view)
+        hostingController.view.frame = CGRect(origin: .zero, size: size)
+        let window = NSWindow(
+            contentRect: hostingController.view.frame,
+            styleMask: [.borderless],
+            backing: .buffered,
+            defer: false
+        )
+        window.contentViewController = hostingController
+        window.orderFront(nil)
+        hostingController.view.needsLayout = true
+        hostingController.view.layoutSubtreeIfNeeded()
+        hostingController.view.displayIfNeeded()
+        RunLoop.current.run(until: Date())
+    #else
+        _ = view
+    #endif
 }

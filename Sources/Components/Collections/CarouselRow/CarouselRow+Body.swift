@@ -12,68 +12,225 @@ extension CarouselRow {
 
     /// The horizontal scroll view, geometry tracking, edge veil, and
     /// accessibility scrolling.
+    ///
+    /// Delegates to ``CarouselRowScrollContent``, a dedicated `View` type
+    /// (rather than an inline `@ViewBuilder` property), so SwiftUI can track
+    /// and diff this subtree independently of the rest of `CarouselRow`.
     var scrollBody: some View {
+        CarouselRowScrollContent(
+            items: items,
+            idKeyPath: idKeyPath,
+            sizing: sizing,
+            spacing: resolvedSpacing,
+            snapping: snapping,
+            rows: rows,
+            rowHeight: rowHeight,
+            content: content,
+            viewportWidth: $viewportWidth,
+            geometry: $geometry
+        )
+    }
+}
+
+// MARK: - Scroll content
+
+/// The horizontal scroll view, geometry tracking, edge veil, and
+/// accessibility scrolling for a ``CarouselRow``.
+///
+/// Extracted as its own `View` (instead of a computed property on
+/// `CarouselRow`) so SwiftUI can diff and update it independently — a plain
+/// `@ViewBuilder` property or method is always re-evaluated as part of its
+/// owning view's `body` and never gets its own identity in the render tree.
+struct CarouselRowScrollContent<Data, ID, Content>: View
+where Data: RandomAccessCollection, ID: Hashable, Content: View {
+
+    let items: Data
+    let idKeyPath: KeyPath<Data.Element, ID>
+    let sizing: CarouselItemSizing
+    let spacing: CGFloat
+    let snapping: CarouselSnapping
+    let rows: Int
+    let rowHeight: CGFloat?
+    let content: (Data.Element) -> Content
+
+    @Binding var viewportWidth: CGFloat
+    @Binding var geometry: CarouselGeometry
+
+    @Environment(\.designTheme) private var theme
+    @Environment(\.layoutDirection) private var layoutDirection
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
         ScrollViewReader { proxy in
-            let scroll = ScrollView(.horizontal, showsIndicators: false) {
-                LazyHStack(spacing: resolvedSpacing) {
-                    ForEach(items, id: idKeyPath) { element in
-                        sizedItem(element)
-                    }
-                }
+            ScrollView(.horizontal, showsIndicators: false) {
+                CarouselRowLane(
+                    items: items,
+                    idKeyPath: idKeyPath,
+                    rows: rows,
+                    rowHeight: rowHeight,
+                    spacing: spacing,
+                    sizing: sizing,
+                    viewportWidth: viewportWidth,
+                    content: content
+                )
                 .scrollTargetLayout()
             }
-
-            snapped(scroll)
-                .contentMargins(.horizontal, resolvedSpacing, for: .scrollContent)
-                .background {
-                    GeometryReader { proxy in
-                        Color.clear.preference(
-                            key: CarouselViewportWidthKey.self,
-                            value: proxy.size.width
-                        )
-                    }
-                }
-                .onPreferenceChange(CarouselViewportWidthKey.self) { width in
-                    viewportWidth = width
-                }
-                .onScrollGeometryChange(for: CarouselGeometry.self) { geometry in
-                    CarouselGeometry(
-                        offsetX: geometry.contentOffset.x,
-                        contentWidth: geometry.contentSize.width,
-                        viewportWidth: geometry.containerSize.width
+            .modifier(CarouselScrollSnappingModifier(snapping: snapping))
+            .contentMargins(.horizontal, spacing, for: .scrollContent)
+            .background {
+                GeometryReader { geometryProxy in
+                    Color.clear.preference(
+                        key: CarouselViewportWidthKey.self,
+                        value: geometryProxy.size.width
                     )
-                } action: { _, new in
-                    geometry = new
                 }
-                .overlay { edgeVeil }
-                .accessibilityElement(children: .contain)
-                .accessibilityScrollAction { edge in
-                    stepScroll(edge: edge, proxy: proxy)
-                }
+            }
+            .onPreferenceChange(CarouselViewportWidthKey.self) { width in
+                viewportWidth = width
+            }
+            .onScrollGeometryChange(for: CarouselGeometry.self) { scrollGeometry in
+                CarouselGeometry(
+                    offsetX: scrollGeometry.contentOffset.x,
+                    contentWidth: scrollGeometry.contentSize.width,
+                    viewportWidth: scrollGeometry.containerSize.width
+                )
+            } action: { _, new in
+                geometry = new
+            }
+            .overlay {
+                CarouselRowEdgeVeil(
+                    geometry: geometry,
+                    animation: veilAnimation,
+                    troughColor: theme.colors.background,
+                    bandWidth: theme.spacing.fourUnits
+                )
+            }
+            .accessibilityElement(children: .contain)
+            .accessibilityScrollAction { edge in
+                stepScroll(edge: edge, proxy: proxy)
+            }
         }
     }
 
-    /// Applies the requested scroll-target behavior. `.free` leaves the row with
-    /// the platform's default momentum stop.
-    @ViewBuilder
-    private func snapped(_ scroll: some View) -> some View {
-        switch snapping {
-        case .viewAligned:
-            scroll.scrollTargetBehavior(.viewAligned)
-        case .free:
-            scroll
-        }
+    /// The animation used for the veil fade — a shorter ease under Reduce Motion.
+    private var veilAnimation: Animation {
+        reduceMotion ? .easeInOut(duration: 0.15) : theme.motion.standardAnimation
     }
 
-    /// A single item, sized per ``CarouselItemSizing``. While the viewport is
-    /// unmeasured, a peeking item falls back to a container-relative frame so it
-    /// never collapses to zero width.
-    @ViewBuilder
-    private func sizedItem(_ element: Data.Element) -> some View {
+    /// Advances the row by one page of visible items in response to a VoiceOver
+    /// scroll gesture, estimating the current position from the scroll offset.
+    ///
+    /// Not `private` so tests can drive it directly with a real
+    /// `ScrollViewProxy` obtained from a hosted `ScrollViewReader`, without
+    /// having to simulate an actual VoiceOver scroll gesture.
+    func stepScroll(edge: Edge, proxy: ScrollViewProxy) {
+        let direction = CarouselRowMath.accessibilityStep(for: edge, layoutDirection: layoutDirection)
+        guard direction != 0 else { return }
+        let ids = items.map { $0[keyPath: idKeyPath] }
+        guard !ids.isEmpty else { return }
+
         let width = CarouselRowMath.itemWidth(
             viewportWidth: viewportWidth,
             sizing: sizing,
-            spacing: resolvedSpacing
+            spacing: spacing
+        )
+        let step = (width ?? viewportWidth) + spacing
+        let current = step > 0 ? Int((geometry.offsetX / step).rounded()) : 0
+        let stride = CarouselRowMath.pageStride(sizing: sizing)
+        let target = CarouselRowMath.clampedIndex(current + direction * stride, count: ids.count)
+
+        withAnimation(veilAnimation) {
+            proxy.scrollTo(ids[target], anchor: .leading)
+        }
+    }
+}
+
+// MARK: - Scroll snapping
+
+/// Applies the requested scroll-target behavior. `.free` leaves the row with
+/// the platform's default momentum stop.
+struct CarouselScrollSnappingModifier: ViewModifier {
+    let snapping: CarouselSnapping
+
+    func body(content: Content) -> some View {
+        switch snapping {
+        case .viewAligned:
+            content.scrollTargetBehavior(.viewAligned)
+        case .free:
+            content
+        }
+    }
+}
+
+// MARK: - Lane
+
+/// The scrollable content: a single `LazyHStack` lane, or a `LazyHGrid`
+/// flowing items top-to-bottom across ``rows`` stacked rows. The grid needs
+/// a bounded height, so it is only used when a `rowHeight` is supplied.
+struct CarouselRowLane<Data, ID, ItemContent>: View
+where Data: RandomAccessCollection, ID: Hashable, ItemContent: View {
+
+    let items: Data
+    let idKeyPath: KeyPath<Data.Element, ID>
+    let rows: Int
+    let rowHeight: CGFloat?
+    let spacing: CGFloat
+    let sizing: CarouselItemSizing
+    let viewportWidth: CGFloat
+    let content: (Data.Element) -> ItemContent
+
+    var body: some View {
+        if rows > 1, let rowHeight {
+            LazyHGrid(
+                rows: Array(
+                    repeating: GridItem(.fixed(rowHeight), spacing: spacing),
+                    count: rows
+                ),
+                spacing: spacing
+            ) {
+                ForEach(items, id: idKeyPath) { element in
+                    item(element)
+                }
+            }
+            .frame(height: rowHeight * CGFloat(rows) + spacing * CGFloat(rows - 1))
+        } else {
+            LazyHStack(spacing: spacing) {
+                ForEach(items, id: idKeyPath) { element in
+                    item(element)
+                }
+            }
+        }
+    }
+
+    private func item(_ element: Data.Element) -> some View {
+        CarouselRowItem(
+            element: element,
+            idKeyPath: idKeyPath,
+            sizing: sizing,
+            viewportWidth: viewportWidth,
+            spacing: spacing,
+            content: content
+        )
+    }
+}
+
+/// A single item, sized per ``CarouselItemSizing``. While the viewport is
+/// unmeasured, a peeking item falls back to a container-relative frame so it
+/// never collapses to zero width.
+struct CarouselRowItem<Element, ID: Hashable, ItemContent: View>: View {
+
+    let element: Element
+    let idKeyPath: KeyPath<Element, ID>
+    let sizing: CarouselItemSizing
+    let viewportWidth: CGFloat
+    let spacing: CGFloat
+    let content: (Element) -> ItemContent
+
+    var body: some View {
+        let width = CarouselRowMath.itemWidth(
+            viewportWidth: viewportWidth,
+            sizing: sizing,
+            spacing: spacing
         )
         Group {
             switch sizing.kind {
@@ -95,73 +252,52 @@ extension CarouselRow {
 
 // MARK: - Edge veil
 
-extension CarouselRow {
+/// Two trough-colored gradient bands that veil the scrollable edges and fade
+/// out once that end is reached. Decorative and non-interactive.
+struct CarouselRowEdgeVeil: View {
 
-    /// Two trough-colored gradient bands that veil the scrollable edges and fade
-    /// out once that end is reached. Decorative and non-interactive.
-    @ViewBuilder
-    var edgeVeil: some View {
+    let geometry: CarouselGeometry
+    let animation: Animation
+    let troughColor: Color
+    let bandWidth: CGFloat
+
+    var body: some View {
         let edges = CarouselRowMath.edgeFade(
             contentOffsetX: geometry.offsetX,
             contentWidth: geometry.contentWidth,
             viewportWidth: geometry.viewportWidth
         )
         HStack(spacing: 0) {
-            edgeBand(visible: edges.leading, isLeading: true)
+            CarouselRowEdgeBand(visible: edges.leading, isLeading: true, troughColor: troughColor, width: bandWidth)
             Spacer(minLength: 0)
-            edgeBand(visible: edges.trailing, isLeading: false)
+            CarouselRowEdgeBand(visible: edges.trailing, isLeading: false, troughColor: troughColor, width: bandWidth)
         }
         .allowsHitTesting(false)
-        .animation(veilAnimation, value: edges.leading)
-        .animation(veilAnimation, value: edges.trailing)
+        .animation(animation, value: edges.leading)
+        .animation(animation, value: edges.trailing)
     }
+}
 
-    private func edgeBand(visible: Bool, isLeading: Bool) -> some View {
-        let trough = theme.colors.background
+/// A single edge-fade gradient band used by ``CarouselRowEdgeVeil``.
+struct CarouselRowEdgeBand: View {
+
+    let visible: Bool
+    let isLeading: Bool
+    let troughColor: Color
+    let width: CGFloat
+
+    var body: some View {
         let colors: [Color] =
             isLeading
-            ? [trough, trough.opacity(0)]
-            : [trough.opacity(0), trough]
-        return LinearGradient(
+            ? [troughColor, troughColor.opacity(0)]
+            : [troughColor.opacity(0), troughColor]
+        LinearGradient(
             colors: colors,
             startPoint: UnitPoint(x: 0, y: 0.5),
             endPoint: UnitPoint(x: 1, y: 0.5)
         )
-        .frame(width: theme.spacing.fourUnits)
+        .frame(width: width)
         .opacity(visible ? 1 : 0)
-    }
-
-    /// The animation used for the veil fade — a shorter ease under Reduce Motion.
-    var veilAnimation: Animation {
-        reduceMotion ? .easeInOut(duration: 0.15) : theme.motion.standardAnimation
-    }
-}
-
-// MARK: - Accessibility scrolling
-
-extension CarouselRow {
-
-    /// Advances the row by one page of visible items in response to a VoiceOver
-    /// scroll gesture, estimating the current position from the scroll offset.
-    func stepScroll(edge: Edge, proxy: ScrollViewProxy) {
-        let direction = CarouselRowMath.accessibilityStep(for: edge, layoutDirection: layoutDirection)
-        guard direction != 0 else { return }
-        let ids = items.map { $0[keyPath: idKeyPath] }
-        guard !ids.isEmpty else { return }
-
-        let width = CarouselRowMath.itemWidth(
-            viewportWidth: viewportWidth,
-            sizing: sizing,
-            spacing: resolvedSpacing
-        )
-        let step = (width ?? viewportWidth) + resolvedSpacing
-        let current = step > 0 ? Int((geometry.offsetX / step).rounded()) : 0
-        let stride = CarouselRowMath.pageStride(sizing: sizing)
-        let target = CarouselRowMath.clampedIndex(current + direction * stride, count: ids.count)
-
-        withAnimation(veilAnimation) {
-            proxy.scrollTo(ids[target], anchor: .leading)
-        }
     }
 }
 
