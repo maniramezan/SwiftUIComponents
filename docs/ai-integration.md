@@ -114,14 +114,18 @@ Carousel row (horizontal, browse-only; reveals a sliver of the next item; edge-f
     CarouselRow(apps) { app in FeaturedCard(app) }                     // Identifiable convenience
     CarouselRow(values, id: \.self, sizing: .peek(visibleCount: 2)) { v in Card(v) }
     CarouselRow(icons, sizing: .fixedWidth(120), snapping: .free) { i in Tile(i) }
+    CarouselRow(apps, rows: 2, rowHeight: 180) { app in Card(app) }    // stacked rows require rowHeight
     // sizing: .peek(visibleCount:peek:) (default, one item + sliver) | .fixedWidth(_) | .fitContent
     // snapping: .viewAligned (default, snaps + keeps peek) | .free (momentum only)
+    // rows: defaults to 1; set rowHeight whenever rows > 1
 
 Carousel board (App-Store-style two-directional layout: vertical shelves, each scrolls horizontally):
     CarouselBoard {
         CarouselShelf("Featured", items: apps) { app in FeaturedCard(app) }          // peeking
         CarouselShelf("Top Free", items: apps, actionLabel: "See All",               // fixed tiles + action
                       sizing: .fixedWidth(120), onSeeAll: { openAll() }) { app in IconTile(app) }
+        CarouselShelf("Continue Watching", items: videos, rows: 2, rowHeight: 180,
+                      titleFont: .title3) { video in VideoCard(video) }
         CarouselShelf("Top Stories", items: stories) { story in ArticleCard(story) }  // different item TYPE
         CarouselShelf("Editor's Pick") { EditorsBanner() }                           // fully custom row
     }
