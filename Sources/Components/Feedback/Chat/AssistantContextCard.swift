@@ -19,7 +19,7 @@ import SwiftUI
 /// ```
 public struct AssistantContextCard: View {
 
-    /// How ``AssistantContextCard/bodyText`` should be styled.
+    /// How the context card's body text should be styled.
     public enum BodyStyle: Sendable {
         /// Renders italic and wrapped in curly quotes — for quoting a
         /// sentence the word/phrase appeared in.
