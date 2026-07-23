@@ -179,6 +179,27 @@ Chat:
     ChatBubbleView(role: .user, content: "Hello")
     ChatBubbleView(role: .assistant, content: "Hi there")
     TypingIndicatorBubbleView()
+    // structured-or-plain assistant bubble: renders `## ` sections when >= 2 are parsed, else falls back to plain markdown
+    StructuredChatBubbleView(role: .assistant, content: llmResponse, autoPromotingHeadings: ["Main Idea", "Examples"])
+
+Assistant conversation UI (streaming chat feature: quick-action chips + turn log + status banners):
+    // Turn model must be Identifiable & Equatable; state drives which bubble variant renders per turn
+    AssistantConversationList(
+        turns: turns, isInteractionEnabled: !isBusy, idleHint: "Tap an action to get started.",
+        userLabel: { $0.actionLabel }, responseState: { $0.state },   // state: .idle | .streaming(String) | .complete(String) | .error(String)
+        retryTitle: "Retry", onRetry: { retry($0.id) },
+        autoPromotingHeadings: ["Main Idea", "Examples"]               // optional, for structured completed responses
+    )
+    // Actions must be Identifiable. Each action can be available, used, disabled, or hidden.
+    AssistantQuickActionChipRow(
+        actions: actions, isInteractionEnabled: !isBusy,
+        state: { actionState(for: $0) }, // return .available to renew an action
+        label: { $0.displayName }, systemImage: { $0.systemImage }, onSelect: { run($0) }
+    )
+    AssistantContextCard(title: "hello", highlight: "Hola", bodyText: "Hello, how are you?", bodyStyle: .quoted, footnote: "From: lesson 3")
+    AssistantUnavailableBanner(reason: "Turn on X in Settings to use this.", settingsAction: .init(title: "Open Settings", action: { openSettings() }))
+    AssistantUpgradeNotice(message: "Upgrade for full support.", upgradeTitle: "Upgrade", onUpgrade: { presentPaywall() })
+    AssistantDisclaimerFooter(text: "AI responses can be inaccurate. Always double-check important information.")
 
 Modifiers:
     .designCardSurface()                    // rounded card with border
@@ -235,6 +256,7 @@ Use the showcase for reference, not reuse:
 - Don't pass unlocalized literals as component content (titles, placeholders, accessibility labels) — these are rendered verbatim, so localize them on your side.
 - Don't nest `CarouselRow` inside another horizontal `ScrollView` — it measures its own finite width to size items, which an unbounded horizontal proposal can't provide. It works in any finite-width slot, including a flexible `HStack` slot next to fixed siblings.
 - Don't nest `CarouselBoard` inside another vertical `ScrollView` — it owns its own scroll. Use `CarouselBoardContent` to embed shelves in a scroll you already manage.
+- Don't reimplement a streaming chat feature (turn log, quick-action chips, status banners) from scratch — compose `AssistantConversationList`, `AssistantQuickActionChipRow`, `AssistantContextCard`, `AssistantUnavailableBanner`, and `AssistantUpgradeNotice` instead; they're generic over your own turn/action model.
 ```
 
 ---
