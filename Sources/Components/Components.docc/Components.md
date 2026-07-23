@@ -103,6 +103,19 @@ open Package.swift   # Opens in Xcode — select the ComponentShowcase scheme an
 - ``ChatMessageRole``
 - ``TypingDotsView``
 - ``TypingIndicatorBubbleView``
+- ``StructuredChatBubbleView``
+- ``AssistantConversationState``
+- ``AssistantConversationList``
+- ``AssistantQuickActionChipRow``
+- ``AssistantQuickActionState``
+- ``AssistantQuickActionChipForegroundRole``
+- ``AssistantContextCard``
+- ``AssistantDisclaimerFooter``
+- ``AssistantStatusBanner``
+- ``AssistantUnavailableBanner``
+- ``AssistantUpgradeNotice``
+- ``AssistantLimitPromptCard``
+- ``TypewriterReveal``
 
 ### Media
 

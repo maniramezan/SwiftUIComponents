@@ -40,6 +40,11 @@ enum ShowcaseComponent: String, CaseIterable, Identifiable {
     // MARK: - Chat
     case chatBubble = "Chat Bubble"
     case typingIndicator = "Typing Indicator"
+    case structuredChatBubble = "Structured Chat Bubble"
+    case assistantConversation = "Assistant Conversation"
+    case assistantQuickActions = "Assistant Quick Actions"
+    case assistantContextCard = "Assistant Context Card"
+    case assistantNotices = "Assistant Notices"
 
     // MARK: - Collections
     case carouselRow = "Carousel Row"
@@ -73,6 +78,11 @@ enum ShowcaseComponent: String, CaseIterable, Identifiable {
         case .pagedView: return "rectangle.split.3x1"
         case .chatBubble: return "bubble.left.and.bubble.right"
         case .typingIndicator: return "ellipsis.message"
+        case .structuredChatBubble: return "list.bullet.rectangle"
+        case .assistantConversation: return "bubble.left.and.text.bubble.right"
+        case .assistantQuickActions: return "bolt.fill"
+        case .assistantContextCard: return "text.book.closed"
+        case .assistantNotices: return "exclamationmark.bubble"
         case .carouselRow: return "rectangle.portrait.on.rectangle.portrait"
         case .carouselBoard: return "rectangle.grid.1x2"
         }
@@ -93,7 +103,8 @@ enum ShowcaseComponent: String, CaseIterable, Identifiable {
             return "Feedback"
         case .pagedView, .segmentedPicker:
             return "Pagination"
-        case .chatBubble, .typingIndicator:
+        case .chatBubble, .typingIndicator, .structuredChatBubble, .assistantConversation,
+            .assistantQuickActions, .assistantContextCard, .assistantNotices:
             return "Chat"
         case .carouselRow, .carouselBoard:
             return "Collections"
