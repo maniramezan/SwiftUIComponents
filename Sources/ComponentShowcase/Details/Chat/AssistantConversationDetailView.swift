@@ -65,6 +65,12 @@ struct AssistantConversationDetailView: View {
                 )
             }
 
+            ShowcaseSection("Typewriter reveal") {
+                TypewriterReveal(text: "The assistant is composing a response.") { text in
+                    ChatBubbleView(role: .assistant, content: text)
+                }
+            }
+
             ShowcaseSection("Empty state") {
                 AssistantConversationList(
                     turns: [DemoTurn](),

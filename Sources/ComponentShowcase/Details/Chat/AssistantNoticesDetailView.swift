@@ -7,6 +7,10 @@ struct AssistantNoticesDetailView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: theme.spacing.twoUnits) {
+            ShowcaseSection("Blocking status banner") {
+                AssistantStatusBanner(message: "The assistant is temporarily unavailable.")
+            }
+
             ShowcaseSection("Unavailable banner — with settings CTA") {
                 AssistantUnavailableBanner(
                     reason: "Turn on Apple Intelligence in Settings to use the assistant.",
@@ -26,6 +30,17 @@ struct AssistantNoticesDetailView: View {
                     upgradeTitle: "Upgrade to Premium",
                     systemImage: "globe",
                     onUpgrade: {}
+                )
+            }
+
+            ShowcaseSection("Limit prompt") {
+                AssistantLimitPromptCard(
+                    message: "You've reached today's assistant limit.",
+                    supportingText: "Upgrade for unlimited help.",
+                    primaryActionTitle: "Upgrade",
+                    secondaryActionTitle: "Not now",
+                    onPrimaryAction: {},
+                    onSecondaryAction: {}
                 )
             }
 

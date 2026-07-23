@@ -111,8 +111,11 @@ open Package.swift   # Opens in Xcode — select the ComponentShowcase scheme an
 - ``AssistantQuickActionChipForegroundRole``
 - ``AssistantContextCard``
 - ``AssistantDisclaimerFooter``
+- ``AssistantStatusBanner``
 - ``AssistantUnavailableBanner``
 - ``AssistantUpgradeNotice``
+- ``AssistantLimitPromptCard``
+- ``TypewriterReveal``
 
 ### Media
 

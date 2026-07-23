@@ -197,9 +197,14 @@ Assistant conversation UI (streaming chat feature: quick-action chips + turn log
         label: { $0.displayName }, systemImage: { $0.systemImage }, onSelect: { run($0) }
     )
     AssistantContextCard(title: "hello", highlight: "Hola", bodyText: "Hello, how are you?", bodyStyle: .quoted, footnote: "From: lesson 3")
+    AssistantStatusBanner(message: "The assistant is temporarily unavailable.")
     AssistantUnavailableBanner(reason: "Turn on X in Settings to use this.", settingsAction: .init(title: "Open Settings", action: { openSettings() }))
     AssistantUpgradeNotice(message: "Upgrade for full support.", upgradeTitle: "Upgrade", onUpgrade: { presentPaywall() })
+    AssistantLimitPromptCard(message: "You've reached today's limit.", supportingText: "Upgrade for unlimited help.", primaryActionTitle: "Upgrade", secondaryActionTitle: "Not now", onPrimaryAction: { presentPaywall() }, onSecondaryAction: { dismiss() })
     AssistantDisclaimerFooter(text: "AI responses can be inaccurate. Always double-check important information.")
+    TypewriterReveal(text: streamingResponse, charactersPerSecond: 60) { revealed in
+        ChatBubbleView(role: .assistant, content: revealed)
+    }
 
 Modifiers:
     .designCardSurface()                    // rounded card with border
