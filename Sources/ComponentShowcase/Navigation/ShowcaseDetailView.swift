@@ -54,6 +54,11 @@ private struct ShowcaseDetailContent: View {
         case .pagedView: PagedViewDetailView()
         case .chatBubble: ChatBubbleDetailView()
         case .typingIndicator: TypingIndicatorDetailView()
+        case .structuredChatBubble: StructuredChatBubbleDetailView()
+        case .assistantConversation: AssistantConversationDetailView()
+        case .assistantQuickActions: AssistantQuickActionsDetailView()
+        case .assistantContextCard: AssistantContextCardDetailView()
+        case .assistantNotices: AssistantNoticesDetailView()
         case .carouselRow: CarouselRowDetailView()
         case .carouselBoard: CarouselBoardDetailView()
         }
