@@ -80,6 +80,10 @@ where Data: RandomAccessCollection, ID: Hashable, Content: View {
         rowHeight: CGFloat? = nil,
         @ViewBuilder content: @escaping (Data.Element) -> Content
     ) {
+        precondition(
+            rows <= 1 || rowHeight != nil,
+            "CarouselRow requires a rowHeight when rows is greater than 1."
+        )
         self.items = items
         self.idKeyPath = id
         self.sizing = sizing
