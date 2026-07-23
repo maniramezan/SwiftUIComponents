@@ -112,9 +112,9 @@ where Data: RandomAccessCollection, ID: Hashable, Content: View {
         }
     }
 
-    /// The animation used for the veil fade — a shorter ease under Reduce Motion.
+    /// The animation used for the veil fade under the current motion settings.
     private var veilAnimation: Animation {
-        reduceMotion ? .easeInOut(duration: 0.15) : theme.motion.standardAnimation
+        reduceMotion ? theme.motion.reducedMotionAnimation : theme.motion.standardAnimation
     }
 
     /// Advances the row by one page of visible items in response to a VoiceOver

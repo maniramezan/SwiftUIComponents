@@ -96,6 +96,37 @@ func themedComponentsAreConstructible() {
     }
 }
 
+// MARK: - Rendering (exercises ThemeToggleCapsule's isOn branches)
+
+@Test("ThemeToggleStyle renders both the on and off capsule states")
+@MainActor
+func themeToggleStyleRendersBothStates() {
+    renderForCoverage(
+        Toggle("Enabled", isOn: .constant(true))
+            .toggleStyle(ThemeToggleStyle())
+    )
+    renderForCoverage(
+        Toggle("Disabled", isOn: .constant(false))
+            .toggleStyle(ThemeToggleStyle())
+    )
+}
+
+@Test("ThemeButtonStyle renders for every role")
+@MainActor
+func themeButtonStyleRenders() {
+    for role in [ThemeButtonRole.primary, .secondary, .tertiary, .destructive] {
+        renderForCoverage(
+            Button("Continue") {}
+                .buttonStyle(ThemeButtonStyle(role: role))
+        )
+    }
+    renderForCoverage(
+        Button("Disabled") {}
+            .buttonStyle(ThemeButtonStyle())
+            .disabled(true)
+    )
+}
+
 private struct ConstructionPage: Identifiable {
     let id: Int
     let title: String

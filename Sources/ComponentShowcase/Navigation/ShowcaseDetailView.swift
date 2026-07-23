@@ -10,7 +10,7 @@ struct ShowcaseDetailView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
-                detailContent
+                ShowcaseDetailContent(component: component)
                     .padding()
             }
         }
@@ -19,9 +19,16 @@ struct ShowcaseDetailView: View {
             .navigationBarTitleDisplayMode(.large)
         #endif
     }
+}
 
-    @ViewBuilder
-    private var detailContent: some View {
+/// Routes `component` to its dedicated detail view.
+///
+/// A dedicated `View` type — rather than an inline `@ViewBuilder` property —
+/// so SwiftUI can diff and update it independently of the enclosing scroll view.
+private struct ShowcaseDetailContent: View {
+    let component: ShowcaseComponent
+
+    var body: some View {
         switch component {
         case .buttons: ButtonsDetailView()
         case .compactAction: CompactActionDetailView()
@@ -47,6 +54,11 @@ struct ShowcaseDetailView: View {
         case .pagedView: PagedViewDetailView()
         case .chatBubble: ChatBubbleDetailView()
         case .typingIndicator: TypingIndicatorDetailView()
+        case .structuredChatBubble: StructuredChatBubbleDetailView()
+        case .assistantConversation: AssistantConversationDetailView()
+        case .assistantQuickActions: AssistantQuickActionsDetailView()
+        case .assistantContextCard: AssistantContextCardDetailView()
+        case .assistantNotices: AssistantNoticesDetailView()
         case .carouselRow: CarouselRowDetailView()
         case .carouselBoard: CarouselBoardDetailView()
         }
