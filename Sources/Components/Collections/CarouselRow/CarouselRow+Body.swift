@@ -179,6 +179,14 @@ where Data: RandomAccessCollection, ID: Hashable, ItemContent: View {
     let viewportWidth: CGFloat
     let content: (Data.Element) -> ItemContent
 
+    private var itemWidth: CGFloat? {
+        CarouselRowMath.itemWidth(
+            viewportWidth: viewportWidth,
+            sizing: sizing,
+            spacing: spacing
+        )
+    }
+
     var body: some View {
         if rows > 1, let rowHeight {
             LazyHGrid(
@@ -189,28 +197,29 @@ where Data: RandomAccessCollection, ID: Hashable, ItemContent: View {
                 spacing: spacing
             ) {
                 ForEach(items, id: idKeyPath) { element in
-                    item(element)
+                    CarouselRowItem(
+                        element: element,
+                        idKeyPath: idKeyPath,
+                        sizing: sizing,
+                        itemWidth: itemWidth,
+                        content: content
+                    )
                 }
             }
             .frame(height: rowHeight * CGFloat(rows) + spacing * CGFloat(rows - 1))
         } else {
             LazyHStack(spacing: spacing) {
                 ForEach(items, id: idKeyPath) { element in
-                    item(element)
+                    CarouselRowItem(
+                        element: element,
+                        idKeyPath: idKeyPath,
+                        sizing: sizing,
+                        itemWidth: itemWidth,
+                        content: content
+                    )
                 }
             }
         }
-    }
-
-    private func item(_ element: Data.Element) -> some View {
-        CarouselRowItem(
-            element: element,
-            idKeyPath: idKeyPath,
-            sizing: sizing,
-            viewportWidth: viewportWidth,
-            spacing: spacing,
-            content: content
-        )
     }
 }
 
@@ -222,25 +231,19 @@ struct CarouselRowItem<Element, ID: Hashable, ItemContent: View>: View {
     let element: Element
     let idKeyPath: KeyPath<Element, ID>
     let sizing: CarouselItemSizing
-    let viewportWidth: CGFloat
-    let spacing: CGFloat
+    let itemWidth: CGFloat?
     let content: (Element) -> ItemContent
 
     var body: some View {
-        let width = CarouselRowMath.itemWidth(
-            viewportWidth: viewportWidth,
-            sizing: sizing,
-            spacing: spacing
-        )
         Group {
             switch sizing.kind {
             case .fitContent:
                 content(element)
             case .fixedWidth:
-                content(element).frame(width: width ?? 0)
+                content(element).frame(width: itemWidth ?? 0)
             case .peek:
-                if let width {
-                    content(element).frame(width: width)
+                if let itemWidth {
+                    content(element).frame(width: itemWidth)
                 } else {
                     content(element).containerRelativeFrame(.horizontal)
                 }
