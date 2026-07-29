@@ -42,7 +42,7 @@ jobs:
       github.event.workflow_run.conclusion == 'success'
     steps:
       - name: Checkout
-        uses: actions/checkout@v6.0.3
+        uses: actions/checkout@v7.0.1
         with:
           # Tag the exact commit CI validated; full history for tag discovery.
           ref: ${{ github.event.workflow_run.head_sha || github.ref }}
