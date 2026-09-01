@@ -112,12 +112,9 @@ private struct AssistantQuickActionChip: View {
         Button(action: onTap) {
             AssistantQuickActionChipLabel(title: title, systemImage: systemImage)
                 .font(theme.typography.subheadline.weight(.medium))
-                .padding(.horizontal, theme.spacing.twoUnits)
-                .padding(.vertical, theme.spacing.oneUnit)
-                .frame(minHeight: theme.motion.minimumHitTarget)
-                .background(isSelected ? theme.colors.primary : theme.colors.containerSecondary)
+                .designPillMetrics()
+                .designCapsuleSurface(isSelected: isSelected)
                 .foregroundStyle(foregroundColor)
-                .clipShape(Capsule())
         }
         .buttonStyle(.plain)
         .disabled(!isEnabled)

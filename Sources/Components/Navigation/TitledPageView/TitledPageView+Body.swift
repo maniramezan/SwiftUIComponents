@@ -219,8 +219,7 @@ struct TitledPageViewPagedContent<Element, ID: Hashable, PageContent: View>: Vie
             guard index >= activeIndex else { return }
         }
         let newID = pages[index][keyPath: idKeyPath]
-        let animation: Animation =
-            reduceMotion ? theme.motion.reducedMotionAnimation : theme.motion.standardAnimation
+        let animation: Animation = theme.motion.animation(reducingMotion: reduceMotion)
         withAnimation(animation) {
             selection = newID
         }

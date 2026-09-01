@@ -58,13 +58,8 @@ private struct ChatBubbleContent: View {
     var body: some View {
         if isTyping, content.isEmpty {
             TypingDotsView()
-        } else if role == .assistant,
-            let attributed = try? AttributedString(
-                markdown: content,
-                options: AttributedString.MarkdownParsingOptions(interpretedSyntax: .full)
-            )
-        {
-            Text(attributed)
+        } else if role == .assistant {
+            Text(AttributedString(markdownOrPlainText: content))
         } else {
             Text(content)
         }

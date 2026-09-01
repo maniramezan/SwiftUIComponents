@@ -1,4 +1,4 @@
-import Components
+@testable import Components
 import DesignSystem
 import Foundation
 import SwiftUI
@@ -71,6 +71,12 @@ func themedComponentsAreConstructible() {
     _ = TypingIndicatorBubbleView()
     _ = CompactActionButton(title: "Grammar", icon: "book") {}
     _ = CompactActionButton(title: "Translate", icon: "globe", isDisabled: true) {}
+    _ = Text("Notice").designNoticeCard(background: .red)
+    _ = Text("Notice Custom").designNoticeCard(background: .blue, cornerRadius: 10, padding: 12)
+    _ = Text("Pill").designPillMetrics()
+    _ = Text("Pill Custom").designPillMetrics(horizontalPadding: 10)
+    _ = AttributedString(markdownOrPlainText: "**Bold** text")
+    _ = AttributedString(markdownOrPlainText: "Plain text")
 
     _ = CachedAsyncImage(url: URL(string: "https://example.com/a.png"), cache: StubCache()) {
         image in

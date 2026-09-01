@@ -30,8 +30,7 @@ public struct SelectableCardSurface: ViewModifier {
     @ViewBuilder
     public func body(content: Content) -> some View {
         let radius = cornerRadius ?? theme.radius.oneAndHalfUnits
-        let useCompatibility =
-            Bundle.main.object(forInfoDictionaryKey: "UIDesignRequiresCompatibility") as? Bool ?? false
+        let useCompatibility = Bundle.requiresDesignCompatibility
         if #available(iOS 26, macOS 26, *), !useCompatibility {
             content.glassEffect(
                 Glass.regular

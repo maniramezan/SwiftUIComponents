@@ -25,6 +25,16 @@ public extension Motion {
     /// Reduce Motion. Defaults to a quick 0.15 s ease when a theme does not
     /// override it.
     @MainActor var reducedMotionAnimation: Animation { .easeInOut(duration: 0.15) }
+
+    /// The animation to use for simple state changes given the current Reduce
+    /// Motion setting — `reducedMotionAnimation` when `reducingMotion` is
+    /// `true`, otherwise `standardAnimation`.
+    ///
+    /// - Parameter reducingMotion: Whether the user has enabled **Reduce
+    ///   Motion** (e.g. read from `@Environment(\.accessibilityReduceMotion)`).
+    @MainActor func animation(reducingMotion: Bool) -> Animation {
+        reducingMotion ? reducedMotionAnimation : standardAnimation
+    }
 }
 
 /// Default motion and interaction tokens.

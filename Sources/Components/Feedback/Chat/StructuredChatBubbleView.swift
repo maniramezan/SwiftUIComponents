@@ -108,10 +108,7 @@ private struct StructuredChatBubbleContent: View {
     }
 
     private func attributedBody(_ text: String) -> AttributedString {
-        (try? AttributedString(
-            markdown: text,
-            options: AttributedString.MarkdownParsingOptions(interpretedSyntax: .full)
-        )) ?? AttributedString(text)
+        AttributedString(markdownOrPlainText: text)
     }
 }
 

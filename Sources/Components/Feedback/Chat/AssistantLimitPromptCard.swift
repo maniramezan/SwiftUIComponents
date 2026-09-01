@@ -54,10 +54,7 @@ public struct AssistantLimitPromptCard: View {
                 .font(theme.typography.subheadline.weight(.medium))
                 .buttonStyle(.bordered)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(theme.spacing.twoUnits)
-        .background(theme.colors.containerSecondary)
-        .clipShape(RoundedRectangle(cornerRadius: theme.radius.oneAndHalfUnits))
+        .designNoticeCard(background: theme.colors.containerSecondary)
     }
 }
 

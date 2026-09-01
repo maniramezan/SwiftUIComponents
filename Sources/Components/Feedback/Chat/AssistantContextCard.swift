@@ -87,10 +87,10 @@ public struct AssistantContextCard: View {
                     .foregroundStyle(theme.colors.textTertiary)
             }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(theme.spacing.threeUnits)
-        .background(theme.colors.containerSecondary)
-        .clipShape(RoundedRectangle(cornerRadius: theme.radius.oneAndHalfUnits))
+        .designNoticeCard(
+            background: theme.colors.containerSecondary,
+            padding: theme.spacing.threeUnits
+        )
     }
 
 }

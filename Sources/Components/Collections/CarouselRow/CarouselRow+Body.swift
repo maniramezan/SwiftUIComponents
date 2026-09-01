@@ -97,14 +97,12 @@ where Data: RandomAccessCollection, ID: Hashable, Content: View {
             } action: { _, new in
                 geometry = new
             }
-            .overlay {
-                CarouselRowEdgeVeil(
-                    geometry: geometry,
-                    animation: veilAnimation,
-                    troughColor: theme.colors.background,
-                    bandWidth: theme.spacing.fourUnits
-                )
-            }
+            .scrollEdgeVeil(
+                geometry: geometry,
+                animation: veilAnimation,
+                troughColor: theme.colors.background,
+                bandWidth: theme.spacing.fourUnits
+            )
             .accessibilityElement(children: .contain)
             .accessibilityScrollAction { edge in
                 stepScroll(edge: edge, proxy: proxy)
@@ -114,7 +112,7 @@ where Data: RandomAccessCollection, ID: Hashable, Content: View {
 
     /// The animation used for the veil fade under the current motion settings.
     private var veilAnimation: Animation {
-        reduceMotion ? theme.motion.reducedMotionAnimation : theme.motion.standardAnimation
+        theme.motion.animation(reducingMotion: reduceMotion)
     }
 
     /// Advances the row by one page of visible items in response to a VoiceOver
@@ -250,57 +248,6 @@ struct CarouselRowItem<Element, ID: Hashable, ItemContent: View>: View {
             }
         }
         .id(element[keyPath: idKeyPath])
-    }
-}
-
-// MARK: - Edge veil
-
-/// Two trough-colored gradient bands that veil the scrollable edges and fade
-/// out once that end is reached. Decorative and non-interactive.
-struct CarouselRowEdgeVeil: View {
-
-    let geometry: CarouselGeometry
-    let animation: Animation
-    let troughColor: Color
-    let bandWidth: CGFloat
-
-    var body: some View {
-        let edges = CarouselRowMath.edgeFade(
-            contentOffsetX: geometry.offsetX,
-            contentWidth: geometry.contentWidth,
-            viewportWidth: geometry.viewportWidth
-        )
-        HStack(spacing: 0) {
-            CarouselRowEdgeBand(visible: edges.leading, isLeading: true, troughColor: troughColor, width: bandWidth)
-            Spacer(minLength: 0)
-            CarouselRowEdgeBand(visible: edges.trailing, isLeading: false, troughColor: troughColor, width: bandWidth)
-        }
-        .allowsHitTesting(false)
-        .animation(animation, value: edges.leading)
-        .animation(animation, value: edges.trailing)
-    }
-}
-
-/// A single edge-fade gradient band used by ``CarouselRowEdgeVeil``.
-struct CarouselRowEdgeBand: View {
-
-    let visible: Bool
-    let isLeading: Bool
-    let troughColor: Color
-    let width: CGFloat
-
-    var body: some View {
-        let colors: [Color] =
-            isLeading
-            ? [troughColor, troughColor.opacity(0)]
-            : [troughColor.opacity(0), troughColor]
-        LinearGradient(
-            colors: colors,
-            startPoint: UnitPoint(x: 0, y: 0.5),
-            endPoint: UnitPoint(x: 1, y: 0.5)
-        )
-        .frame(width: width)
-        .opacity(visible ? 1 : 0)
     }
 }
 
