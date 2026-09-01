@@ -149,6 +149,9 @@ Flip card (two-sided flashcard; tap or VoiceOver "Flip" action toggles it):
     // animation: defaults to theme.motion.standardAnimation when omitted
     // Each face is wrapped in a card surface; Reduce Motion replaces the 3D flip with a cross-fade.
 
+Disclosure card (summary remains visible; detail expands inline):
+    DisclosureCard(isExpanded: $isExpanded) { summary } detail: { detail }
+
 Feedback:
     LoadingView()
     LoadingView("Loading…")
