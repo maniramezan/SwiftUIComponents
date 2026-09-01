@@ -39,9 +39,9 @@ public struct DisclosureCard<Label: View, Detail: View>: View {
 #Preview("Disclosure Card") {
     PreviewContent { theme in
         DisclosureCard(isExpanded: .constant(false)) {
-            Text("Word of the day")
+            Text("Section title")
         } detail: {
-            Text("A word selected for today, with its definition hidden until requested.")
+            Text("Additional information shown when the section is expanded.")
         }
         .padding(theme.spacing.twoUnits)
     }
