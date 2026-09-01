@@ -22,10 +22,7 @@ public struct AssistantStatusBanner: View {
         Text(message)
             .font(theme.typography.subheadline)
             .foregroundStyle(theme.colors.onError)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(theme.spacing.twoUnits)
-            .background(theme.colors.error)
-            .clipShape(RoundedRectangle(cornerRadius: theme.radius.oneAndHalfUnits))
+            .designNoticeCard(background: theme.colors.error)
     }
 }
 

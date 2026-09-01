@@ -147,14 +147,12 @@ public extension CarouselRow where Data.Element: Identifiable, ID == Data.Elemen
 
 // MARK: - Scroll geometry snapshot
 
-/// A snapshot of the row's scroll geometry, tracked via
-/// `onScrollGeometryChange` to drive the edge-fade veil and accessibility
-/// scrolling.
-struct CarouselGeometry: Equatable {
-    var offsetX: CGFloat = 0
-    var contentWidth: CGFloat = 0
-    var viewportWidth: CGFloat = 0
-}
+/// The row's scroll geometry snapshot, tracked via `onScrollGeometryChange` to
+/// drive the edge-fade veil and accessibility scrolling.
+///
+/// Alias for the shared ``ScrollGeometrySnapshot`` used by every scrollable
+/// component that veils its edges.
+typealias CarouselGeometry = ScrollGeometrySnapshot
 
 /// Preference key that reports the row's allocated width. Measuring the width
 /// with a `GeometryReader` (rather than the scroll-geometry callback) yields a

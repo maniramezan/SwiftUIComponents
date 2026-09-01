@@ -58,10 +58,7 @@ public struct AssistantUpgradeNotice: View {
                 .buttonStyle(.bordered)
                 .controlSize(.small)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(theme.spacing.twoUnits)
-        .background(theme.colors.containerSecondary)
-        .clipShape(RoundedRectangle(cornerRadius: theme.radius.oneAndHalfUnits))
+        .designNoticeCard(background: theme.colors.containerSecondary)
     }
 }
 

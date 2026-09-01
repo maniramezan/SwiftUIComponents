@@ -37,6 +37,7 @@ open Package.swift   # Opens in Xcode — select the ComponentShowcase scheme an
 - ``SelectionListContentView``
 - ``SelectionNode``
 - ``PillChip``
+- ``PillMetrics``
 
 ### Indicators
 
@@ -95,6 +96,7 @@ open Package.swift   # Opens in Xcode — select the ComponentShowcase scheme an
 - ``AsyncContentView``
 - ``ErrorBanner``
 - ``ErrorSection``
+- ``NoticeCard``
 - ``ToastView``
 - ``ToastRole``
 - ``ToastAction``

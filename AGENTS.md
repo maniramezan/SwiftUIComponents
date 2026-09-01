@@ -20,6 +20,15 @@
 - Apply theming through `.designTheme(_:)` at the root of a hierarchy and read tokens from `@Environment(\.designTheme)` inside views.
 - When public APIs change, update `docs/ai-integration.md` (the single consumer API reference) and the target's DocC landing page in the same change. Do not duplicate the API reference into `CLAUDE.md` or `README.md` — they link to `docs/ai-integration.md` instead.
 
+### Reusable Shared Helpers
+Before reaching for a bespoke implementation, check whether an existing shared helper already covers the case — deduplicating these is the intended design, not an accident:
+- **Scroll edge-fade geometry**: `ScrollLayoutMath` (`Sources/Components/Layout/Scroll/ScrollLayout.swift`) owns `edgeFade` / `accessibilityStep` and the `ScrollGeometrySnapshot` / `ScrollEdgeVeil` / `ScrollEdgeBand` types. Any horizontally scrollable component that veils its edges (`SegmentedPicker`, `CarouselRow`, `TitledPageView`) must use these, applied via the internal `View.scrollEdgeVeil(...)` modifier — do not hand-roll per-component edge-fade math or veil views.
+- **`Bundle.requiresDesignCompatibility`** (`Sources/Components/Surfaces/Adaptive/Bundle+Compatibility.swift`): the single source for the `UIDesignRequiresCompatibility` Info.plist decision used by glass vs. fallback surfaces/buttons. Reuse it instead of re-reading the Info.plist key inline.
+- **`.designNoticeCard(background:cornerRadius:padding:)`** / `NoticeCard` (`Sources/Components/Feedback/Notice/NoticeCard.swift`): full-width, padded, rounded container for inline notice, banner, and error cards. Reuse for any surface with a fill color, `twoUnits` default padding, and `oneAndHalfUnits` corner radius.
+- **`.designPillMetrics(horizontalPadding:)`** / `PillMetrics` (`Sources/Components/Selection/Chips/PillMetrics.swift`): capsule-pill padding (`oneUnit` vertical), `minimumHitTarget` height, and capsule content shape. Combine with `.designCapsuleSurface(...)` rather than hand-rolling chip backgrounds.
+- **`theme.motion.animation(reducingMotion:)`** (`DesignSystem.Motion`): resolve the active animation from the current Reduce Motion setting. Use instead of the inline `reduceMotion ? reducedMotionAnimation : standardAnimation` ternary.
+- **`AttributedString(markdownOrPlainText:)`** (`Sources/Components/Typography/AttributedString+Markdown.swift`): parse user/model-provided Markdown with `.full` interpreted syntax, falling back to plain text on malformed input. Use for any string that *may* contain Markdown but must never crash.
+
 ## Build, Test, and Development Commands
 - `swift package resolve` updates dependencies whenever `Package.swift` changes.
 - `swift build -Xswiftc -warnings-as-errors` performs incremental compilation with warnings treated as errors; add `--configuration release` before tagging.

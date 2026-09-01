@@ -9,8 +9,7 @@ public extension View {
     /// - Parameter prominent: When `true`, uses the prominent glass/bordered variant.
     @ViewBuilder
     func designAdaptiveButtonStyle(prominent: Bool = false) -> some View {
-        let useCompatibility =
-            Bundle.main.object(forInfoDictionaryKey: "UIDesignRequiresCompatibility") as? Bool ?? false
+        let useCompatibility = Bundle.requiresDesignCompatibility
         if #available(iOS 26, macOS 26, *), !useCompatibility {
             if prominent {
                 self.buttonStyle(.glassProminent)

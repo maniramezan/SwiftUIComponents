@@ -190,20 +190,10 @@ enum TitledPageViewMath {
     /// Converts an accessibility scroll edge into a logical page delta.
     ///
     /// Leading/trailing edges are layout-direction aware because the next page
-    /// appears on the leading edge in right-to-left layouts.
+    /// appears on the leading edge in right-to-left layouts. Delegates to the
+    /// shared ``ScrollLayoutMath``.
     nonisolated static func accessibilityStep(for edge: Edge, layoutDirection: LayoutDirection) -> Int {
-        switch edge {
-        case .leading:
-            return layoutDirection == .rightToLeft ? +1 : -1
-        case .trailing:
-            return layoutDirection == .rightToLeft ? -1 : +1
-        case .top:
-            return -1
-        case .bottom:
-            return +1
-        @unknown default:
-            return +1
-        }
+        ScrollLayoutMath.accessibilityStep(for: edge, layoutDirection: layoutDirection)
     }
 
     /// Whether the indicator subview should render at all. Hidden styles
