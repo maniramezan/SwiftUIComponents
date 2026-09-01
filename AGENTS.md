@@ -48,6 +48,12 @@
 - Treat an app as a source of an abstract pattern, never as source code or sample content to copy. Search all changed lines for product/domain leakage before opening or updating a PR.
 - If code is reusable across applications, it belongs here or in another appropriate shared library—not in an app repository.
 
+## ComponentShowcase Coverage (Required)
+
+- Every new public component must be added to the `ComponentShowcase` target in the same PR that introduces it.
+- Its showcase must provide live controls for every meaningful configurable parameter and state so reviewers can exercise behavior without editing source code. A static `#Preview`, construction test, snapshot, or documentation snippet does not satisfy this requirement.
+- New-component PRs are incomplete until the showcase target builds and the configurable entry is reachable from the showcase UI.
+
 ## Performance & View Composition
 
 - **Never split a view's body into `@ViewBuilder` computed properties or methods** (e.g. `@ViewBuilder private var rowContent: some View { ... }`, `private func item(_:) -> some View { ... }`). These are always inlined into the owning view's `body` and re-evaluated every time that body re-evaluates — they never get their own identity in the render tree, so SwiftUI cannot diff, skip, or animate them independently.
