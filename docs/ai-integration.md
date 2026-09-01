@@ -77,6 +77,7 @@ Badge:
 
 Filter chip:
     PillChip("Label", isSelected: isSelected) { /* action */ }
+    ActionPill(action: openItem) { HStack { Text("Type").bold(); Text("Value") } }
 
 Picker (item must conform to MenuPickerItem: Hashable & Identifiable, var title: String):
     MenuPicker(items: allItems, currentValue: $selected)

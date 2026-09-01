@@ -37,6 +37,7 @@ open Package.swift   # Opens in Xcode — select the ComponentShowcase scheme an
 - ``SelectionListContentView``
 - ``SelectionNode``
 - ``PillChip``
+- ``ActionPill``
 
 ### Indicators
 

@@ -20,6 +20,12 @@
 - Apply theming through `.designTheme(_:)` at the root of a hierarchy and read tokens from `@Environment(\.designTheme)` inside views.
 - When public APIs change, update `docs/ai-integration.md` (the single consumer API reference) and the target's DocC landing page in the same change. Do not duplicate the API reference into `CLAUDE.md` or `README.md` — they link to `docs/ai-integration.md` instead.
 
+## ComponentShowcase Coverage (Required)
+
+- Every new public component must be added to the `ComponentShowcase` target in the same PR that introduces it.
+- Its showcase must provide live controls for every meaningful configurable parameter and state so reviewers can exercise behavior without editing source code. A static `#Preview`, construction test, snapshot, or documentation snippet does not satisfy this requirement.
+- New-component PRs are incomplete until the showcase target builds and the configurable entry is reachable from the showcase UI.
+
 ## Build, Test, and Development Commands
 - `swift package resolve` updates dependencies whenever `Package.swift` changes.
 - `swift build -Xswiftc -warnings-as-errors` performs incremental compilation with warnings treated as errors; add `--configuration release` before tagging.
