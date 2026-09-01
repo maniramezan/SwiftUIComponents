@@ -43,49 +43,32 @@ enum CarouselRowMath {
     /// geometry. Returns `(false, false)` whenever the content fits inside the
     /// viewport.
     ///
-    /// - Parameters:
-    ///   - contentOffsetX: The current horizontal content offset.
-    ///   - contentWidth: The total scrollable content width.
-    ///   - viewportWidth: The visible width of the scroll view.
-    ///   - threshold: Slop, in points, used to ignore sub-pixel offsets.
-    /// - Returns: Whether the leading and trailing edges, respectively, should
-    ///   render a fade band.
+    /// Delegates to the shared ``ScrollLayoutMath`` so every scrollable
+    /// component resolves edge fades identically.
     nonisolated static func edgeFade(
         contentOffsetX: CGFloat,
         contentWidth: CGFloat,
         viewportWidth: CGFloat,
         threshold: CGFloat = 1
     ) -> (leading: Bool, trailing: Bool) {
-        guard contentWidth > viewportWidth + threshold else { return (false, false) }
-        let canScrollLeading = contentOffsetX > threshold
-        let canScrollTrailing = contentOffsetX + viewportWidth < contentWidth - threshold
-        return (canScrollLeading, canScrollTrailing)
+        ScrollLayoutMath.edgeFade(
+            contentOffsetX: contentOffsetX,
+            contentWidth: contentWidth,
+            viewportWidth: viewportWidth,
+            threshold: threshold
+        )
     }
 
     /// Converts an accessibility scroll edge into a logical index delta.
     /// Leading/trailing flip under right-to-left layout so VoiceOver always
     /// advances forward through the items.
     ///
-    /// - Parameters:
-    ///   - edge: The edge the user scrolled toward.
-    ///   - layoutDirection: The active layout direction.
-    /// - Returns: `-1` to move toward the start, `+1` toward the end.
+    /// Delegates to the shared ``ScrollLayoutMath``.
     nonisolated static func accessibilityStep(
         for edge: Edge,
         layoutDirection: LayoutDirection
     ) -> Int {
-        switch edge {
-        case .leading:
-            return layoutDirection == .rightToLeft ? +1 : -1
-        case .trailing:
-            return layoutDirection == .rightToLeft ? -1 : +1
-        case .top:
-            return -1
-        case .bottom:
-            return +1
-        @unknown default:
-            return +1
-        }
+        ScrollLayoutMath.accessibilityStep(for: edge, layoutDirection: layoutDirection)
     }
 
     /// Clamps an index into the valid `0..<count` range. Returns `0` for an

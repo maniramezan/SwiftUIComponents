@@ -25,15 +25,12 @@ public struct ActionPill<Label: View>: View {
         Button(action: action) {
             label
                 .fixedSize(horizontal: true, vertical: false)
-                .padding(.horizontal, theme.spacing.oneAndHalfUnits)
-                .padding(.vertical, theme.spacing.oneUnit)
-                .frame(minHeight: theme.motion.minimumHitTarget)
+                .designPillMetrics(horizontalPadding: theme.spacing.oneAndHalfUnits)
                 .designCapsuleSurface()
                 .overlay {
                     Capsule(style: .continuous)
                         .strokeBorder(theme.colors.border, lineWidth: theme.stroke.thin)
                 }
-                .contentShape(Capsule(style: .continuous))
         }
         .buttonStyle(.plain)
     }

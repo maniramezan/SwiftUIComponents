@@ -220,8 +220,13 @@ Modifiers:
     .designCapsuleSurface()                 // pill surface
     .designCapsuleSurface(isSelected: true) // selected state
     .designInputSurface()                   // text field background
+    .designNoticeCard(background: theme.colors.error)  // full-width rounded notice/banner/error card
+    .designPillMetrics()                    // capsule-pill padding + min height + content shape
     .designTextStyle(.headline)             // font + color from theme
     // text roles: .title | .headline | .body | .secondary | .caption | .error
+
+Motion tokens:
+    theme.motion.animation(reducingMotion: reduceMotion)  // reduced vs standard animation
 
 ### Common Patterns
 

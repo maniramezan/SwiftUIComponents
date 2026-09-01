@@ -25,10 +25,10 @@ public struct ErrorBanner: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
         .foregroundStyle(theme.colors.error)
-        .padding(theme.spacing.oneAndHalfUnits)
-        .background(
-            theme.colors.error.opacity(0.08),
-            in: RoundedRectangle(cornerRadius: theme.radius.oneUnit, style: .continuous)
+        .designNoticeCard(
+            background: theme.colors.error.opacity(0.08),
+            cornerRadius: theme.radius.oneUnit,
+            padding: theme.spacing.oneAndHalfUnits
         )
         .accessibilityElement(children: .combine)
         .accessibilityLabel(Text(Strings.ErrorView.accessibilityLabel(message)))

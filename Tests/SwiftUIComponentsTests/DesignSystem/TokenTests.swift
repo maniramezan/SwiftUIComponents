@@ -54,6 +54,8 @@ func motionProtocolExtensionProvidesDefaults() {
     let motion = MinimalMotion()
     #expect(motion.pressedOpacity == 0.82)
     #expect(motion.reducedMotionAnimation == .easeInOut(duration: 0.15))
+    #expect(motion.animation(reducingMotion: true) == motion.reducedMotionAnimation)
+    #expect(motion.animation(reducingMotion: false) == motion.standardAnimation)
 }
 
 @Test("A minimal ColorTheme conformer inherits the shadow default")

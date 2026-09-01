@@ -245,14 +245,12 @@ struct SegmentedPickerScrollingRow<Item: MenuPickerItem, Label: View>: View {
             }
             .background(theme.colors.segmentUnselectedBackground, in: Capsule(style: .continuous))
             .overlay { SegmentedPickerTroughBorder() }
-            .overlay {
-                SegmentedPickerEdgeIndicators(
-                    geometry: geometry,
-                    animation: activeAnimation,
-                    troughColor: theme.colors.segmentUnselectedBackground,
-                    bandWidth: theme.spacing.fourUnits
-                )
-            }
+            .scrollEdgeVeil(
+                geometry: geometry,
+                animation: activeAnimation,
+                troughColor: theme.colors.segmentUnselectedBackground,
+                bandWidth: theme.spacing.fourUnits
+            )
             .clipShape(Capsule(style: .continuous))
             .accessibilityElement(children: .contain)
             .accessibilityScrollAction { edge in
@@ -269,7 +267,7 @@ struct SegmentedPickerScrollingRow<Item: MenuPickerItem, Label: View>: View {
     }
 
     private var activeAnimation: Animation {
-        reduceMotion ? theme.motion.reducedMotionAnimation : theme.motion.standardAnimation
+        theme.motion.animation(reducingMotion: reduceMotion)
     }
 
     /// Scrolls the picker to the given item, positioning it near the trailing
@@ -352,7 +350,7 @@ private struct SegmentedPickerSegment<Item: MenuPickerItem, Label: View>: View {
     private var isActive: Bool { item.id == selection.id }
 
     private var activeAnimation: Animation {
-        reduceMotion ? theme.motion.reducedMotionAnimation : theme.motion.standardAnimation
+        theme.motion.animation(reducingMotion: reduceMotion)
     }
 
     var body: some View {
@@ -424,106 +422,44 @@ private struct SegmentedPickerBadge: View {
     }
 }
 
-// MARK: - Edge indicators
-
-/// The leading/trailing edge-fade veil overlaid on the scrolling layout.
-private struct SegmentedPickerEdgeIndicators: View {
-    let geometry: ScrollGeometrySnapshot
-    let animation: Animation
-    let troughColor: Color
-    let bandWidth: CGFloat
-
-    var body: some View {
-        let edges = SegmentedPickerMath.edgeFade(
-            contentOffsetX: geometry.offsetX,
-            contentWidth: geometry.contentWidth,
-            viewportWidth: geometry.viewportWidth
-        )
-        HStack(spacing: 0) {
-            SegmentedPickerEdgeBand(visible: edges.leading, isLeading: true, troughColor: troughColor, width: bandWidth)
-            Spacer(minLength: 0)
-            SegmentedPickerEdgeBand(
-                visible: edges.trailing, isLeading: false, troughColor: troughColor, width: bandWidth)
-        }
-        .allowsHitTesting(false)
-        .animation(animation, value: edges.leading)
-        .animation(animation, value: edges.trailing)
-    }
-}
-
-/// A single edge-fade gradient band used by ``SegmentedPickerEdgeIndicators``.
-private struct SegmentedPickerEdgeBand: View {
-    let visible: Bool
-    let isLeading: Bool
-    let troughColor: Color
-    let width: CGFloat
-
-    var body: some View {
-        let colors: [Color] =
-            isLeading
-            ? [troughColor, troughColor.opacity(0)]
-            : [troughColor.opacity(0), troughColor]
-        LinearGradient(
-            colors: colors,
-            startPoint: UnitPoint(x: 0, y: 0.5),
-            endPoint: UnitPoint(x: 1, y: 0.5)
-        )
-        .frame(width: width)
-        .opacity(visible ? 1 : 0)
-    }
-}
-
 // MARK: - Pure helpers
 
 /// Pure geometry/accessibility math shared by ``SegmentedPicker``'s scrolling
-/// layout. Kept in a non-generic namespace so decorative subviews (like
-/// ``SegmentedPickerEdgeIndicators``) can call it without needing to know
-/// `SegmentedPicker`'s `Item`/`Label` generic parameters.
+/// layout. Kept in a non-generic namespace so decorative subviews can call it
+/// without needing to know `SegmentedPicker`'s `Item`/`Label` generic
+/// parameters.
 enum SegmentedPickerMath {
 
     /// Determines which scrollable edges should fade based on the current
     /// scroll geometry. Returns `(false, false)` whenever the content fits
     /// inside the viewport.
     ///
-    /// - Parameters:
-    ///   - contentOffsetX: The current horizontal content offset.
-    ///   - contentWidth: The total scrollable content width.
-    ///   - viewportWidth: The visible width of the scroll view.
-    ///   - threshold: Slop, in points, used to ignore sub-pixel offsets that
-    ///     could otherwise trigger a fade as soon as the user lifts a finger.
-    /// - Returns: A pair of booleans indicating whether the leading and
-    ///   trailing edges, respectively, should render an indicator band.
+    /// Delegates to the shared ``ScrollLayoutMath`` so every scrollable
+    /// component resolves edge fades identically.
     static func edgeFade(
         contentOffsetX: CGFloat,
         contentWidth: CGFloat,
         viewportWidth: CGFloat,
         threshold: CGFloat = 1
     ) -> (leading: Bool, trailing: Bool) {
-        guard contentWidth > viewportWidth + threshold else { return (false, false) }
-        let canScrollLeading = contentOffsetX > threshold
-        let canScrollTrailing = contentOffsetX + viewportWidth < contentWidth - threshold
-        return (canScrollLeading, canScrollTrailing)
+        ScrollLayoutMath.edgeFade(
+            contentOffsetX: contentOffsetX,
+            contentWidth: contentWidth,
+            viewportWidth: viewportWidth,
+            threshold: threshold
+        )
     }
 
     /// Converts an accessibility scroll edge into a logical selection delta.
     /// Leading/trailing edges flip in right-to-left layouts so VoiceOver users
     /// always advance forward through the items.
+    ///
+    /// Delegates to the shared ``ScrollLayoutMath``.
     static func accessibilityStep(
         for edge: Edge,
         layoutDirection: LayoutDirection
     ) -> Int {
-        switch edge {
-        case .leading:
-            return layoutDirection == .rightToLeft ? +1 : -1
-        case .trailing:
-            return layoutDirection == .rightToLeft ? -1 : +1
-        case .top:
-            return -1
-        case .bottom:
-            return +1
-        @unknown default:
-            return +1
-        }
+        ScrollLayoutMath.accessibilityStep(for: edge, layoutDirection: layoutDirection)
     }
 }
 
@@ -551,14 +487,6 @@ extension SegmentedPicker {
     ) -> Int {
         SegmentedPickerMath.accessibilityStep(for: edge, layoutDirection: layoutDirection)
     }
-}
-
-// MARK: - Private types
-
-private struct ScrollGeometrySnapshot: Equatable {
-    var offsetX: CGFloat = 0
-    var contentWidth: CGFloat = 0
-    var viewportWidth: CGFloat = 0
 }
 
 // MARK: - Preview
