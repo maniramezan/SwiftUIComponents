@@ -38,6 +38,7 @@ open Package.swift   # Opens in Xcode — select the ComponentShowcase scheme an
 - ``SelectionNode``
 - ``PillChip``
 - ``PillMetrics``
+- ``ActionPill``
 
 ### Indicators
 
@@ -56,6 +57,7 @@ open Package.swift   # Opens in Xcode — select the ComponentShowcase scheme an
 - ``AdaptiveSurface``
 - ``SelectableCardSurface``
 - ``FlipCard``
+- ``DisclosureCard``
 - ``FlipAxis``
 
 ### Layout

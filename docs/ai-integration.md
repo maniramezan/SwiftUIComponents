@@ -77,6 +77,7 @@ Badge:
 
 Filter chip:
     PillChip("Label", isSelected: isSelected) { /* action */ }
+    ActionPill(action: openItem) { HStack { Text("Type").bold(); Text("Value") } }
 
 Picker (item must conform to MenuPickerItem: Hashable & Identifiable, var title: String):
     MenuPicker(items: allItems, currentValue: $selected)
@@ -148,6 +149,9 @@ Flip card (two-sided flashcard; tap or VoiceOver "Flip" action toggles it):
     // axis: .horizontal (default, sweeps left/right) | .vertical (sweeps top/bottom)
     // animation: defaults to theme.motion.standardAnimation when omitted
     // Each face is wrapped in a card surface; Reduce Motion replaces the 3D flip with a cross-fade.
+
+Disclosure card (summary remains visible; detail expands inline):
+    DisclosureCard(isExpanded: $isExpanded) { summary } detail: { detail }
 
 Feedback:
     LoadingView()
