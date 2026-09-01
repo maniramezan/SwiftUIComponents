@@ -41,7 +41,15 @@
 - Run `swift format --in-place Sources Tests` (or Xcode's formatter) before committing to keep diffs clean.
 - When a view introduces supporting private subviews or helpers, define them as their own `View`/`ViewModifier`-conforming types (see **Performance & View Composition** below), organized in `extension` blocks or `// MARK:` sections at the bottom of the file.
 
+## Product Isolation (Non-Negotiable)
+
+- This public repository contains reusable primitives only. Never add application-specific logic, branding, feature names, analytics, domain models, business rules, strings, fixtures, or dependencies from any consuming app.
+- Examples, previews, tests, documentation, symbol names, and sample data must be domain-neutral. Use generic concepts such as labels, status values, sections, items, and actions.
+- Treat an app as a source of an abstract pattern, never as source code or sample content to copy. Search all changed lines for product/domain leakage before opening or updating a PR.
+- If code is reusable across applications, it belongs here or in another appropriate shared library—not in an app repository.
+
 ## Performance & View Composition
+
 - **Never split a view's body into `@ViewBuilder` computed properties or methods** (e.g. `@ViewBuilder private var rowContent: some View { ... }`, `private func item(_:) -> some View { ... }`). These are always inlined into the owning view's `body` and re-evaluated every time that body re-evaluates — they never get their own identity in the render tree, so SwiftUI cannot diff, skip, or animate them independently.
 - Instead, extract subviews into their own `View`-conforming `struct`s (and modifier-style helpers into `ViewModifier`-conforming `struct`s applied via `.modifier(_:)`). This gives SwiftUI a real type to diff against and lets it skip re-rendering a subtree when its inputs haven't changed.
 - This applies to internal/private decomposition of a single component's body. It does **not** apply to the standard `@ViewBuilder` *parameter* pattern used for caller-supplied content (e.g. `init(@ViewBuilder content: () -> Content)`), which is the correct, idiomatic way to accept child views from a caller.
