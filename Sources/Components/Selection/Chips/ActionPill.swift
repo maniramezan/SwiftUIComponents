@@ -43,9 +43,9 @@ public struct ActionPill<Label: View>: View {
     PreviewContent { theme in
         ActionPill(action: {}) {
             HStack(spacing: theme.spacing.halfUnit) {
-                Text("past")
+                Text("Status")
                     .bold()
-                Text("walked")
+                Text("Active")
             }
             .font(theme.typography.caption)
         }

@@ -7,8 +7,8 @@ import Testing
 func actionPillAcceptsDynamicLabelContent() {
     let pill = ActionPill(action: {}) {
         HStack {
-            Text("past")
-            Text("walked")
+            Text("Status")
+            Text("Active")
         }
     }
     _ = pill.body
