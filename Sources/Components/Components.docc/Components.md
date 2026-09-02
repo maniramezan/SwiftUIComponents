@@ -52,6 +52,8 @@ open Package.swift   # Opens in Xcode — select the ComponentShowcase scheme an
 
 - ``TextRole``
 - ``TypeStyle``
+- ``TypographySlot``
+- ``DesignText``
 
 ### Surfaces
 
