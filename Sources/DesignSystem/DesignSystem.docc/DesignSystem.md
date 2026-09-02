@@ -40,6 +40,7 @@ A platform-agnostic design token layer providing spacing, radius, stroke, motion
 ### State
 
 - ``LoadingState``
+- ``AsyncLoadable``
 
 ### Caching
 

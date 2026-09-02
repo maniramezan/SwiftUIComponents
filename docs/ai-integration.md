@@ -47,6 +47,44 @@ To create a custom theme, conform a struct to `Theme` and provide six properties
 `spacing` (`Spacing`), `radius` (`Radius`), `stroke` (`Stroke`),
 `motion` (`Motion`), `colors` (`ColorTheme`), and `typography` (`Typography`).
 
+### Driving AsyncContentView From Your Own State
+
+`AsyncContentView` accepts any `AsyncLoadable`, not only `LoadingState`. If your app
+already owns a state enum with its own error type, conform it once instead of converting at
+every call site:
+
+    extension MyState: AsyncLoadable {
+        var loadingState: LoadingState<Value, MyError> {
+            switch self {
+            case .idle: .idle
+            case .loading: .loading
+            case .loaded(let value): .loaded(value)
+            case .failed(let error): .failed(error)
+            }
+        }
+    }
+
+    AsyncContentView(state: viewModel.state) { value in ... }
+        loadingContent: { LoadingView() }
+        errorContent: { error in ... }
+
+### Choosing a Product
+
+Link `DesignSystem` and `Components` for an app whose own modules are static, which is the
+common case.
+
+Link `SwiftUIComponentsDynamic` instead — one dynamic image vending both targets — when
+your own modules are dynamic frameworks. Static products get copied into each of those
+frameworks, and the duplicate `Bundle.module` lookup that follows kills hostless test
+bundles (the xctest agent is `Bundle.main`, so the resource bundle is not found). Imports
+are unchanged either way:
+
+    .package(url: "https://github.com/maniramezan/swiftuicomponents", from: "0.10.0")
+    // then link the product "SwiftUIComponentsDynamic"
+
+    import DesignSystem
+    import Components
+
 ### Reading Tokens in Custom Views
 
     @Environment(\.designTheme) var theme

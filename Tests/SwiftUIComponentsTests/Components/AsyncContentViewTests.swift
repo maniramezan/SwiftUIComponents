@@ -78,4 +78,34 @@ struct AsyncContentViewTests {
             }
         }
     }
+
+    /// The initializer a consuming app uses: its own state type, never converted to
+    /// `LoadingState` at the call site.
+    @Test("renders a consumer's own AsyncLoadable state")
+    func consumerStateInitializer() {
+        let view = AsyncContentView(state: ConsumerState.ready("value")) { value in
+            Text(value)
+        } loadingContent: {
+            Text("Loading")
+        } errorContent: { error in
+            Text(error.message)
+        }
+        _ = view
+    }
+
+    /// A state type shaped like an app's own — different case names, its own error —
+    /// rather than a `LoadingState` in disguise.
+    private enum ConsumerState: Equatable, AsyncLoadable {
+        case busy
+        case ready(String)
+        case broken(StubError)
+
+        var loadingState: LoadingState<String, StubError> {
+            switch self {
+            case .busy: .loading
+            case .ready(let value): .loaded(value)
+            case .broken(let error): .failed(error)
+            }
+        }
+    }
 }
