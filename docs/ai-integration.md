@@ -54,6 +54,15 @@ To create a custom theme, conform a struct to `Theme` and provide six properties
     theme.colors.primary      // Color  (@MainActor)
     theme.colors.segmentUnselectedBackground // Color (@MainActor)
     theme.typography.body     // Font   (@MainActor)
+    theme.typography.captionBold // Font (@MainActor)
+
+`Typography` also exposes a weight ladder over its base slots — `largeTitleBold`,
+`title2Bold`, `title2Semibold`, `title3Bold`, `title3Semibold`, `headlineSemibold`,
+`bodySemibold`, `bodyMedium`, `subheadlineMedium`, `subheadlineSemibold`, `footnoteSemibold`,
+`captionSemibold`, `captionBold`, `caption2Bold`. Each has a protocol-extension default
+derived from the conformer's own slot, so a custom `Typography` inherits the whole ladder
+(custom font family included) and overrides only what its scale defines differently. Reach
+for these instead of re-weighting a slot inline at the call site.
 
 All `colors` and `typography` access is @MainActor — use only from View.body or @MainActor functions.
 

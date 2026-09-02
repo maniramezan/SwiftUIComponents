@@ -88,6 +88,39 @@ func typographySupportsCustomFamily() {
     _ = DefaultTypography(fontFamily: "Avenir Next")
 }
 
+@Test("Default typography exposes every weight variant")
+@MainActor
+func defaultTypographyExposesWeightVariants() {
+    let typography = DefaultTypography()
+
+    _ = typography.largeTitleBold
+    _ = typography.title2Bold
+    _ = typography.title2Semibold
+    _ = typography.title3Bold
+    _ = typography.title3Semibold
+    _ = typography.headlineSemibold
+    _ = typography.bodySemibold
+    _ = typography.bodyMedium
+    _ = typography.subheadlineMedium
+    _ = typography.subheadlineSemibold
+    _ = typography.footnoteSemibold
+    _ = typography.captionSemibold
+    _ = typography.captionBold
+    _ = typography.caption2Bold
+}
+
+@Test("Weight variants derive from the conformer's own base slots")
+@MainActor
+func weightVariantsDeriveFromBaseSlots() {
+    let typography = MinimalTypography()
+
+    // A conformer's own slot, re-weighted — not a hard-coded system font. Proves a custom
+    // font family or text-style mapping flows through the whole ladder.
+    #expect(typography.bodySemibold == typography.body.weight(.semibold))
+    #expect(typography.captionBold == typography.caption.bold())
+    #expect(typography.title3Semibold == typography.title3.weight(.semibold))
+}
+
 // MARK: - Fixtures
 
 /// A `Motion` conformer supplying only the original three requirements, to
@@ -119,4 +152,25 @@ private struct MinimalColorTheme: ColorTheme {
     @MainActor var success: Color { .green }
     @MainActor var warning: Color { .orange }
     @MainActor var disabled: Color { .gray }
+}
+
+/// A `Typography` conformer supplying only the original fifteen requirements, to prove the
+/// weight variants fall back to the protocol extension's defaults for any pre-existing
+/// custom conformer.
+private struct MinimalTypography: Typography {
+    @MainActor var largeTitle: Font { .largeTitle }
+    @MainActor var title: Font { .title }
+    @MainActor var title2: Font { .title2 }
+    @MainActor var title3: Font { .title3 }
+    @MainActor var headline: Font { .headline }
+    @MainActor var body: Font { .body }
+    @MainActor var callout: Font { .callout }
+    @MainActor var subheadline: Font { .subheadline }
+    @MainActor var footnote: Font { .footnote }
+    @MainActor var caption: Font { .caption }
+    @MainActor var caption2: Font { .caption2 }
+    @MainActor var button: Font { .body.weight(.semibold) }
+    @MainActor var control: Font { .body.weight(.medium) }
+    @MainActor var badge: Font { .caption.weight(.semibold) }
+    @MainActor var field: Font { .body }
 }
