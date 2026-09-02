@@ -53,8 +53,23 @@ To create a custom theme, conform a struct to `Theme` and provide six properties
     theme.spacing.twoUnits    // CGFloat
     theme.colors.primary      // Color  (@MainActor)
     theme.colors.segmentUnselectedBackground // Color (@MainActor)
+    theme.colors.overlayHeavy // Color  (@MainActor)
     theme.typography.body     // Font   (@MainActor)
     theme.typography.captionBold // Font (@MainActor)
+
+`ColorTheme` also exposes role tokens beyond the core palette — `interactiveSubtle` (a
+faint wash of `primary` for chip fills and selected rows), the overlay scrims
+`overlaySubtle` / `overlayMedium` / `overlayHeavy` with the fixed `onOverlay` foreground,
+the edge-gradient stops `overlayShadowStart` / `overlayShadowEnd` / `overlayBottomTint`,
+and `shimmerHighlight`. Each has a protocol-extension default derived from the conformer's
+own `primary` or `shadow`, so a custom `ColorTheme` inherits a consistent set and overrides
+only what it needs.
+
+Skeleton shimmer (apply once at the root of a skeleton layout, not per block; static under
+Reduce Motion, and `\.isGhostShimmerDisabled` forces the static form for snapshot tests):
+
+    VStack { GhostLoadingBlock(height: 16); GhostLoadingBlock(height: 88) }
+        .designGhostShimmer()
 
 `Typography` also exposes a weight ladder over its base slots — `largeTitleBold`,
 `title2Bold`, `title2Semibold`, `title3Bold`, `title3Semibold`, `headlineSemibold`,
@@ -233,6 +248,10 @@ Modifiers:
     .designPillMetrics()                    // capsule-pill padding + min height + content shape
     .designTextStyle(.headline)             // font + color from theme
     // text roles: .title | .headline | .body | .secondary | .caption | .error
+    .designSelectableCardSurface(isSelected: true)  // card surface with a selected state
+    .designAdaptiveSurface()               // glass on iOS/macOS 26+, .ultraThinMaterial below
+    .designAdaptiveButtonStyle(prominent: true)     // .glass button on 26+, .bordered below; honors UIDesignRequiresCompatibility
+    .designGhostShimmer()                  // sweep highlight across skeleton content (see "Feedback")
 
 Motion tokens:
     theme.motion.animation(reducingMotion: reduceMotion)  // reduced vs standard animation
