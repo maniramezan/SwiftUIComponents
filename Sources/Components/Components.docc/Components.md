@@ -16,6 +16,10 @@ open Package.swift   # Opens in Xcode — select the ComponentShowcase scheme an
 
 ## Topics
 
+### Essentials
+
+- <doc:Modifiers>
+
 ### Buttons
 
 - ``ThemeButton``
