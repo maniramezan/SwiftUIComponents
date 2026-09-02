@@ -121,6 +121,34 @@ func weightVariantsDeriveFromBaseSlots() {
     #expect(typography.title3Semibold == typography.title3.weight(.semibold))
 }
 
+@Test("Default colors expose every overlay, interactive-tint and skeleton role")
+@MainActor
+func defaultColorsExposeRoleTokens() {
+    let colors = DefaultColors()
+
+    _ = colors.interactiveSubtle
+    _ = colors.overlaySubtle
+    _ = colors.overlayMedium
+    _ = colors.overlayHeavy
+    _ = colors.onOverlay
+    _ = colors.overlayShadowStart
+    _ = colors.overlayShadowEnd
+    _ = colors.overlayBottomTint
+    _ = colors.shimmerHighlight
+}
+
+@Test("Role tokens derive from the conformer's own base colors")
+@MainActor
+func roleTokensDeriveFromBaseColors() {
+    let colors = MinimalColorTheme()
+
+    // Derived from this conformer's own primary/shadow, not a hard-coded black or blue,
+    // so a theme that overrides either gets a consistent scrim and tint for free.
+    #expect(colors.interactiveSubtle == colors.primary.opacity(0.15))
+    #expect(colors.overlayHeavy == colors.shadow.opacity(0.75))
+    #expect(colors.shimmerHighlight == colors.shadow.opacity(0.07))
+}
+
 // MARK: - Fixtures
 
 /// A `Motion` conformer supplying only the original three requirements, to
