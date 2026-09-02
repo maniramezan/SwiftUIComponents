@@ -62,20 +62,19 @@ private struct GhostShimmerModifier: ViewModifier {
     }
 }
 
-private struct GhostShimmerHighlightBand: View {
+struct GhostShimmerHighlightBand: View {
     let highlight: Color
     let containerWidth: CGFloat
     let phase: CGFloat
 
     var body: some View {
-        let bandWidth = containerWidth * GhostShimmerMetrics.bandWidthFraction
         LinearGradient(
             colors: [.clear, highlight, .clear],
             startPoint: .leading,
             endPoint: .trailing
         )
-        .frame(width: bandWidth)
-        .offset(x: -bandWidth + (containerWidth + 2 * bandWidth) * phase)
+        .frame(width: GhostShimmerMetrics.bandWidth(containerWidth: containerWidth))
+        .offset(x: GhostShimmerMetrics.offset(containerWidth: containerWidth, phase: phase))
     }
 }
 
@@ -96,6 +95,21 @@ enum GhostShimmerMetrics {
         let elapsed = date.timeIntervalSinceReferenceDate.truncatingRemainder(dividingBy: period)
         let cycle = elapsed / period
         return CGFloat(min(cycle / sweepFraction, 1))
+    }
+
+    /// Width of the highlight band for a container of the given width.
+    static func bandWidth(containerWidth: CGFloat) -> CGFloat {
+        containerWidth * bandWidthFraction
+    }
+
+    /// Leading offset of the highlight band for a sweep `phase` in `0...1`.
+    ///
+    /// At phase `0` the band sits fully off the leading edge; at phase `1` it has cleared
+    /// the trailing edge, so the visible sweep spans exactly one container width plus the
+    /// band on either side.
+    static func offset(containerWidth: CGFloat, phase: CGFloat) -> CGFloat {
+        let band = bandWidth(containerWidth: containerWidth)
+        return -band + (containerWidth + 2 * band) * phase
     }
 }
 

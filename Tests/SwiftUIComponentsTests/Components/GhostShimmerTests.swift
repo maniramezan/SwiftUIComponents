@@ -39,6 +39,31 @@ struct GhostShimmerTests {
         #expect(drift < 0.0001)
     }
 
+    /// The band spans a fixed fraction of the container so the sweep reads the same at any
+    /// width.
+    @Test func bandWidthIsAFractionOfTheContainer() {
+        #expect(GhostShimmerMetrics.bandWidth(containerWidth: 200) == 200 * GhostShimmerMetrics.bandWidthFraction)
+        #expect(GhostShimmerMetrics.bandWidth(containerWidth: 0) == 0)
+    }
+
+    /// At phase 0 the band sits fully off the leading edge; at phase 1 it has cleared the
+    /// trailing edge by its own width.
+    @Test func offsetSweepsFromOffscreenToOffscreen() {
+        let width: CGFloat = 300
+        let band = GhostShimmerMetrics.bandWidth(containerWidth: width)
+
+        #expect(GhostShimmerMetrics.offset(containerWidth: width, phase: 0) == -band)
+        #expect(GhostShimmerMetrics.offset(containerWidth: width, phase: 1) == width + band)
+    }
+
+    /// Renders `GhostShimmerHighlightBand` directly — the gradient, frame, and offset run
+    /// even offscreen, unlike the `TimelineView` that drives it in the modifier.
+    @Test @MainActor func highlightBandRenders() {
+        renderForCoverage(
+            GhostShimmerHighlightBand(highlight: .white, containerWidth: 320, phase: 0.5)
+        )
+    }
+
     /// Exercises the animating path: the masked highlight band and its gradient are built
     /// only when Reduce Motion is off and the sweep is not force-disabled.
     @Test @MainActor func rendersAnimatingSweep() {
