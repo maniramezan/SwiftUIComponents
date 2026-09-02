@@ -248,6 +248,10 @@ Modifiers:
     .designPillMetrics()                    // capsule-pill padding + min height + content shape
     .designTextStyle(.headline)             // font + color from theme
     // text roles: .title | .headline | .body | .secondary | .caption | .error
+    .designSelectableCardSurface(isSelected: true)  // card surface with a selected state
+    .designAdaptiveSurface()               // glass on iOS/macOS 26+, .ultraThinMaterial below
+    .designAdaptiveButtonStyle(prominent: true)     // .glass button on 26+, .bordered below; honors UIDesignRequiresCompatibility
+    .designGhostShimmer()                  // sweep highlight across skeleton content (see "Feedback")
 
 Motion tokens:
     theme.motion.animation(reducingMotion: reduceMotion)  // reduced vs standard animation
