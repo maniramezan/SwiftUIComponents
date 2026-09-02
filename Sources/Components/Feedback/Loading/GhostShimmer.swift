@@ -93,8 +93,8 @@ enum GhostShimmerMetrics {
     /// rests off-screen for the remainder, which is what produces the familiar pause
     /// between sweeps rather than a continuously travelling band.
     static func phase(at date: Date) -> CGFloat {
-        let cycle = date.timeIntervalSinceReferenceDate
-            .truncatingRemainder(dividingBy: period) / period
+        let elapsed = date.timeIntervalSinceReferenceDate.truncatingRemainder(dividingBy: period)
+        let cycle = elapsed / period
         return CGFloat(min(cycle / sweepFraction, 1))
     }
 }
