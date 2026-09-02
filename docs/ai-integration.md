@@ -47,6 +47,27 @@ To create a custom theme, conform a struct to `Theme` and provide six properties
 `spacing` (`Spacing`), `radius` (`Radius`), `stroke` (`Stroke`),
 `motion` (`Motion`), `colors` (`ColorTheme`), and `typography` (`Typography`).
 
+### Driving AsyncContentView From Your Own State
+
+`AsyncContentView` accepts any `AsyncLoadable`, not only `LoadingState`. If your app
+already owns a state enum with its own error type, conform it once instead of converting at
+every call site:
+
+    extension MyState: AsyncLoadable {
+        var loadingState: LoadingState<Value, MyError> {
+            switch self {
+            case .idle: .idle
+            case .loading: .loading
+            case .loaded(let value): .loaded(value)
+            case .failed(let error): .failed(error)
+            }
+        }
+    }
+
+    AsyncContentView(state: viewModel.state) { value in ... }
+        loadingContent: { LoadingView() }
+        errorContent: { error in ... }
+
 ### Choosing a Product
 
 Link `DesignSystem` and `Components` for an app whose own modules are static, which is the

@@ -35,6 +35,32 @@ public struct AsyncContentView<
     private let errorContent: (Failure) -> ErrorContent
     @Environment(\.designTheme) private var theme
 
+    /// Creates an async content view from any type that can describe itself as a
+    /// `LoadingState`.
+    ///
+    /// Use this when the caller already owns a state enum — a view model's own type, say —
+    /// rather than converting it to `LoadingState` at the call site. Conform that type to
+    /// `AsyncLoadable` once and pass it directly.
+    ///
+    /// - Parameters:
+    ///   - state: Current state, in any `AsyncLoadable` form.
+    ///   - content: Builder rendered once the state is `.loaded(value)`.
+    ///   - loadingContent: Builder rendered while the state is `.loading`.
+    ///   - errorContent: Builder rendered when the state is `.failed(failure)`.
+    public init(
+        state: some AsyncLoadable<Value, Failure>,
+        @ViewBuilder content: @escaping (Value) -> Content,
+        @ViewBuilder loadingContent: @escaping () -> LoadingContent,
+        @ViewBuilder errorContent: @escaping (Failure) -> ErrorContent
+    ) {
+        self.init(
+            state: state.loadingState,
+            content: content,
+            loadingContent: loadingContent,
+            errorContent: errorContent
+        )
+    }
+
     /// Creates an async content view.
     ///
     /// - Parameters:
