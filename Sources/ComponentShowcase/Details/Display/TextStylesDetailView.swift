@@ -34,6 +34,10 @@ struct TextStylesDetailView: View {
                 }
             }
 
+            ShowcaseSection("DesignText — pick a slot") {
+                DesignTextPlayground()
+            }
+
             ShowcaseSection("Typography weight ladder") {
                 VStack(alignment: .leading, spacing: theme.spacing.oneUnit) {
                     ForEach(WeightLadderSample.all) { sample in
@@ -77,6 +81,47 @@ private struct WeightLadderSample: Identifiable {
         .init(name: "captionSemibold") { $0.captionSemibold },
         .init(name: "captionBold") { $0.captionBold },
         .init(name: "caption2Bold") { $0.caption2Bold },
+    ]
+}
+
+/// Live controls for ``DesignText``: choose any ``TypographySlot`` and edit the sample
+/// string, then see the rendered result in that slot's themed font.
+private struct DesignTextPlayground: View {
+    @State private var slot: TypographySlot = .body
+    @State private var sample: String = "The quick brown fox"
+    @Environment(\.designTheme) private var theme
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: theme.spacing.oneAndHalfUnits) {
+            Picker("Slot", selection: $slot) {
+                ForEach(Self.slots, id: \.slot) { entry in
+                    Text(entry.name).tag(entry.slot)
+                }
+            }
+
+            TextField("Sample text", text: $sample)
+                .textFieldStyle(.roundedBorder)
+
+            DesignText(verbatim: sample, slot: slot)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    /// Every ``TypographySlot`` paired with the token name it maps to, in ladder order.
+    private static let slots: [(name: String, slot: TypographySlot)] = [
+        ("largeTitle", .largeTitle), ("title", .title), ("title2", .title2),
+        ("title3", .title3), ("headline", .headline), ("body", .body),
+        ("callout", .callout), ("subheadline", .subheadline), ("footnote", .footnote),
+        ("caption", .caption), ("caption2", .caption2), ("button", .button),
+        ("control", .control), ("badge", .badge), ("field", .field),
+        ("largeTitleBold", .largeTitleBold), ("title2Bold", .title2Bold),
+        ("title2Semibold", .title2Semibold), ("title3Bold", .title3Bold),
+        ("title3Semibold", .title3Semibold), ("headlineSemibold", .headlineSemibold),
+        ("bodySemibold", .bodySemibold), ("bodyMedium", .bodyMedium),
+        ("subheadlineMedium", .subheadlineMedium),
+        ("subheadlineSemibold", .subheadlineSemibold),
+        ("footnoteSemibold", .footnoteSemibold), ("captionSemibold", .captionSemibold),
+        ("captionBold", .captionBold), ("caption2Bold", .caption2Bold),
     ]
 }
 
