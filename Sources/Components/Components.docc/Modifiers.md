@@ -67,6 +67,14 @@ Text("Section")
     .designTextStyle(.headline)
 ```
 
+For a full type-scale rung rather than a semantic role, render a ``DesignText`` with a
+``TypographySlot`` — it applies the matching `Typography` font and nothing else, so the
+call site never names a raw `Font`:
+
+```swift
+DesignText("Section", slot: .headlineSemibold)
+```
+
 ## Feedback
 
 - term `designGhostShimmer()`:

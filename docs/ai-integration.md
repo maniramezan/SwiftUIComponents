@@ -117,6 +117,13 @@ derived from the conformer's own slot, so a custom `Typography` inherits the who
 (custom font family included) and overrides only what its scale defines differently. Reach
 for these instead of re-weighting a slot inline at the call site.
 
+`TypographySlot` names any one of those members (base slot or weight variant) as a
+type-safe value, and `DesignText("…", slot: .headlineSemibold)` renders a string in that
+slot's font — the call-site-safe alternative to passing a raw `Font`. `DesignText` applies
+font only; compose `.foregroundStyle(…)` yourself. Use `DesignText(verbatim:slot:)` for
+strings that must not be localized. `TypographySlot.font(_:)` resolves the `Font` directly
+when a view needs the value.
+
 All `colors` and `typography` access is @MainActor — use only from View.body or @MainActor functions.
 
 ### Component Reference
@@ -286,6 +293,8 @@ Modifiers:
     .designPillMetrics()                    // capsule-pill padding + min height + content shape
     .designTextStyle(.headline)             // font + color from theme
     // text roles: .title | .headline | .body | .secondary | .caption | .error
+    // full type scale (font only, no color): DesignText("Label", slot: .title3Semibold)
+    // slot: one case per Typography member (base slots + weight ladder); DesignText(verbatim:slot:) for un-localized
     .designSelectableCardSurface(isSelected: true)  // card surface with a selected state
     .designAdaptiveSurface()               // glass on iOS/macOS 26+, .ultraThinMaterial below
     .designAdaptiveButtonStyle(prominent: true)     // .glass button on 26+, .bordered below; honors UIDesignRequiresCompatibility
