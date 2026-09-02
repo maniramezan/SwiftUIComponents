@@ -1,4 +1,6 @@
+import DesignSystem
 import Foundation
+import SwiftUI
 import Testing
 
 @testable import Components
@@ -35,5 +37,34 @@ struct GhostShimmerTests {
             GhostShimmerMetrics.phase(at: first) - GhostShimmerMetrics.phase(at: later)
         )
         #expect(drift < 0.0001)
+    }
+
+    /// Exercises the animating path: the masked highlight band and its gradient are built
+    /// only when Reduce Motion is off and the sweep is not force-disabled.
+    @Test @MainActor func rendersAnimatingSweep() {
+        renderForCoverage(
+            skeleton
+                .designGhostShimmer()
+                .designTheme(DefaultTheme())
+        )
+    }
+
+    /// Exercises the static path: `\.isGhostShimmerDisabled` (the same gate Reduce Motion
+    /// trips) skips the band entirely so a snapshot never captures a clock-dependent frame.
+    @Test @MainActor func rendersStaticWhenDisabled() {
+        renderForCoverage(
+            skeleton
+                .designGhostShimmer()
+                .environment(\.isGhostShimmerDisabled, true)
+                .designTheme(DefaultTheme())
+        )
+    }
+
+    @MainActor private var skeleton: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            GhostLoadingBlock(width: 160, height: 16)
+            GhostLoadingBlock(height: 88)
+        }
+        .padding()
     }
 }
