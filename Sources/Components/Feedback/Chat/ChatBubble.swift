@@ -24,6 +24,7 @@ public struct ChatBubble<Content: View>: View {
     private let role: ChatMessageRole
     private let content: Content
     @Environment(\.designTheme) private var theme
+    @Environment(\.layoutDirection) private var contentLayoutDirection
 
     /// Creates a chat bubble around custom content.
     ///
@@ -36,10 +37,19 @@ public struct ChatBubble<Content: View>: View {
     }
 
     public var body: some View {
+        // The role-based side-of-screen alignment below is fixed relative to
+        // the screen, not to text direction, so the outer `HStack` is pinned
+        // to `.leftToRight` and the ambient `layoutDirection` (set by a
+        // caller to render bidi response text, e.g. RTL native languages) is
+        // reapplied only to `content`. Without this, an RTL ambient
+        // direction would mirror the whole `HStack`, flipping which side of
+        // the screen the bubble renders on (e.g. an assistant bubble landing
+        // on the trailing side, on top of the user's).
         HStack(spacing: 0) {
             if role == .user { Spacer(minLength: theme.spacing.sixUnits) }
 
             content
+                .environment(\.layoutDirection, contentLayoutDirection)
                 .padding(theme.spacing.oneAndHalfUnits)
                 .background(bubbleShape.fill(backgroundColor))
                 .overlay(bubbleShape.strokeBorder(borderColor, lineWidth: theme.stroke.hairline))
@@ -47,6 +57,7 @@ public struct ChatBubble<Content: View>: View {
 
             if role != .user { Spacer(minLength: theme.spacing.sixUnits) }
         }
+        .environment(\.layoutDirection, .leftToRight)
         .accessibilityElement(children: .combine)
         .accessibilityLabel(Text(accessibilityRolePrefix))
     }
