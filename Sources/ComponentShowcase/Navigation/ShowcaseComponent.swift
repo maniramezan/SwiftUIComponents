@@ -38,13 +38,7 @@ enum ShowcaseComponent: String, CaseIterable, Identifiable {
     case segmentedPicker = "Segmented Picker"
 
     // MARK: - Chat
-    case chatBubble = "Chat Bubble"
-    case typingIndicator = "Typing Indicator"
-    case structuredChatBubble = "Structured Chat Bubble"
-    case assistantConversation = "Assistant Conversation"
-    case assistantQuickActions = "Assistant Quick Actions"
-    case assistantContextCard = "Assistant Context Card"
-    case assistantNotices = "Assistant Notices"
+    case chat = "Chat"
 
     // MARK: - Collections
     case carouselRow = "Carousel Row"
@@ -76,13 +70,7 @@ enum ShowcaseComponent: String, CaseIterable, Identifiable {
         case .emptyState: return "tray"
         case .toast: return "bell.badge.fill"
         case .pagedView: return "rectangle.split.3x1"
-        case .chatBubble: return "bubble.left.and.bubble.right"
-        case .typingIndicator: return "ellipsis.message"
-        case .structuredChatBubble: return "list.bullet.rectangle"
-        case .assistantConversation: return "bubble.left.and.text.bubble.right"
-        case .assistantQuickActions: return "bolt.fill"
-        case .assistantContextCard: return "text.book.closed"
-        case .assistantNotices: return "exclamationmark.bubble"
+        case .chat: return "bubble.left.and.bubble.right"
         case .carouselRow: return "rectangle.portrait.on.rectangle.portrait"
         case .carouselBoard: return "rectangle.grid.1x2"
         }
@@ -103,11 +91,17 @@ enum ShowcaseComponent: String, CaseIterable, Identifiable {
             return "Feedback"
         case .pagedView, .segmentedPicker:
             return "Pagination"
-        case .chatBubble, .typingIndicator, .structuredChatBubble, .assistantConversation,
-            .assistantQuickActions, .assistantContextCard, .assistantNotices:
+        case .chat:
             return "Chat"
         case .carouselRow, .carouselBoard:
             return "Collections"
         }
+    }
+
+    /// `true` for a full-page experience (e.g. the chat playground) that
+    /// should occupy the whole detail pane instead of the padded
+    /// `ScrollView` every other component's static reference content uses.
+    var fillsDetailPane: Bool {
+        self == .chat
     }
 }
