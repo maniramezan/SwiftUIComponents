@@ -16,10 +16,10 @@ struct StructuredChatBubbleViewTests {
         _ = StructuredChatBubbleView(
             role: .assistant,
             content: """
-                ## Main Idea
+                ## Summary
                 Body one.
 
-                ## Examples
+                ## Details
                 Body two.
                 """
         )
@@ -29,8 +29,8 @@ struct StructuredChatBubbleViewTests {
     func autoPromotingHeadings() {
         _ = StructuredChatBubbleView(
             role: .assistant,
-            content: "Main Idea This word means hello. Examples Used as a greeting.",
-            autoPromotingHeadings: ["Main Idea", "Examples"]
+            content: "Summary A short overview of the item. Details The first supporting point.",
+            autoPromotingHeadings: ["Summary", "Details"]
         )
     }
 
@@ -69,10 +69,10 @@ struct StructuredChatBubbleViewTests {
             StructuredChatBubbleView(
                 role: .assistant,
                 content: """
-                    ## Main Idea
+                    ## Summary
                     Body one.
 
-                    ## Examples
+                    ## Details
                     Body two.
                     """
             )

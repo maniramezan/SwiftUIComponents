@@ -168,7 +168,7 @@ public enum AssistantQuickActionChipForegroundRole: Equatable, Sendable {
 }
 
 private enum PreviewAction: String, CaseIterable, Identifiable {
-    case translate, explain, examples
+    case summarize, expand, rephrase
     var id: String { rawValue }
 }
 
@@ -177,9 +177,9 @@ private enum PreviewAction: String, CaseIterable, Identifiable {
         AssistantQuickActionChipRow<PreviewAction>(
             actions: PreviewAction.allCases,
             isInteractionEnabled: true,
-            state: { $0 == .translate ? .used : .available },
+            state: { $0 == .summarize ? .used : .available },
             label: { $0.rawValue.capitalized },
-            systemImage: { _ in "text.book.closed" },
+            systemImage: { _ in "sparkles" },
             onSelect: { _ in }
         )
         .padding(theme.spacing.twoUnits)

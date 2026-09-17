@@ -8,51 +8,51 @@ struct AssistantContextCardTests {
 
     @Test("title only constructs")
     func titleOnly() {
-        _ = AssistantContextCard(title: "hello")
+        _ = AssistantContextCard(title: "Example item")
     }
 
     @Test("full card with quoted body constructs")
     func fullQuoted() {
         _ = AssistantContextCard(
-            title: "hello",
-            highlight: "Hola",
-            bodyText: "Hello, how are you today?",
+            title: "Example item",
+            highlight: "Label",
+            bodyText: "The sentence this item appeared in.",
             bodyStyle: .quoted,
-            footnote: "From: Everyday English"
+            footnote: "From: Reference source"
         )
     }
 
     @Test("full card with plain body constructs")
     func fullPlain() {
         _ = AssistantContextCard(
-            title: "Present Perfect",
-            highlight: "B1",
-            bodyText: "have/has + past participle",
+            title: "Example pattern",
+            highlight: "Category",
+            bodyText: "PREFIX + BODY + SUFFIX",
             bodyStyle: .plain
         )
     }
 
     @Test("empty optional strings are treated as absent")
     func emptyStringsHidden() {
-        _ = AssistantContextCard(title: "hello", highlight: "", bodyText: "", footnote: "")
+        _ = AssistantContextCard(title: "Example item", highlight: "", bodyText: "", footnote: "")
     }
 
     // MARK: - Rendering
 
     @Test("title-only card renders")
     func titleOnlyRenders() {
-        renderForCoverage(AssistantContextCard(title: "hello"))
+        renderForCoverage(AssistantContextCard(title: "Example item"))
     }
 
     @Test("full quoted card renders")
     func fullQuotedRenders() {
         renderForCoverage(
             AssistantContextCard(
-                title: "hello",
-                highlight: "Hola",
-                bodyText: "Hello, how are you today?",
+                title: "Example item",
+                highlight: "Label",
+                bodyText: "The sentence this item appeared in.",
                 bodyStyle: .quoted,
-                footnote: "From: Everyday English"
+                footnote: "From: Reference source"
             )
         )
     }
@@ -61,9 +61,9 @@ struct AssistantContextCardTests {
     func fullPlainRenders() {
         renderForCoverage(
             AssistantContextCard(
-                title: "Present Perfect",
-                highlight: "B1",
-                bodyText: "have/has + past participle",
+                title: "Example pattern",
+                highlight: "Category",
+                bodyText: "PREFIX + BODY + SUFFIX",
                 bodyStyle: .plain
             )
         )
@@ -71,6 +71,6 @@ struct AssistantContextCardTests {
 
     @Test("empty optional strings render as hidden")
     func emptyStringsRender() {
-        renderForCoverage(AssistantContextCard(title: "hello", highlight: "", bodyText: "", footnote: ""))
+        renderForCoverage(AssistantContextCard(title: "Example item", highlight: "", bodyText: "", footnote: ""))
     }
 }

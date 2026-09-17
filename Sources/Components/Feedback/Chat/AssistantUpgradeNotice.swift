@@ -3,15 +3,15 @@ import SwiftUI
 
 /// A notice + call-to-action shown when an assistant feature is degraded or
 /// limited under the current plan/tier and the caller wants to prompt an
-/// upgrade — e.g. "the free tier can't respond in your language; upgrade for
-/// full support."
+/// upgrade — e.g. "the free tier can't answer this kind of request; upgrade
+/// for full support."
 ///
 /// The caller resolves its own localized copy; this component owns no copy
 /// of its own.
 ///
 /// ```swift
 /// AssistantUpgradeNotice(
-///     message: "Upgrade to Premium to get help in all languages.",
+///     message: "Upgrade to Premium for unlimited assistant help.",
 ///     upgradeTitle: "Upgrade to Premium",
 ///     onUpgrade: { presentPaywall() }
 /// )
@@ -65,7 +65,7 @@ public struct AssistantUpgradeNotice: View {
 #Preview("Assistant upgrade notice") {
     PreviewContent { theme in
         AssistantUpgradeNotice(
-            message: "Upgrade to Premium to get help in all languages.",
+            message: "Upgrade to Premium for unlimited assistant help.",
             upgradeTitle: "Upgrade to Premium",
             systemImage: "globe",
             onUpgrade: {}

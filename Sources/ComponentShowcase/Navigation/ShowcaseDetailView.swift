@@ -8,15 +8,24 @@ struct ShowcaseDetailView: View {
     let component: ShowcaseComponent
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 0) {
+        Group {
+            if component.fillsDetailPane {
+                // A full-page experience (e.g. the chat playground) needs the
+                // whole detail pane, not the padded ScrollView every other
+                // component's static reference content uses below.
                 ShowcaseDetailContent(component: component)
-                    .padding()
+            } else {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 0) {
+                        ShowcaseDetailContent(component: component)
+                            .padding()
+                    }
+                }
             }
         }
         .navigationTitle(component.rawValue)
         #if os(iOS) || targetEnvironment(macCatalyst)
-            .navigationBarTitleDisplayMode(.large)
+            .navigationBarTitleDisplayMode(component.fillsDetailPane ? .inline : .large)
         #endif
     }
 }
@@ -52,13 +61,7 @@ private struct ShowcaseDetailContent: View {
         case .emptyState: EmptyStateDetailView()
         case .toast: ToastDetailView()
         case .pagedView: PagedViewDetailView()
-        case .chatBubble: ChatBubbleDetailView()
-        case .typingIndicator: TypingIndicatorDetailView()
-        case .structuredChatBubble: StructuredChatBubbleDetailView()
-        case .assistantConversation: AssistantConversationDetailView()
-        case .assistantQuickActions: AssistantQuickActionsDetailView()
-        case .assistantContextCard: AssistantContextCardDetailView()
-        case .assistantNotices: AssistantNoticesDetailView()
+        case .chat: ChatPlaygroundDetailView()
         case .carouselRow: CarouselRowDetailView()
         case .carouselBoard: CarouselBoardDetailView()
         }

@@ -13,9 +13,9 @@ struct CompactActionDetailView: View {
 
             ShowcaseSection("Action row") {
                 HStack(spacing: theme.spacing.oneUnit) {
-                    CompactActionButton(title: "Translate", icon: "globe") {}
+                    CompactActionButton(title: "Share", icon: "square.and.arrow.up") {}
                     CompactActionButton(title: "Simplify", icon: "wand.and.stars") {}
-                    CompactActionButton(title: "Explain", icon: "lightbulb") {}
+                    CompactActionButton(title: "Details", icon: "info.circle") {}
                 }
             }
 

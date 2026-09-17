@@ -9,8 +9,8 @@ import SwiftUI
 /// action label using `theme.typography.subheadline`.
 ///
 /// ```swift
-/// SectionHeader(title: "Vocabulary", actionLabel: "See All") {
-///     openVocabularyList()
+/// SectionHeader(title: "Recent Items", actionLabel: "See All") {
+///     openItemList()
 /// }
 /// ```
 ///
@@ -66,7 +66,7 @@ public struct SectionHeader: View {
 
 #Preview("Section Header — with action") {
     PreviewContent { theme in
-        SectionHeader(title: "Vocabulary", actionLabel: "See All") {}
+        SectionHeader(title: "Recent Items", actionLabel: "See All") {}
             .padding(.vertical, theme.spacing.twoUnits)
     }
 }

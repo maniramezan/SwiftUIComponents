@@ -97,38 +97,38 @@ struct StructuredMessageParserTests {
     @Test("auto-promotes provided heading phrases when emitted without ##")
     func autoPromotesHeadings() throws {
         let text = """
-            Main Idea The cat sat on the mat. This is the main point.
+            Summary The cat sat on the mat. This is the main point.
 
-            Examples See how the cat sits comfortably.
+            Details See how the cat sits comfortably.
             """
         let result = StructuredMessageParser.sections(
             from: text,
-            autoPromotingHeadings: ["Main Idea", "Examples"]
+            autoPromotingHeadings: ["Summary", "Details"]
         )
         let sections = try #require(result)
         #expect(sections.count == 2)
-        #expect(sections[0].title == "Main Idea")
-        #expect(sections[1].title == "Examples")
+        #expect(sections[0].title == "Summary")
+        #expect(sections[1].title == "Details")
     }
 
     @Test("does not promote headings that already have ## prefix")
     func skipsAlreadyPromoted() throws {
         let text = """
-            ## Main Idea
+            ## Summary
 
             Existing body one.
 
-            ## Examples
+            ## Details
 
             Existing body two.
             """
         let result = StructuredMessageParser.sections(
             from: text,
-            autoPromotingHeadings: ["Main Idea", "Examples"]
+            autoPromotingHeadings: ["Summary", "Details"]
         )
         let sections = try #require(result)
         #expect(sections.count == 2)
-        #expect(sections[0].title == "Main Idea")
+        #expect(sections[0].title == "Summary")
         #expect(sections[0].body == "Existing body one.")
     }
 
