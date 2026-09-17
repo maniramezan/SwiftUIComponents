@@ -12,7 +12,7 @@ import Foundation
 /// ```swift
 /// let sections = StructuredMessageParser.sections(
 ///     from: assistantResponse,
-///     autoPromotingHeadings: ["Main Idea", "Examples", "Common Mistakes"]
+///     autoPromotingHeadings: ["Summary", "Details", "Caveats"]
 /// )
 /// ```
 ///

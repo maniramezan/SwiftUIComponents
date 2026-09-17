@@ -13,7 +13,7 @@ import SwiftUI
 /// StructuredChatBubbleView(
 ///     role: .assistant,
 ///     content: llmResponse,
-///     autoPromotingHeadings: ["Main Idea", "Examples", "Common Mistakes"]
+///     autoPromotingHeadings: ["Summary", "Details", "Caveats"]
 /// )
 /// ```
 ///
@@ -26,6 +26,7 @@ public struct StructuredChatBubbleView: View {
     private let isTyping: Bool
     private let autoPromotingHeadings: [String]
     private let minimumSectionCount: Int
+    private let contentLayoutDirection: LayoutDirection?
 
     /// Creates a structured-or-plain chat bubble.
     ///
@@ -41,18 +42,26 @@ public struct StructuredChatBubbleView: View {
     ///     ``StructuredMessageParser``. Defaults to empty.
     ///   - minimumSectionCount: The smallest number of parsed sections that
     ///     justifies structured rendering. Defaults to `2`.
+    ///   - contentLayoutDirection: Lays the sections (or the plain fallback
+    ///     text) out in this direction regardless of the surrounding
+    ///     interface — pass `.rightToLeft` for a right-to-left reply inside a
+    ///     left-to-right app. The bubble's side-of-screen alignment is
+    ///     unaffected. See ``ChatBubble``. Defaults to `nil`, which inherits
+    ///     the ambient layout direction.
     public init(
         role: ChatMessageRole,
         content: String,
         isTyping: Bool = false,
         autoPromotingHeadings: [String] = [],
-        minimumSectionCount: Int = 2
+        minimumSectionCount: Int = 2,
+        contentLayoutDirection: LayoutDirection? = nil
     ) {
         self.role = role
         self.content = content
         self.isTyping = isTyping
         self.autoPromotingHeadings = autoPromotingHeadings
         self.minimumSectionCount = minimumSectionCount
+        self.contentLayoutDirection = contentLayoutDirection
     }
 
     public var body: some View {
@@ -64,11 +73,16 @@ public struct StructuredChatBubbleView: View {
                 minimumSectionCount: minimumSectionCount
             )
         {
-            ChatBubble(role: .assistant) {
+            ChatBubble(role: .assistant, contentLayoutDirection: contentLayoutDirection) {
                 StructuredChatBubbleContent(sections: sections)
             }
         } else {
-            ChatBubbleView(role: role, content: content, isTyping: isTyping)
+            ChatBubbleView(
+                role: role,
+                content: content,
+                isTyping: isTyping,
+                contentLayoutDirection: contentLayoutDirection
+            )
         }
     }
 }
@@ -115,16 +129,16 @@ private struct StructuredChatBubbleContent: View {
 #Preview("Structured chat bubble") {
     PreviewContent { theme in
         VStack(alignment: .leading, spacing: theme.spacing.oneUnit) {
-            ChatBubbleView(role: .user, content: "Explain the present perfect tense")
+            ChatBubbleView(role: .user, content: "Summarize this section")
             StructuredChatBubbleView(
                 role: .assistant,
                 content: """
-                    ## Main Idea
-                    Used for actions that happened at an unspecified time before now.
+                    ## Summary
+                    A short overview of the item you asked about.
 
-                    ## Examples
-                    - I have visited Paris.
-                    - She has finished her homework.
+                    ## Details
+                    - The first supporting point.
+                    - The second supporting point.
                     """
             )
             StructuredChatBubbleView(

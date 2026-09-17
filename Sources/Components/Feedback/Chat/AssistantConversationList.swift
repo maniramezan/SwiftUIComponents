@@ -9,7 +9,7 @@ import SwiftUI
 ///
 /// Generic over any `Identifiable & Equatable` turn type so callers can
 /// share one conversation-log implementation across multiple assistant
-/// features (e.g. a word-help assistant and a grammar-help assistant), each
+/// features (e.g. a summarizing assistant and a troubleshooting assistant), each
 /// supplying its own turn model, user-facing label, and response state via
 /// closures.
 ///
@@ -33,6 +33,7 @@ public struct AssistantConversationList<Turn: Identifiable & Equatable>: View {
     private let retryTitle: String
     private let onRetry: (Turn) -> Void
     private let autoPromotingHeadings: [String]
+    private let contentLayoutDirection: LayoutDirection?
 
     /// Creates an assistant conversation list.
     ///
@@ -52,6 +53,12 @@ public struct AssistantConversationList<Turn: Identifiable & Equatable>: View {
     ///     headings so completed responses can render as structured
     ///     sections. See ``StructuredMessageParser``. Defaults to empty,
     ///     which renders completed responses as plain markdown text.
+    ///   - contentLayoutDirection: Lays every bubble's text out in this
+    ///     direction regardless of the surrounding interface — pass
+    ///     `.rightToLeft` for a right-to-left conversation inside a
+    ///     left-to-right app. Bubble alignment is unaffected. See
+    ///     ``ChatBubble``. Defaults to `nil`, which inherits the ambient
+    ///     layout direction.
     public init(
         turns: [Turn],
         isInteractionEnabled: Bool,
@@ -60,7 +67,8 @@ public struct AssistantConversationList<Turn: Identifiable & Equatable>: View {
         responseState: @escaping (Turn) -> AssistantConversationState,
         retryTitle: String,
         onRetry: @escaping (Turn) -> Void,
-        autoPromotingHeadings: [String] = []
+        autoPromotingHeadings: [String] = [],
+        contentLayoutDirection: LayoutDirection? = nil
     ) {
         self.turns = turns
         self.isInteractionEnabled = isInteractionEnabled
@@ -70,6 +78,7 @@ public struct AssistantConversationList<Turn: Identifiable & Equatable>: View {
         self.retryTitle = retryTitle
         self.onRetry = onRetry
         self.autoPromotingHeadings = autoPromotingHeadings
+        self.contentLayoutDirection = contentLayoutDirection
     }
 
     @Environment(\.designTheme) private var theme
@@ -92,6 +101,7 @@ public struct AssistantConversationList<Turn: Identifiable & Equatable>: View {
                         isRetryEnabled: isInteractionEnabled,
                         retryTitle: retryTitle,
                         autoPromotingHeadings: autoPromotingHeadings,
+                        contentLayoutDirection: contentLayoutDirection,
                         onRetry: { onRetry(turn) }
                     )
                     .id(turn.id)
@@ -112,29 +122,37 @@ private struct AssistantConversationTurnView: View {
     let isRetryEnabled: Bool
     let retryTitle: String
     let autoPromotingHeadings: [String]
+    let contentLayoutDirection: LayoutDirection?
     let onRetry: () -> Void
 
     @Environment(\.designTheme) private var theme
 
     var body: some View {
         VStack(alignment: .leading, spacing: theme.spacing.oneUnit) {
-            ChatBubbleView(role: .user, content: userLabel)
+            ChatBubbleView(role: .user, content: userLabel, contentLayoutDirection: contentLayoutDirection)
             switch state {
             case .idle:
                 EmptyView()
             case .streaming(let text):
-                ChatBubbleView(role: .assistant, content: text, isTyping: true)
+                ChatBubbleView(
+                    role: .assistant,
+                    content: text,
+                    isTyping: true,
+                    contentLayoutDirection: contentLayoutDirection
+                )
             case .complete(let text):
                 StructuredChatBubbleView(
                     role: .assistant,
                     content: text,
-                    autoPromotingHeadings: autoPromotingHeadings
+                    autoPromotingHeadings: autoPromotingHeadings,
+                    contentLayoutDirection: contentLayoutDirection
                 )
             case .error(let message):
                 AssistantConversationErrorTurnBubble(
                     message: message,
                     isRetryEnabled: isRetryEnabled,
                     retryTitle: retryTitle,
+                    contentLayoutDirection: contentLayoutDirection,
                     onRetry: onRetry
                 )
             }
@@ -150,12 +168,13 @@ private struct AssistantConversationErrorTurnBubble: View {
     let message: String
     let isRetryEnabled: Bool
     let retryTitle: String
+    let contentLayoutDirection: LayoutDirection?
     let onRetry: () -> Void
 
     @Environment(\.designTheme) private var theme
 
     var body: some View {
-        ChatBubble(role: .assistant) {
+        ChatBubble(role: .assistant, contentLayoutDirection: contentLayoutDirection) {
             VStack(alignment: .leading, spacing: theme.spacing.oneAndHalfUnits) {
                 Text(message)
                     .font(theme.typography.subheadline)
@@ -179,8 +198,8 @@ private struct PreviewTurn: Identifiable, Equatable {
     PreviewContent { theme in
         AssistantConversationList(
             turns: [
-                PreviewTurn(label: "Translate", state: .complete("Hola")),
-                PreviewTurn(label: "Explain", state: .streaming("This word means...")),
+                PreviewTurn(label: "Summarize", state: .complete("Here's the short version.")),
+                PreviewTurn(label: "Expand", state: .streaming("Here's what I")),
             ],
             isInteractionEnabled: true,
             idleHint: "Tap an action below to get started.",
@@ -211,7 +230,7 @@ private struct PreviewTurn: Identifiable, Equatable {
 #Preview("Assistant conversation list — error") {
     PreviewContent { theme in
         AssistantConversationList(
-            turns: [PreviewTurn(label: "Explain", state: .error("Something went wrong."))],
+            turns: [PreviewTurn(label: "Expand", state: .error("Something went wrong."))],
             isInteractionEnabled: true,
             userLabel: { $0.label },
             responseState: { $0.state },

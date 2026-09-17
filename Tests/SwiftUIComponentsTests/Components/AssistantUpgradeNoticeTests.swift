@@ -9,7 +9,7 @@ struct AssistantUpgradeNoticeTests {
     @Test("default systemImage constructs")
     func defaultIcon() {
         _ = AssistantUpgradeNotice(
-            message: "Upgrade to Premium to get help in all languages.",
+            message: "Upgrade to Premium for unlimited assistant help.",
             upgradeTitle: "Upgrade to Premium",
             onUpgrade: {}
         )
@@ -18,7 +18,7 @@ struct AssistantUpgradeNoticeTests {
     @Test("custom systemImage constructs")
     func customIcon() {
         _ = AssistantUpgradeNotice(
-            message: "Upgrade to Premium to get help in all languages.",
+            message: "Upgrade to Premium for unlimited assistant help.",
             upgradeTitle: "Upgrade to Premium",
             systemImage: "globe",
             onUpgrade: {}
@@ -31,7 +31,7 @@ struct AssistantUpgradeNoticeTests {
     func defaultIconRenders() {
         renderForCoverage(
             AssistantUpgradeNotice(
-                message: "Upgrade to Premium to get help in all languages.",
+                message: "Upgrade to Premium for unlimited assistant help.",
                 upgradeTitle: "Upgrade to Premium",
                 onUpgrade: {}
             )
@@ -42,7 +42,7 @@ struct AssistantUpgradeNoticeTests {
     func customIconRenders() {
         renderForCoverage(
             AssistantUpgradeNotice(
-                message: "Upgrade to Premium to get help in all languages.",
+                message: "Upgrade to Premium for unlimited assistant help.",
                 upgradeTitle: "Upgrade to Premium",
                 systemImage: "globe",
                 onUpgrade: {}

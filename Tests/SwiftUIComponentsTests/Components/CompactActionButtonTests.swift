@@ -33,7 +33,7 @@ struct CompactActionButtonTests {
 
     @Test("respects SwiftUI .disabled() modifier")
     func swiftUIDisabledModifier() {
-        let view = CompactActionButton(title: "Translate", icon: "globe") {}
+        let view = CompactActionButton(title: "Share", icon: "globe") {}
             .disabled(true)
         _ = view
     }

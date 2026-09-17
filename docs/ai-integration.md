@@ -257,7 +257,9 @@ Chat:
     ChatBubbleView(role: .assistant, content: "Hi there")
     TypingIndicatorBubbleView()
     // structured-or-plain assistant bubble: renders `## ` sections when >= 2 are parsed, else falls back to plain markdown
-    StructuredChatBubbleView(role: .assistant, content: llmResponse, autoPromotingHeadings: ["Main Idea", "Examples"])
+    StructuredChatBubbleView(role: .assistant, content: llmResponse, autoPromotingHeadings: ["Summary", "Details"])
+    // right-to-left reply inside a left-to-right app: lays the text out RTL, leaves bubble alignment alone
+    ChatBubbleView(role: .assistant, content: rtlReply, contentLayoutDirection: .rightToLeft)
 
 Assistant conversation UI (streaming chat feature: quick-action chips + turn log + status banners):
     // Turn model must be Identifiable & Equatable; state drives which bubble variant renders per turn
@@ -265,7 +267,8 @@ Assistant conversation UI (streaming chat feature: quick-action chips + turn log
         turns: turns, isInteractionEnabled: !isBusy, idleHint: "Tap an action to get started.",
         userLabel: { $0.actionLabel }, responseState: { $0.state },   // state: .idle | .streaming(String) | .complete(String) | .error(String)
         retryTitle: "Retry", onRetry: { retry($0.id) },
-        autoPromotingHeadings: ["Main Idea", "Examples"]               // optional, for structured completed responses
+        autoPromotingHeadings: ["Summary", "Details"],                 // optional, for structured completed responses
+        contentLayoutDirection: .rightToLeft                           // optional, RTL message text in an LTR app
     )
     // Actions must be Identifiable. Each action can be available, used, disabled, or hidden.
     AssistantQuickActionChipRow(
@@ -273,10 +276,10 @@ Assistant conversation UI (streaming chat feature: quick-action chips + turn log
         state: { actionState(for: $0) }, // return .available to renew an action
         label: { $0.displayName }, systemImage: { $0.systemImage }, onSelect: { run($0) }
     )
-    AssistantContextCard(title: "hello", highlight: "Hola", bodyText: "Hello, how are you?", bodyStyle: .quoted, footnote: "From: lesson 3")
+    AssistantContextCard(title: "Example item", highlight: "Label", bodyText: "The sentence this item appeared in.", bodyStyle: .quoted, footnote: "From: Reference source")
     AssistantStatusBanner(message: "The assistant is temporarily unavailable.")
     AssistantUnavailableBanner(reason: "Turn on X in Settings to use this.", settingsAction: .init(title: "Open Settings", action: { openSettings() }))
-    AssistantUpgradeNotice(message: "Upgrade for full support.", upgradeTitle: "Upgrade", onUpgrade: { presentPaywall() })
+    AssistantUpgradeNotice(message: "Upgrade to Premium for unlimited assistant help.", upgradeTitle: "Upgrade", onUpgrade: { presentPaywall() })
     AssistantLimitPromptCard(message: "You've reached today's limit.", supportingText: "Upgrade for unlimited help.", primaryActionTitle: "Upgrade", secondaryActionTitle: "Not now", onPrimaryAction: { presentPaywall() }, onSecondaryAction: { dismiss() })
     AssistantDisclaimerFooter(text: "AI responses can be inaccurate. Always double-check important information.")
     TypewriterReveal(text: streamingResponse, charactersPerSecond: 60) { revealed in
@@ -349,6 +352,7 @@ Use the showcase for reference, not reuse:
 - Don't pass unlocalized literals as component content (titles, placeholders, accessibility labels) — these are rendered verbatim, so localize them on your side.
 - Don't nest `CarouselRow` inside another horizontal `ScrollView` — it measures its own finite width to size items, which an unbounded horizontal proposal can't provide. It works in any finite-width slot, including a flexible `HStack` slot next to fixed siblings.
 - Don't nest `CarouselBoard` inside another vertical `ScrollView` — it owns its own scroll. Use `CarouselBoardContent` to embed shelves in a scroll you already manage.
+- Don't wrap chat bubbles in `.environment(\.layoutDirection, .rightToLeft)` to render a right-to-left reply — that mirrors the row and flips which side of the screen each role sits on. Pass `contentLayoutDirection: .rightToLeft` per bubble instead; role alignment is leading/trailing, so a genuinely right-to-left *localization* still mirrors correctly on its own.
 - Don't reimplement a streaming chat feature (turn log, quick-action chips, status banners) from scratch — compose `AssistantConversationList`, `AssistantQuickActionChipRow`, `AssistantContextCard`, `AssistantUnavailableBanner`, and `AssistantUpgradeNotice` instead; they're generic over your own turn/action model.
 ```
 

@@ -3,7 +3,7 @@ import SwiftUI
 import Testing
 
 private enum PreviewAction: String, CaseIterable, Identifiable {
-    case translate, explain, examples, grammar
+    case summarize, expand, rephrase, share
     var id: String { rawValue }
 }
 
@@ -14,35 +14,35 @@ struct AssistantQuickActionChipRowTests {
     @Test("action states support use, disable, hide, and renewal")
     func actionStates() {
         var states: [PreviewAction: AssistantQuickActionState] = [
-            .translate: .available,
-            .explain: .disabled,
-            .examples: .hidden,
+            .summarize: .available,
+            .expand: .disabled,
+            .rephrase: .hidden,
         ]
 
-        states[.translate] = .used
-        #expect(states[.translate] == .used)
-        #expect(states[.explain] == .disabled)
-        #expect(states[.examples] == .hidden)
+        states[.summarize] = .used
+        #expect(states[.summarize] == .used)
+        #expect(states[.expand] == .disabled)
+        #expect(states[.rephrase] == .hidden)
 
-        states[.translate] = .available
-        #expect(states[.translate] == .available)
+        states[.summarize] = .available
+        #expect(states[.summarize] == .available)
     }
 
     @Test("row accepts a dynamic action collection and state resolver")
     func dynamicActions() {
         _ = AssistantQuickActionChipRow<PreviewAction>(
-            actions: [.translate, .explain, .examples, .grammar],
+            actions: [.summarize, .expand, .rephrase, .share],
             isInteractionEnabled: true,
             state: {
                 switch $0 {
-                case .translate: .used
-                case .explain: .available
-                case .examples: .disabled
-                case .grammar: .hidden
+                case .summarize: .used
+                case .expand: .available
+                case .rephrase: .disabled
+                case .share: .hidden
                 }
             },
             label: { $0.rawValue.capitalized },
-            systemImage: { _ in "text.book.closed" },
+            systemImage: { _ in "sparkles" },
             onSelect: { _ in }
         )
     }
@@ -55,10 +55,10 @@ struct AssistantQuickActionChipRowTests {
                 isInteractionEnabled: true,
                 state: {
                     switch $0 {
-                    case .translate: .used
-                    case .explain: .available
-                    case .examples: .disabled
-                    case .grammar: .hidden
+                    case .summarize: .used
+                    case .expand: .available
+                    case .rephrase: .disabled
+                    case .share: .hidden
                     }
                 },
                 label: { $0.rawValue.capitalized },
@@ -71,7 +71,7 @@ struct AssistantQuickActionChipRowTests {
     func globallyDisabledRenders() {
         renderForCoverage(
             AssistantQuickActionChipRow<PreviewAction>(
-                actions: [.translate],
+                actions: [.summarize],
                 isInteractionEnabled: false,
                 label: { $0.rawValue.capitalized },
                 onSelect: { _ in }
