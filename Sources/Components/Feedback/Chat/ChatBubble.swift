@@ -19,6 +19,9 @@ import SwiftUI
 /// - `.user` → trailing, prominent fill (`theme.colors.primary`)
 /// - `.assistant` → leading, soft fill (`theme.colors.container`)
 /// - `.system` → leading, neutral fill (`theme.colors.containerSecondary`)
+///
+/// Accessibility groups content under the speaker label while preserving the
+/// message and any custom controls as navigable children.
 public struct ChatBubble<Content: View>: View {
 
     private let role: ChatMessageRole
@@ -47,7 +50,7 @@ public struct ChatBubble<Content: View>: View {
 
             if role != .user { Spacer(minLength: theme.spacing.sixUnits) }
         }
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: .contain)
         .accessibilityLabel(Text(accessibilityRolePrefix))
     }
 }

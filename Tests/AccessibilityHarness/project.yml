@@ -1,0 +1,40 @@
+name: ChatAccessibility
+packages:
+  Components:
+    path: ../..
+options:
+  deploymentTarget:
+    iOS: "18.0"
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    GENERATE_INFOPLIST_FILE: YES
+    CODE_SIGNING_ALLOWED: NO
+targets:
+  ChatAccessibility:
+    type: application
+    platform: iOS
+    sources: [App]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.example.components.accessibility
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+    dependencies:
+      - package: Components
+        product: Components
+  ChatAccessibilityUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources: [UITests]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.example.components.accessibility.tests
+    dependencies:
+      - target: ChatAccessibility
+schemes:
+  ChatAccessibility:
+    build:
+      targets:
+        ChatAccessibility: all
+    test:
+      targets: [ChatAccessibilityUITests]
