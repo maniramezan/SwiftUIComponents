@@ -15,7 +15,7 @@ struct SectionHeaderTests {
     @Test("title with action label and closure renders action button")
     func titleWithAction() {
         var tapped = false
-        let header = SectionHeader(title: "Vocabulary", actionLabel: "See All") {
+        let header = SectionHeader(title: "Recent Items", actionLabel: "See All") {
             tapped = true
         }
         _ = header

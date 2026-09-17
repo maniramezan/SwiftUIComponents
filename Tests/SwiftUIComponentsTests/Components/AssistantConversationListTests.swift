@@ -40,10 +40,10 @@ struct AssistantConversationListTests {
     @Test("idle, streaming, complete, and error turns all construct")
     func allStates() {
         let turns = [
-            PreviewTurn(id: "1", label: "Translate", state: .idle),
-            PreviewTurn(id: "2", label: "Explain", state: .streaming("Partial...")),
-            PreviewTurn(id: "3", label: "Examples", state: .complete("Final answer.")),
-            PreviewTurn(id: "4", label: "Grammar", state: .error("Something went wrong.")),
+            PreviewTurn(id: "1", label: "Summarize", state: .idle),
+            PreviewTurn(id: "2", label: "Expand", state: .streaming("Partial...")),
+            PreviewTurn(id: "3", label: "Rephrase", state: .complete("Final answer.")),
+            PreviewTurn(id: "4", label: "Share", state: .error("Something went wrong.")),
         ]
         _ = AssistantConversationList(
             turns: turns,
@@ -59,21 +59,21 @@ struct AssistantConversationListTests {
     func autoPromotingHeadings() {
         _ = AssistantConversationList(
             turns: [
-                PreviewTurn(id: "1", label: "Explain", state: .complete("## Main Idea\nBody.\n\n## Examples\nBody."))
+                PreviewTurn(id: "1", label: "Expand", state: .complete("## Summary\nBody.\n\n## Details\nBody."))
             ],
             isInteractionEnabled: true,
             userLabel: { $0.label },
             responseState: { $0.state },
             retryTitle: "Retry",
             onRetry: { _ in },
-            autoPromotingHeadings: ["Main Idea", "Examples"]
+            autoPromotingHeadings: ["Summary", "Details"]
         )
     }
 
     @Test("onRetry closure is constructible and independently invocable with a turn")
     func retryCallback() {
         var retried: PreviewTurn?
-        let turn = PreviewTurn(id: "1", label: "Explain", state: .error("Failed"))
+        let turn = PreviewTurn(id: "1", label: "Expand", state: .error("Failed"))
         _ = AssistantConversationList(
             turns: [turn],
             isInteractionEnabled: true,
@@ -120,7 +120,7 @@ struct AssistantConversationListTests {
     func idleTurnRenders() {
         renderForCoverage(
             AssistantConversationList(
-                turns: [PreviewTurn(id: "1", label: "Translate", state: .idle)],
+                turns: [PreviewTurn(id: "1", label: "Summarize", state: .idle)],
                 isInteractionEnabled: true,
                 userLabel: { $0.label },
                 responseState: { $0.state },
@@ -134,7 +134,7 @@ struct AssistantConversationListTests {
     func streamingTurnRenders() {
         renderForCoverage(
             AssistantConversationList(
-                turns: [PreviewTurn(id: "1", label: "Explain", state: .streaming("Partial..."))],
+                turns: [PreviewTurn(id: "1", label: "Expand", state: .streaming("Partial..."))],
                 isInteractionEnabled: true,
                 userLabel: { $0.label },
                 responseState: { $0.state },
@@ -148,7 +148,7 @@ struct AssistantConversationListTests {
     func completeTurnRenders() {
         renderForCoverage(
             AssistantConversationList(
-                turns: [PreviewTurn(id: "1", label: "Examples", state: .complete("Final answer."))],
+                turns: [PreviewTurn(id: "1", label: "Rephrase", state: .complete("Final answer."))],
                 isInteractionEnabled: true,
                 userLabel: { $0.label },
                 responseState: { $0.state },
@@ -162,7 +162,7 @@ struct AssistantConversationListTests {
     func errorTurnRenders() {
         renderForCoverage(
             AssistantConversationList(
-                turns: [PreviewTurn(id: "1", label: "Grammar", state: .error("Something went wrong."))],
+                turns: [PreviewTurn(id: "1", label: "Share", state: .error("Something went wrong."))],
                 isInteractionEnabled: false,
                 userLabel: { $0.label },
                 responseState: { $0.state },

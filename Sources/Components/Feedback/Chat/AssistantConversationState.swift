@@ -5,8 +5,8 @@ import Foundation
 ///
 /// ```swift
 /// var state: AssistantConversationState = .idle
-/// state = .streaming("The word means...")   // tokens arriving
-/// state = .complete("The word means \"hello\".")  // final text
+/// state = .streaming("Here's what I")        // tokens arriving
+/// state = .complete("Here's what I found.")  // final text
 /// state = .error("Something went wrong.")
 /// ```
 public enum AssistantConversationState: Equatable, Sendable {

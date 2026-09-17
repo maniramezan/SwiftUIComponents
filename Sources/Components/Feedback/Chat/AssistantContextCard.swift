@@ -2,30 +2,30 @@ import DesignSystem
 import SwiftUI
 
 /// A context card shown at the top of an assistant conversation, describing
-/// what the user is getting help with — for example the word or grammar
-/// rule a word/grammar-help assistant is explaining.
+/// what the user is getting help with — for example the item, entry, or rule
+/// the assistant has been asked about.
 ///
 /// Callers resolve their own localized strings; this component owns no
 /// copy of its own.
 ///
 /// ```swift
 /// AssistantContextCard(
-///     title: "hello",
-///     highlight: "Hola",
-///     bodyText: "Hello, how are you today?",
+///     title: "Example item",
+///     highlight: "Label",
+///     bodyText: "The sentence this item appeared in.",
 ///     bodyStyle: .quoted,
-///     footnote: "From: Everyday English"
+///     footnote: "From: Reference source"
 /// )
 /// ```
 public struct AssistantContextCard: View {
 
     /// How the context card's body text should be styled.
     public enum BodyStyle: Sendable {
-        /// Renders italic and wrapped in curly quotes — for quoting a
-        /// sentence the word/phrase appeared in.
+        /// Renders italic and wrapped in curly quotes — for quoting the
+        /// passage the subject appeared in.
         case quoted
         /// Renders as a normal secondary line — for a plain description
-        /// such as a grammar form pattern.
+        /// such as a structural pattern.
         case plain
     }
 
@@ -38,11 +38,11 @@ public struct AssistantContextCard: View {
     /// Creates an assistant context card.
     ///
     /// - Parameters:
-    ///   - title: The primary subject, e.g. the word or grammar rule name.
-    ///   - highlight: An optional emphasized subtitle, e.g. a translation
-    ///     or difficulty level. Hidden when `nil` or empty.
-    ///   - bodyText: An optional supporting line, e.g. an example sentence
-    ///     or form pattern. Hidden when `nil` or empty.
+    ///   - title: The primary subject, e.g. the item or rule name.
+    ///   - highlight: An optional emphasized subtitle, e.g. a short label or
+    ///     category. Hidden when `nil` or empty.
+    ///   - bodyText: An optional supporting line, e.g. an example passage or
+    ///     structural pattern. Hidden when `nil` or empty.
     ///   - bodyStyle: How `bodyText` is styled. Defaults to `.plain`.
     ///   - footnote: An optional trailing caption, e.g. a source
     ///     attribution. Hidden when `nil` or empty.
@@ -109,25 +109,25 @@ private struct AssistantContextCardBodyLine: View {
     }
 }
 
-#Preview("Word context") {
+#Preview("Quoted context") {
     PreviewContent { theme in
         AssistantContextCard(
-            title: "hello",
-            highlight: "Hola",
-            bodyText: "Hello, how are you today?",
+            title: "Example item",
+            highlight: "Label",
+            bodyText: "The sentence this item appeared in.",
             bodyStyle: .quoted,
-            footnote: "From: Everyday English"
+            footnote: "From: Reference source"
         )
         .padding(theme.spacing.twoUnits)
     }
 }
 
-#Preview("Grammar context") {
+#Preview("Plain context") {
     PreviewContent { theme in
         AssistantContextCard(
-            title: "Present Perfect",
-            highlight: "B1",
-            bodyText: "have/has + past participle",
+            title: "Example pattern",
+            highlight: "Category",
+            bodyText: "PREFIX + BODY + SUFFIX",
             bodyStyle: .plain
         )
         .padding(theme.spacing.twoUnits)
