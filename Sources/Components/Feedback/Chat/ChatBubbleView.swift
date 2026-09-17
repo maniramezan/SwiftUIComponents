@@ -23,6 +23,7 @@ public struct ChatBubbleView: View {
     private let role: ChatMessageRole
     private let content: String
     private let isTyping: Bool
+    private let contentLayoutDirection: LayoutDirection?
 
     /// Creates a text chat bubble.
     ///
@@ -32,14 +33,26 @@ public struct ChatBubbleView: View {
     ///     `.assistant` and the text parses successfully.
     ///   - isTyping: When `true` and `content` is empty, an animated typing
     ///     indicator is shown instead of the text. Defaults to `false`.
-    public init(role: ChatMessageRole, content: String, isTyping: Bool = false) {
+    ///   - contentLayoutDirection: Lays the message text out in this
+    ///     direction regardless of the surrounding interface — pass
+    ///     `.rightToLeft` for a right-to-left reply inside a left-to-right
+    ///     app. The bubble's side-of-screen alignment is unaffected. See
+    ///     ``ChatBubble``. Defaults to `nil`, which inherits the ambient
+    ///     layout direction.
+    public init(
+        role: ChatMessageRole,
+        content: String,
+        isTyping: Bool = false,
+        contentLayoutDirection: LayoutDirection? = nil
+    ) {
         self.role = role
         self.content = content
         self.isTyping = isTyping
+        self.contentLayoutDirection = contentLayoutDirection
     }
 
     public var body: some View {
-        ChatBubble(role: role) {
+        ChatBubble(role: role, contentLayoutDirection: contentLayoutDirection) {
             ChatBubbleContent(role: role, content: content, isTyping: isTyping)
         }
     }
@@ -69,10 +82,10 @@ private struct ChatBubbleContent: View {
 #Preview("Chat bubbles — text") {
     PreviewContent { theme in
         VStack(spacing: theme.spacing.oneUnit) {
-            ChatBubbleView(role: .user, content: "How do I use this word?")
+            ChatBubbleView(role: .user, content: "What does this option do?")
             ChatBubbleView(
                 role: .assistant,
-                content: "The word *hello* is a greeting used when meeting someone."
+                content: "The *compact* option reduces the spacing between rows."
             )
             ChatBubbleView(role: .assistant, content: "", isTyping: true)
         }

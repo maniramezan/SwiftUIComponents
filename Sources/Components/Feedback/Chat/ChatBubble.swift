@@ -20,49 +20,76 @@ import SwiftUI
 /// - `.assistant` → leading, soft fill (`theme.colors.container`)
 /// - `.system` → leading, neutral fill (`theme.colors.containerSecondary`)
 ///
+/// Those edges are leading/trailing, not left/right, so a right-to-left
+/// *interface* mirrors the conversation as a whole. To render right-to-left
+/// *content* inside a left-to-right interface — a reply in the reader's
+/// native language, say — pass `contentLayoutDirection: .rightToLeft` rather
+/// than mirroring the surrounding hierarchy, which would flip which side of
+/// the screen each role lands on:
+///
+/// ```swift
+/// ChatBubble(role: .assistant, contentLayoutDirection: .rightToLeft) {
+///     Text(reply)
+/// }
+/// ```
+///
 /// Accessibility groups content under the speaker label while preserving the
 /// message and any custom controls as navigable children.
 public struct ChatBubble<Content: View>: View {
 
     private let role: ChatMessageRole
+    private let contentLayoutDirection: LayoutDirection?
     private let content: Content
     @Environment(\.designTheme) private var theme
-    @Environment(\.layoutDirection) private var contentLayoutDirection
+    @Environment(\.layoutDirection) private var ambientLayoutDirection
 
     /// Creates a chat bubble around custom content.
     ///
     /// - Parameters:
     ///   - role: Conversational role; controls alignment and tint.
+    ///   - contentLayoutDirection: Lays `content` out in this direction
+    ///     regardless of the surrounding interface — pass `.rightToLeft` to
+    ///     render a right-to-left reply inside a left-to-right app. The
+    ///     bubble's own side-of-screen alignment is unaffected. Defaults to
+    ///     `nil`, which inherits the ambient layout direction.
     ///   - content: Bubble body builder.
-    public init(role: ChatMessageRole, @ViewBuilder content: () -> Content) {
+    public init(
+        role: ChatMessageRole,
+        contentLayoutDirection: LayoutDirection? = nil,
+        @ViewBuilder content: () -> Content
+    ) {
         self.role = role
+        self.contentLayoutDirection = contentLayoutDirection
         self.content = content()
     }
 
     public var body: some View {
-        // The role-based side-of-screen alignment below is fixed relative to
-        // the screen, not to text direction, so the outer `HStack` is pinned
-        // to `.leftToRight` and the ambient `layoutDirection` (set by a
-        // caller to render bidi response text, e.g. RTL native languages) is
-        // reapplied only to `content`. Without this, an RTL ambient
-        // direction would mirror the whole `HStack`, flipping which side of
-        // the screen the bubble renders on (e.g. an assistant bubble landing
-        // on the trailing side, on top of the user's).
+        // Role alignment is expressed in leading/trailing terms and follows
+        // the ambient layout direction, so a right-to-left *interface*
+        // mirrors the whole conversation the way the system messaging apps
+        // do. Content direction is resolved separately, per bubble: a caller
+        // rendering a right-to-left reply inside a left-to-right app
+        // overrides it here instead of mirroring the row, which would
+        // otherwise flip which side of the screen each role lands on (e.g.
+        // an assistant bubble landing on top of the user's).
         HStack(spacing: 0) {
-            if role == .user { Spacer(minLength: theme.spacing.sixUnits) }
+            if ChatBubbleLayout.hugsTrailingEdge(for: role) { Spacer(minLength: theme.spacing.sixUnits) }
 
             content
-                .environment(\.layoutDirection, contentLayoutDirection)
+                .environment(\.layoutDirection, resolvedContentDirection)
                 .padding(theme.spacing.oneAndHalfUnits)
                 .background(bubbleShape.fill(backgroundColor))
                 .overlay(bubbleShape.strokeBorder(borderColor, lineWidth: theme.stroke.hairline))
                 .foregroundStyle(foregroundColor)
 
-            if role != .user { Spacer(minLength: theme.spacing.sixUnits) }
+            if !ChatBubbleLayout.hugsTrailingEdge(for: role) { Spacer(minLength: theme.spacing.sixUnits) }
         }
-        .environment(\.layoutDirection, .leftToRight)
         .accessibilityElement(children: .contain)
         .accessibilityLabel(Text(accessibilityRolePrefix))
+    }
+
+    private var resolvedContentDirection: LayoutDirection {
+        ChatBubbleLayout.contentDirection(override: contentLayoutDirection, ambient: ambientLayoutDirection)
     }
 }
 
