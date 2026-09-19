@@ -54,6 +54,25 @@ func initSucceedsWithValidCurrentValue() throws {
     _ = MenuPicker(items: items, currentValue: binding)
 }
 
+// MARK: - init — degraded inputs
+
+@Test("init does not trap when currentValue is missing from items")
+@MainActor
+func initToleratesMissingCurrentValue() throws {
+    let items = makeItems(3)
+    var selected = MenuPickerTestItem(id: 99, title: "Not listed")
+    let binding = Binding(get: { selected }, set: { selected = $0 })
+    _ = MenuPicker(items: items, currentValue: binding)
+}
+
+@Test("init does not trap when items is empty")
+@MainActor
+func initToleratesEmptyItems() throws {
+    var selected = MenuPickerTestItem(id: 1, title: "Only value")
+    let binding = Binding(get: { selected }, set: { selected = $0 })
+    _ = MenuPicker(items: [MenuPickerTestItem](), currentValue: binding)
+}
+
 // MARK: - Long-list threshold
 
 @Test("init accepts exactly longListThreshold items")
