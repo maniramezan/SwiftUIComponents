@@ -1,4 +1,5 @@
 import DesignSystem
+import OSLog
 import SwiftUI
 
 /// A value that can be displayed by `MenuPicker`.
@@ -33,6 +34,10 @@ public struct MenuPicker<Item: MenuPickerItem>: View {
 
     nonisolated private static var longListThreshold: Int { 30 }
 
+    nonisolated private static var logger: Logger {
+        Logger(subsystem: "com.swiftuicomponents", category: "MenuPicker")
+    }
+
     /// Controls which presentation `MenuPicker` uses on iOS.
     public enum PresentationStyle: Sendable {
         /// Uses a native dropdown menu for short lists and falls back to a compact wheel sheet
@@ -64,8 +69,9 @@ public struct MenuPicker<Item: MenuPickerItem>: View {
 
     /// Initializes a `MenuPicker`.
     /// - Parameters:
-    ///   - items: The items to display. Must be non-empty and must contain `currentValue`.
-    ///   - currentValue: The currently selected item. Must exist in `items`.
+    ///   - items: The items to display. Should be non-empty and contain `currentValue`; otherwise the
+    ///     picker logs a fault and still shows `currentValue` as its title, with no option checked.
+    ///   - currentValue: The currently selected item. Should exist in `items`.
     ///   - preferredStyle: Which iOS presentation to use. Defaults to `.automatic`.
     ///   - onWidthChange: Optional callback that receives the measured width so parents can react (e.g., switch layouts).
     public init(
@@ -75,14 +81,17 @@ public struct MenuPicker<Item: MenuPickerItem>: View {
         onWidthChange: ((CGFloat) -> Void)? = nil
     ) {
         let items = Array(items)
-        precondition(!items.isEmpty, "MenuPicker requires at least one item.")
-        precondition(
-            items.contains(where: { $0.id == currentValue.wrappedValue.id }),
-            "currentValue must exist in items."
-        )
+        if items.isEmpty {
+            Self.logger.fault("MenuPicker received no items; showing currentValue with an empty menu.")
+        } else if !items.contains(where: { $0.id == currentValue.wrappedValue.id }) {
+            Self.logger.fault(
+                "MenuPicker currentValue is not among its \(items.count, privacy: .public) items; no option is checked."
+            )
+        }
         self.items = items
         self._currentValue = currentValue
-        self.longestLabel = Self.longestLabel(in: items)
+        // Include the current value so the trigger never clips it, even when it is missing from `items`.
+        self.longestLabel = Self.longestLabel(in: items + [currentValue.wrappedValue])
         self.preferredStyle = preferredStyle
         self.onWidthChange = onWidthChange
     }
