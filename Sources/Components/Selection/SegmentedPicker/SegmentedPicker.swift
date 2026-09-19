@@ -1,4 +1,5 @@
 import DesignSystem
+import OSLog
 import SwiftUI
 
 /// Controls how a ``SegmentedPicker`` sizes its segments along the horizontal axis.
@@ -75,13 +76,18 @@ public struct SegmentedPicker<Item: MenuPickerItem, Label: View>: View {
     @Environment(\.layoutDirection) private var layoutDirection
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
+    nonisolated private static var logger: Logger {
+        Logger(subsystem: "com.swiftuicomponents", category: "SegmentedPicker")
+    }
+
     // MARK: - Initializers
 
     /// Creates a segmented picker with a custom label for each segment.
     ///
     /// - Parameters:
-    ///   - items: The selectable items. Must be non-empty and must contain
-    ///     `selection`.
+    ///   - items: The selectable items. Should be non-empty and contain
+    ///     `selection`; otherwise the picker logs a fault and renders with no
+    ///     active segment.
     ///   - selection: Two-way binding to the currently selected item.
     ///   - sizing: Controls how segments are sized along the horizontal axis.
     ///     See ``SegmentSizing`` for available options. Defaults to `.fit`.
@@ -105,11 +111,13 @@ public struct SegmentedPicker<Item: MenuPickerItem, Label: View>: View {
         @ViewBuilder label: @escaping (Item, Bool) -> Label
     ) {
         let items = Array(items)
-        precondition(!items.isEmpty, "SegmentedPicker requires at least one item.")
-        precondition(
-            items.contains(where: { $0.id == selection.wrappedValue.id }),
-            "selection must exist in items."
-        )
+        if items.isEmpty {
+            Self.logger.fault("SegmentedPicker received no items; rendering an empty row.")
+        } else if !items.contains(where: { $0.id == selection.wrappedValue.id }) {
+            Self.logger.fault(
+                "SegmentedPicker selection is not among its \(items.count, privacy: .public) items; no segment is active."
+            )
+        }
         self.items = items
         self._selection = selection
         self.sizing = sizing
@@ -139,8 +147,9 @@ public extension SegmentedPicker where Label == Text {
     /// the segment is active.
     ///
     /// - Parameters:
-    ///   - items: The selectable items. Must be non-empty and must contain
-    ///     `selection`.
+    ///   - items: The selectable items. Should be non-empty and contain
+    ///     `selection`; otherwise the picker logs a fault and renders with no
+    ///     active segment.
     ///   - selection: Two-way binding to the currently selected item.
     ///   - sizing: Controls how segments are sized along the horizontal axis.
     ///     See ``SegmentSizing`` for available options. Defaults to `.fit`.

@@ -81,6 +81,23 @@ func accessibilityStepFlipsEdgesInRTL() {
 
 // MARK: - init smoke tests
 
+@Test("init does not trap when selection is missing from items")
+@MainActor
+func initToleratesMissingSelection() {
+    let items = (1...3).map { MenuPickerTestItem(id: $0, title: "Option \($0)") }
+    var selected = MenuPickerTestItem(id: 99, title: "Not listed")
+    let binding = Binding(get: { selected }, set: { selected = $0 })
+    _ = SegmentedPicker(items: items, selection: binding) { item, _ in Text(item.title) }
+}
+
+@Test("init does not trap when items is empty")
+@MainActor
+func initToleratesEmptySegmentItems() {
+    var selected = MenuPickerTestItem(id: 1, title: "Only value")
+    let binding = Binding(get: { selected }, set: { selected = $0 })
+    _ = SegmentedPicker(items: [MenuPickerTestItem](), selection: binding) { item, _ in Text(item.title) }
+}
+
 @Test("init succeeds with a custom label builder")
 @MainActor
 func initSucceedsWithCustomLabel() {
