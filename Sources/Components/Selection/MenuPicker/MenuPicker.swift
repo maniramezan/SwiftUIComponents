@@ -2,17 +2,11 @@ import DesignSystem
 import OSLog
 import SwiftUI
 
-/// A value that can be displayed by `MenuPicker`.
-public protocol MenuPickerItem: Hashable, Identifiable {
-    /// The display title for the item.
-    var title: String { get }
-}
-
-/// Adds a default title implementation for types whose `description` is already user-facing.
-public extension MenuPickerItem where Self: CustomStringConvertible {
-    /// Default title derived from `CustomStringConvertible`.
-    var title: String { description }
-}
+#if canImport(UIKit)
+    import UIKit
+#elseif canImport(AppKit)
+    import AppKit
+#endif
 
 /// A lightweight dropdown-like picker that keeps the trigger width in sync with the widest option and
 /// works consistently across iOS, macOS, and Mac Catalyst.
@@ -62,6 +56,9 @@ public struct MenuPicker<Item: MenuPickerItem>: View {
     @State private var measuredWidth: CGFloat = 0
     @State private var isListPresented = false
     @Environment(\.designTheme) private var theme
+    /// Read so a Dynamic Type change re-evaluates `body` and re-measures the
+    /// trigger against the rescaled control font.
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     // MARK: - Callbacks
 
@@ -99,41 +96,45 @@ public struct MenuPicker<Item: MenuPickerItem>: View {
     /// The SwiftUI body for the menu picker.
     public var body: some View {
         #if canImport(UIKit)
-            let requiredWidth = measuredWidth > 0 ? measuredWidth : measureWidth(for: theme.typography.controlUIFont)
-            if Self.usesWheelSheet(for: preferredStyle, itemCount: items.count) {
-                WheelMenuPicker(
-                    items: items,
-                    currentValue: $currentValue,
-                    title: currentValue.title,
-                    width: requiredWidth,
-                    horizontalPadding: theme.spacing.oneAndHalfUnits,
-                    verticalPadding: theme.spacing.oneUnit,
-                    triggerFont: theme.typography.control,
-                    isPresented: $isListPresented
-                )
-                .frame(width: requiredWidth, alignment: .center)
-                .layoutPriority(1)
-                .accessibilityLabel(Text(Strings.MenuPicker.selectedOption(currentValue.title)))
-            } else {
-                UIKitMenuPicker(
-                    items: items,
-                    currentValue: $currentValue,
-                    longestLabel: longestLabel,
-                    horizontalPadding: theme.spacing.oneAndHalfUnits,
-                    verticalPadding: theme.spacing.oneUnit,
-                    triggerFont: theme.typography.controlUIFont,
-                    foregroundColor: theme.colors.textPrimary,
-                    width: requiredWidth,
-                    onSelection: { newValue in
-                        currentValue = newValue
-                    }
-                )
-                .frame(width: requiredWidth, alignment: .center)
-                .layoutPriority(1)
-                .accessibilityLabel(Text(Strings.MenuPicker.selectedOption(currentValue.title)))
+            // Measured on every evaluation (a single string measurement) rather than cached, so a
+            // change to `items`, the theme's control font, or Dynamic Type re-sizes the trigger.
+            let requiredWidth = measureWidth(for: theme.typography.controlUIFont)
+            Group {
+                if Self.usesWheelSheet(for: preferredStyle, itemCount: items.count) {
+                    WheelMenuPicker(
+                        items: items,
+                        currentValue: $currentValue,
+                        title: currentValue.title,
+                        width: requiredWidth,
+                        horizontalPadding: theme.spacing.oneAndHalfUnits,
+                        verticalPadding: theme.spacing.oneUnit,
+                        triggerFont: theme.typography.control,
+                        isPresented: $isListPresented
+                    )
+                } else {
+                    UIKitMenuPicker(
+                        items: items,
+                        currentValue: $currentValue,
+                        longestLabel: longestLabel,
+                        horizontalPadding: theme.spacing.oneAndHalfUnits,
+                        verticalPadding: theme.spacing.oneUnit,
+                        triggerFont: theme.typography.controlUIFont,
+                        foregroundColor: theme.colors.textPrimary,
+                        width: requiredWidth,
+                        onSelection: { newValue in
+                            currentValue = newValue
+                        }
+                    )
+                }
+            }
+            .frame(width: requiredWidth, alignment: .center)
+            .layoutPriority(1)
+            .accessibilityLabel(Text(Strings.MenuPicker.selectedOption(currentValue.title)))
+            .onChange(of: requiredWidth, initial: true) { _, newWidth in
+                handleWidthChange(newWidth)
             }
         #elseif canImport(AppKit)
-            let requiredWidth = measuredWidth > 0 ? measuredWidth : measureWidth(for: theme.typography.controlNSFont)
+            let requiredWidth = measureWidth(for: theme.typography.controlNSFont)
 
             AppKitMenuPicker(
                 items: items,
@@ -148,13 +149,11 @@ public struct MenuPicker<Item: MenuPickerItem>: View {
                 }
             )
             .frame(width: requiredWidth, alignment: .leading)
-            .onAppear {
-                if measuredWidth == 0 {
-                    handleWidthChange(requiredWidth)
-                }
-            }
             .layoutPriority(1)
             .accessibilityLabel(Text(Strings.MenuPicker.selectedOption(currentValue.title)))
+            .onChange(of: requiredWidth, initial: true) { _, newWidth in
+                handleWidthChange(newWidth)
+            }
         #else
             Picker(selection: selectedID) {
                 ForEach(items) { item in
@@ -191,237 +190,11 @@ public struct MenuPicker<Item: MenuPickerItem>: View {
 
 }
 
-// MARK: - Preview
-
-#Preview {
-    @Previewable @State var currentValue = 9
-    PreviewContent { theme in
-        MenuPicker(items: 9...17, currentValue: $currentValue)
-            .padding(theme.spacing.twoUnits)
-            .background(Color.pink)
-    }
-}
-
-#if canImport(UIKit)
-    import UIKit
-
-    // MARK: - UIKit Bridge
-
-    private struct UIKitMenuPicker<Item: MenuPickerItem>: UIViewRepresentable {
-        let items: [Item]
-        @Binding var currentValue: Item
-        let longestLabel: String
-        let horizontalPadding: CGFloat
-        let verticalPadding: CGFloat
-        let triggerFont: UIFont
-        let foregroundColor: Color
-        let width: CGFloat
-        let onSelection: (Item) -> Void
-
-        func makeUIView(context: Context) -> UIButton {
-            var initialConfig = UIButton.Configuration.plain()
-            initialConfig.titleAlignment = .center
-            let button = UIButton(configuration: initialConfig)
-            button.showsMenuAsPrimaryAction = true
-            let constraint = button.widthAnchor.constraint(equalToConstant: width)
-            // One below `.required` so this can coexist with UIKit's own temporary/interim layout
-            // constraints (e.g. `_UITemporaryLayoutWidth == 0`) while a hosting SwiftUI parent is
-            // still negotiating sizes, instead of hard-conflicting and logging Auto Layout errors.
-            constraint.priority = UILayoutPriority(999)
-            constraint.isActive = true
-            context.coordinator.widthConstraint = constraint
-            return button
-        }
-
-        func updateUIView(_ uiView: UIButton, context: Context) {
-            uiView.configuration = makeConfiguration()
-            uiView.menu = makeMenu()
-            uiView.invalidateIntrinsicContentSize()
-            guard context.coordinator.widthConstraint?.constant != width else { return }
-            context.coordinator.widthConstraint?.constant = width
-            uiView.layoutIfNeeded()
-        }
-
-        func makeCoordinator() -> Coordinator {
-            Coordinator()
-        }
-
-        private func makeConfiguration() -> UIButton.Configuration {
-            var configuration = UIButton.Configuration.plain()
-            configuration.title = currentValue.title
-            configuration.titleAlignment = .center
-            configuration.contentInsets = NSDirectionalEdgeInsets(
-                top: verticalPadding,
-                leading: horizontalPadding,
-                bottom: verticalPadding,
-                trailing: horizontalPadding
-            )
-            configuration.baseForegroundColor = UIColor(foregroundColor)
-            let font = triggerFont
-            configuration.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { incoming in
-                var outgoing = incoming
-                outgoing.font = font
-                return outgoing
-            }
-            return configuration
-        }
-
-        private func makeMenu() -> UIMenu {
-            let actions = items.map { item in
-                UIAction(title: item.title, state: item.id == currentValue.id ? .on : .off) { _ in
-                    onSelection(item)
-                }
-            }
-            return UIMenu(children: actions)
-        }
-
-        final class Coordinator {
-            var widthConstraint: NSLayoutConstraint?
-        }
-
-        func sizeThatFits(_ proposal: ProposedViewSize, uiView: UIButton, context: Context) -> CGSize? {
-            let targetHeight = uiView.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize).height
-            return CGSize(width: width, height: targetHeight)
-        }
-    }
-
-#endif
-
-#if canImport(UIKit)
-    // MARK: - Wheel Picker (compact sheet, for long lists)
-
-    private struct WheelMenuPicker<Item: MenuPickerItem>: View {
-        let items: [Item]
-        @Binding var currentValue: Item
-        let title: String
-        let width: CGFloat
-        let horizontalPadding: CGFloat
-        let verticalPadding: CGFloat
-        let triggerFont: Font
-        @Binding var isPresented: Bool
-
-        var body: some View {
-            Button(action: { isPresented = true }) {
-                Text(title)
-                    .font(triggerFont)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.6)
-                    .allowsTightening(true)
-                    .padding(.horizontal, horizontalPadding)
-                    .padding(.vertical, verticalPadding)
-                    .frame(width: width, alignment: .center)
-            }
-            .buttonStyle(.plain)
-            .accessibilityHint(Text(Strings.MenuPicker.changeSelectionHint))
-            .sheet(isPresented: $isPresented) {
-                Picker("", selection: $currentValue) {
-                    ForEach(items) { item in
-                        Text(item.title).tag(item)
-                    }
-                }
-                .pickerStyle(.wheel)
-                // Tuned to comfortably fit a native wheel picker's fixed
-                // row height plus its drag indicator; not a spacing/size
-                // token value since it isn't a gap or a component metric.
-                .presentationDetents([.height(220)])
-                .presentationDragIndicator(.visible)
-            }
-        }
-    }
-
-#endif
-
-#if canImport(AppKit)
-    import AppKit
-
-    // MARK: - AppKit Bridge
-
-    private struct AppKitMenuPicker<Item: MenuPickerItem>: NSViewRepresentable {
-        let items: [Item]
-        @Binding var currentValue: Item
-        let longestLabel: String
-        let horizontalPadding: CGFloat
-        let verticalPadding: CGFloat
-        let triggerFont: NSFont
-        let width: CGFloat
-        let onSelection: (Item) -> Void
-
-        func makeNSView(context: Context) -> NSPopUpButton {
-            let button = NSPopUpButton(frame: .zero, pullsDown: false)
-            button.translatesAutoresizingMaskIntoConstraints = false
-            button.setContentHuggingPriority(.required, for: .horizontal)
-            button.setContentCompressionResistancePriority(.required, for: .horizontal)
-            button.target = context.coordinator
-            button.action = #selector(Coordinator.selectionChanged(_:))
-            let constraint = button.widthAnchor.constraint(greaterThanOrEqualToConstant: width)
-            constraint.isActive = true
-            context.coordinator.widthConstraint = constraint
-            return button
-        }
-
-        func updateNSView(_ view: NSPopUpButton, context: Context) {
-            context.coordinator.items = items
-            view.removeAllItems()
-            for item in items {
-                view.addItem(withTitle: item.title)
-            }
-            if let index = items.firstIndex(where: { $0.id == currentValue.id }) {
-                view.selectItem(at: index)
-            }
-            view.font = triggerFont
-            view.alignment = .center
-            view.sizeToFit()
-            context.coordinator.widthConstraint?.constant = width
-        }
-
-        func makeCoordinator() -> Coordinator {
-            Coordinator(onSelection: onSelection)
-        }
-
-        func sizeThatFits(_ proposal: ProposedViewSize, nsView: NSPopUpButton, context: Context) -> CGSize? {
-            let targetHeight = nsView.fittingSize.height
-            return CGSize(width: width, height: targetHeight)
-        }
-
-        @MainActor
-        final class Coordinator: NSObject {
-            var onSelection: (Item) -> Void
-            var items: [Item] = []
-            var widthConstraint: NSLayoutConstraint?
-
-            init(onSelection: @escaping (Item) -> Void) {
-                self.onSelection = onSelection
-            }
-
-            @objc func selectionChanged(_ sender: NSPopUpButton) {
-                let index = sender.indexOfSelectedItem
-                guard index >= 0, index < items.count else { return }
-                onSelection(items[index])
-            }
-        }
-
-    }
-
-#endif
-
-extension Int: @retroactive Identifiable {
-    /// Identifies the integer value for `Identifiable` conformance.
-    public var id: Int { self }
-}
-
-/// Provides sample `MenuPickerItem` behavior for integer values.
-extension Int: MenuPickerItem {
-    /// A generated title used for preview and sample items.
-    public var title: String {
-        let length = (self % 8) + 3
-        let prefix = String(repeating: "A", count: length)
-        return "\(prefix) \(self)"
-    }
-}
-
 // MARK: - State Helpers
 
 private extension MenuPicker {
+    /// Records a newly measured trigger width and forwards it to `onWidthChange`, ignoring
+    /// zero widths and repeats so the callback fires once per real change.
     func handleWidthChange(_ width: CGFloat) {
         guard width > 0 else { return }
         if measuredWidth != width {
@@ -507,5 +280,23 @@ extension MenuPicker {
         popUpChrome: CGFloat
     ) -> CGFloat {
         textWidth + (horizontalPadding * 2) + edgeInset + popUpChrome
+    }
+}
+
+// MARK: - Preview
+
+/// Sample item for the preview. Deliberately not an `Int` conformance: a public
+/// retroactive `Int: MenuPickerItem` would leak into every consumer module.
+private struct PreviewHour: MenuPickerItem {
+    let id: Int
+    var title: String { "\(id):00" }
+}
+
+#Preview {
+    @Previewable @State var currentValue = PreviewHour(id: 9)
+    PreviewContent { theme in
+        MenuPicker(items: (9...17).map { PreviewHour(id: $0) }, currentValue: $currentValue)
+            .padding(theme.spacing.twoUnits)
+            .background(Color.pink)
     }
 }
