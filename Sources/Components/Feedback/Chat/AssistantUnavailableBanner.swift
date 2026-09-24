@@ -44,7 +44,7 @@ public struct AssistantUnavailableBanner: View {
                 Spacer()
                 if let settingsAction {
                     Button(settingsAction.title, action: settingsAction.action)
-                        .font(theme.typography.subheadline.weight(.medium))
+                        .font(theme.typography.subheadlineMedium)
                         .buttonStyle(.bordered)
                         .controlSize(.small)
                 }

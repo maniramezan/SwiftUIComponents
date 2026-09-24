@@ -62,7 +62,7 @@ public struct CompactActionButton: View {
     public var body: some View {
         Button(action: action) {
             Label(title, systemImage: icon)
-                .font(theme.typography.subheadline.weight(.medium))
+                .font(theme.typography.subheadlineMedium)
                 .foregroundStyle(theme.colors.onPrimary)
                 .padding(.horizontal, theme.spacing.oneAndHalfUnits)
                 .padding(.vertical, theme.spacing.oneUnit)

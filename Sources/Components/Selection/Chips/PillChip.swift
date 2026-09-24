@@ -26,7 +26,7 @@ public struct PillChip: View {
     public var body: some View {
         Button(action: action) {
             Text(title)
-                .font(theme.typography.subheadline.weight(isSelected ? .semibold : .regular))
+                .font(isSelected ? theme.typography.subheadlineSemibold : theme.typography.subheadline)
                 .designPillMetrics()
                 .designCapsuleSurface(isSelected: isSelected)
         }
