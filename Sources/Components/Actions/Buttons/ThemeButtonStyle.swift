@@ -11,6 +11,7 @@ public struct ThemeButtonStyle: ButtonStyle {
     private let role: ThemeButtonRole
     @Environment(\.isEnabled) private var isEnabled
     @Environment(\.designTheme) private var theme
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     /// Creates a themed button style.
     public init(role: ThemeButtonRole = .primary) {
@@ -33,7 +34,7 @@ public struct ThemeButtonStyle: ButtonStyle {
             .opacity(
                 isEnabled ? (configuration.isPressed ? theme.motion.pressedOpacity : 1) : theme.motion.disabledOpacity
             )
-            .animation(theme.motion.standardAnimation, value: configuration.isPressed)
+            .animation(theme.motion.animation(reducingMotion: reduceMotion), value: configuration.isPressed)
     }
 }
 
