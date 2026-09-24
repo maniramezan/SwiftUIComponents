@@ -244,3 +244,13 @@ private func render<V: View>(_ view: V, size: CGSize = CGSize(width: 320, height
         _ = view
     #endif
 }
+
+@Test("Multiple rows without a rowHeight fall back to one row instead of trapping")
+@MainActor
+func multipleRowsWithoutHeightFallsBack() {
+    renderForCoverage(
+        CarouselRow(1...6, id: \.self, rows: 3) { value in
+            Text("\(value)")
+        }
+    )
+}

@@ -20,9 +20,8 @@ import SwiftUI
 /// `.disabled(_:)` so it stops responding to taps *and* reports the disabled
 /// state to assistive technologies (VoiceOver, Switch Control, Full Keyboard
 /// Access), which then cannot activate it. It also takes on the standard
-/// dimmed disabled appearance. The transition is animated with
-/// `theme.motion.standardAnimation` so toggling disabled state reads as a
-/// smooth state change rather than a pop.
+/// dimmed disabled appearance. The disabled-state transition uses the theme motion for the current
+/// Reduce Motion setting.
 public struct CompactActionButton: View {
 
     private let title: String
@@ -31,6 +30,7 @@ public struct CompactActionButton: View {
     private let action: () -> Void
     @Environment(\.designTheme) private var theme
     @Environment(\.isEnabled) private var isEnvironmentEnabled
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private var isEffectivelyDisabled: Bool {
         if let explicitDisabled { return explicitDisabled }
@@ -62,7 +62,7 @@ public struct CompactActionButton: View {
     public var body: some View {
         Button(action: action) {
             Label(title, systemImage: icon)
-                .font(theme.typography.subheadline.weight(.medium))
+                .font(theme.typography.subheadlineMedium)
                 .foregroundStyle(theme.colors.onPrimary)
                 .padding(.horizontal, theme.spacing.oneAndHalfUnits)
                 .padding(.vertical, theme.spacing.oneUnit)
@@ -72,7 +72,7 @@ public struct CompactActionButton: View {
         .buttonBorderShape(.capsule)
         .tint(theme.colors.primary)
         .disabled(isEffectivelyDisabled)
-        .animation(theme.motion.standardAnimation, value: isEffectivelyDisabled)
+        .animation(theme.motion.animation(reducingMotion: reduceMotion), value: isEffectivelyDisabled)
     }
 }
 

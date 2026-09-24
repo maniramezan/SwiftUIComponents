@@ -82,19 +82,6 @@ public struct AssistantQuickActionChipRow<Action: Identifiable>: View {
     }
 }
 
-/// The presentation state of one action in an
-/// ``AssistantQuickActionChipRow``.
-public enum AssistantQuickActionState: Equatable, Sendable {
-    /// The action is visible and can be selected when row interaction is enabled.
-    case available
-    /// The action is visible, highlighted as already used, and disabled.
-    case used
-    /// The action remains visible but cannot currently be selected.
-    case disabled
-    /// The action is omitted from the row.
-    case hidden
-}
-
 /// A single chip in an ``AssistantQuickActionChipRow``.
 private struct AssistantQuickActionChip: View {
     let title: String
@@ -111,15 +98,16 @@ private struct AssistantQuickActionChip: View {
     var body: some View {
         Button(action: onTap) {
             AssistantQuickActionChipLabel(title: title, systemImage: systemImage)
-                .font(theme.typography.subheadline.weight(.medium))
+                .font(theme.typography.subheadlineMedium)
                 .designPillMetrics()
                 .designCapsuleSurface(isSelected: isSelected)
                 .foregroundStyle(foregroundColor)
         }
         .buttonStyle(.plain)
         .disabled(!isEnabled)
+        // A used chip is conveyed visually by its filled capsule; say so to VoiceOver too.
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
-
 }
 
 private struct AssistantQuickActionChipLabel: View {
@@ -142,28 +130,6 @@ private extension AssistantQuickActionChip {
         case .primaryText: theme.colors.textPrimary
         case .disabledText: theme.colors.disabled
         }
-    }
-}
-
-/// Which semantic foreground color an ``AssistantQuickActionChipRow`` chip
-/// should use, resolved as a pure function so the decision table is
-/// unit-testable without rendering a view.
-///
-/// Halving the whole button's opacity (background + text together) when
-/// disabled leaves the title nearly unreadable against its pill background.
-/// A used (selected) chip stays fully legible — `onSelectedFill` is already
-/// designed to contrast with the primary fill; a not-yet-usable chip
-/// switches its text to the dedicated disabled-but-legible label color
-/// instead of dimming it.
-public enum AssistantQuickActionChipForegroundRole: Equatable, Sendable {
-    case onSelectedFill
-    case primaryText
-    case disabledText
-
-    /// Resolves the chip's foreground role from its selection/enablement.
-    public static func resolve(isSelected: Bool, isEnabled: Bool) -> AssistantQuickActionChipForegroundRole {
-        if isSelected { return .onSelectedFill }
-        return isEnabled ? .primaryText : .disabledText
     }
 }
 

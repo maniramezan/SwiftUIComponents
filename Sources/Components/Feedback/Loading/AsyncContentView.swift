@@ -5,8 +5,8 @@ import SwiftUI
 /// `LoadingState`: the loading content while in flight, the success content
 /// once a value lands, or the error content when the fetch fails.
 ///
-/// Transitions between cases cross-fade using `theme.motion.standardAnimation`,
-/// so toggling state reads as a smooth swap rather than a layout pop.
+/// Transitions between cases cross-fade using the theme's animation for the
+/// current Reduce Motion setting.
 ///
 /// ```swift
 /// AsyncContentView(state: viewModel.profileState) { profile in
@@ -34,6 +34,7 @@ public struct AsyncContentView<
     private let loadingContent: () -> LoadingContent
     private let errorContent: (Failure) -> ErrorContent
     @Environment(\.designTheme) private var theme
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     /// Creates an async content view from any type that can describe itself as a
     /// `LoadingState`.
@@ -93,6 +94,6 @@ public struct AsyncContentView<
                 errorContent(failure).transition(.opacity)
             }
         }
-        .animation(theme.motion.standardAnimation, value: state)
+        .animation(theme.motion.animation(reducingMotion: reduceMotion), value: state)
     }
 }

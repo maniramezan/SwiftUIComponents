@@ -85,24 +85,11 @@ public struct ChatBubble<Content: View>: View {
             if !ChatBubbleLayout.hugsTrailingEdge(for: role) { Spacer(minLength: theme.spacing.sixUnits) }
         }
         .accessibilityElement(children: .contain)
-        .accessibilityLabel(Text(accessibilityRolePrefix))
+        .accessibilityLabel(Text(Strings.Chat.speaker(role)))
     }
 
     private var resolvedContentDirection: LayoutDirection {
         ChatBubbleLayout.contentDirection(override: contentLayoutDirection, ambient: ambientLayoutDirection)
-    }
-}
-
-// MARK: - Accessibility
-
-extension ChatBubble {
-
-    @MainActor fileprivate var accessibilityRolePrefix: String {
-        switch role {
-        case .user: "You"
-        case .assistant: "Assistant"
-        case .system: "System"
-        }
     }
 }
 

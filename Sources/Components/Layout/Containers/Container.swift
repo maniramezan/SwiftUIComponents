@@ -45,9 +45,7 @@ public struct Container<Content: View>: View {
 
     @MainActor private var border: Color {
         switch style {
-        case .outlined:
-            theme.colors.border
-        case .card, .elevated:
+        case .card, .elevated, .outlined:
             theme.colors.border
         case .plain:
             Color.clear

@@ -1,6 +1,7 @@
-import Components
 import SwiftUI
 import Testing
+
+@testable import Components
 
 @MainActor
 @Suite("FlowLayout")
@@ -89,33 +90,47 @@ struct FlowLayoutTests {
         )
         #expect(result.size.height == 42)
     }
+
+    @Test("unbounded width keeps one line and reports its width")
+    func unboundedWidthHugsContent() {
+        let layout = FlowLayout(spacing: 10, lineSpacing: 5)
+        let result = layout.testArrange(
+            maxWidth: FlowLayout.boundedWidth(nil),
+            sizes: [CGSize(width: 50, height: 20), CGSize(width: 30, height: 10)]
+        )
+        #expect(result.size == CGSize(width: 90, height: 20))
+        #expect(result.positions == [CGPoint(x: 0, y: 0), CGPoint(x: 60, y: 0)])
+    }
+
+    @Test("infinite and missing proposals are both treated as unbounded")
+    func boundedWidthNormalizesProposals() {
+        #expect(FlowLayout.boundedWidth(nil) == .infinity)
+        #expect(FlowLayout.boundedWidth(.infinity) == .infinity)
+        #expect(FlowLayout.boundedWidth(240) == 240)
+    }
+
+    @Test("renders wrapped and fixed-size content")
+    func rendersInHost() {
+        let tags = ["Alpha", "Beta", "Gamma", "Delta", "A much longer label that must wrap on its own"]
+        renderForCoverage(
+            FlowLayout(spacing: 8, lineSpacing: 8) {
+                ForEach(tags, id: \.self) { Text($0) }
+            }
+        )
+        renderForCoverage(
+            FlowLayout(spacing: 8) {
+                ForEach(tags, id: \.self) { Text($0) }
+            }
+            .fixedSize()
+        )
+    }
 }
 
 // MARK: - Test helper
 
 extension FlowLayout {
-    /// Exercises the same wrapping math as the real layout, using known sizes.
-    func testArrange(maxWidth: CGFloat, sizes: [CGSize]) -> (
-        size: CGSize, positions: [CGPoint]
-    ) {
-        var positions = [CGPoint]()
-        var currentX: CGFloat = .zero
-        var currentY: CGFloat = .zero
-        var lineHeight: CGFloat = .zero
-        var totalHeight: CGFloat = .zero
-
-        for size in sizes {
-            if currentX + size.width > maxWidth, currentX > 0 {
-                currentX = 0
-                currentY += lineHeight + lineSpacing
-                lineHeight = 0
-            }
-            positions.append(CGPoint(x: currentX, y: currentY))
-            currentX += size.width + spacing
-            lineHeight = max(lineHeight, size.height)
-            totalHeight = max(totalHeight, currentY + lineHeight)
-        }
-
-        return (CGSize(width: maxWidth, height: totalHeight), positions)
+    /// Runs the layout's real wrapping math against known item sizes.
+    func testArrange(maxWidth: CGFloat, sizes: [CGSize]) -> (size: CGSize, positions: [CGPoint]) {
+        Self.arrange(sizes: sizes, maxWidth: maxWidth, spacing: spacing, lineSpacing: lineSpacing)
     }
 }

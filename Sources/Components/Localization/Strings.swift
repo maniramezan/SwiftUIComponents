@@ -1,6 +1,7 @@
 import Foundation
 
 /// Typed access to localized strings stored in the package string catalog.
+@usableFromInline
 enum Strings {
     enum Toolbar {
         static let close = LocalizedStringResource(
@@ -27,7 +28,16 @@ enum Strings {
         }
     }
 
+    @usableFromInline
     enum Search {
+        @usableFromInline
+        static let placeholder = LocalizedStringResource(
+            "Search",
+            bundle: .atURL(Bundle.module.bundleURL),
+            comment:
+                "Placeholder shown in an empty search field when the caller supplies no placeholder of its own."
+        )
+
         static let clearButton = LocalizedStringResource(
             "Clear search",
             bundle: .atURL(Bundle.module.bundleURL),
@@ -79,6 +89,34 @@ enum Strings {
             comment:
                 "Accessibility label for the animated three-dot indicator shown while a response is being composed."
         )
+
+        /// Spoken name of the speaker for a chat bubble, so VoiceOver users can tell
+        /// who said what without relying on bubble alignment or tint.
+        static func speaker(_ role: ChatMessageRole) -> LocalizedStringResource {
+            switch role {
+            case .user:
+                LocalizedStringResource(
+                    "You",
+                    bundle: .atURL(Bundle.module.bundleURL),
+                    comment:
+                        "Accessibility label naming the speaker of a chat bubble sent by the person using the app."
+                )
+            case .assistant:
+                LocalizedStringResource(
+                    "Assistant",
+                    bundle: .atURL(Bundle.module.bundleURL),
+                    comment:
+                        "Accessibility label naming the speaker of a chat bubble written by an AI assistant or bot."
+                )
+            case .system:
+                LocalizedStringResource(
+                    "System",
+                    bundle: .atURL(Bundle.module.bundleURL),
+                    comment:
+                        "Accessibility label naming the speaker of an automated system message in a chat conversation."
+                )
+            }
+        }
     }
 
     enum Button {

@@ -5,7 +5,7 @@ import SwiftUI
 ///
 /// Held by ``TitledPageViewHeader`` and ``TitledPageViewIndicator`` so
 /// they don't need to re-resolve theme tokens at every layout pass.
-struct ResolvedPaginationStyle: Equatable {
+struct ResolvedPaginationStyle {
     let titleFont: Font
     let titleColor: Color
     let adjacentTitleColor: Color
@@ -23,12 +23,4 @@ struct ResolvedPaginationStyle: Equatable {
     /// unidirectional/none).
     let titleLeadingPadding: CGFloat?
 
-    static func == (lhs: ResolvedPaginationStyle, rhs: ResolvedPaginationStyle) -> Bool {
-        lhs.peekDirection == rhs.peekDirection
-            && lhs.titleAlignment == rhs.titleAlignment
-            && lhs.peekWidth == rhs.peekWidth
-            && lhs.headerSpacing == rhs.headerSpacing
-            && lhs.titleGap == rhs.titleGap
-            && lhs.reduceMotionUsesCrossfade == rhs.reduceMotionUsesCrossfade
-    }
 }

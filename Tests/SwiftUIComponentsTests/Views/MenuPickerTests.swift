@@ -156,11 +156,29 @@ func initAcceptsExplicitAutomaticStyle() throws {
     _ = MenuPicker(items: items, currentValue: binding, preferredStyle: .automatic)
 }
 
-@Test("Int conforms to MenuPickerItem for convenient picker usage")
-func intConformsToMenuPickerItem() {
-    let value = 9
-    #expect(value.id == 9)
-    #expect(value.title == "AAAA 9")
+@Test("onWidthChange reports a positive trigger width once rendered")
+@MainActor
+func onWidthChangeFiresOnRender() {
+    let items = makeItems(3)
+    var reported: [CGFloat] = []
+    renderForCoverage(
+        MenuPicker(items: items, currentValue: .constant(items[0]), onWidthChange: { reported.append($0) })
+    )
+    RunLoop.current.run(until: Date().addingTimeInterval(0.05))
+    #expect(!reported.isEmpty)
+    #expect(reported.allSatisfy { $0 > 0 })
+}
+
+@Test("onWidthChange fires for long lists that use the wheel sheet")
+@MainActor
+func onWidthChangeFiresForWheelSheet() {
+    let items = makeItems(40)
+    var reported: [CGFloat] = []
+    renderForCoverage(
+        MenuPicker(items: items, currentValue: .constant(items[0]), onWidthChange: { reported.append($0) })
+    )
+    RunLoop.current.run(until: Date().addingTimeInterval(0.05))
+    #expect(!reported.isEmpty)
 }
 
 // MARK: - AppKit trigger width

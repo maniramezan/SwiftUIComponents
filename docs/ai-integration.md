@@ -171,6 +171,8 @@ Filter chip:
 
 Picker (item must conform to MenuPickerItem: Hashable & Identifiable, var title: String; the package
 ships no conformances for Int/String — wrap them in your own type):
+    // The package does not conform Int or String to MenuPickerItem. Wrap scalar values:
+    struct NumberOption: MenuPickerItem { let id: Int; var title: String { String(id) } }
     MenuPicker(items: allItems, currentValue: $selected)
     MenuPicker(items: allItems, currentValue: $selected, onWidthChange: { newWidth in pickerWidth = newWidth })
     // preferredStyle: .automatic (default) falls back to a wheel sheet past ~30 items; .menu always
@@ -199,7 +201,7 @@ Selection list (for `.sheet`/drawer or inline; single- or multiple-choice; rows 
 Segmented picker (horizontal, single-selection; scrolls with fading edges when overflowing; auto-scrolls active segment into view):
     SegmentedPicker(items: Filter.allCases, selection: $filter)
     SegmentedPicker(items: tabs, selection: $tab, sizing: .fillProportionally, density: .compact)
-    // sizing: .fit (default) | .fillEqually | .fillProportionally   density: .regular (44pt) | .compact (~32pt)
+    // sizing: .fit (default) | .fillEqually | .fillProportionally; density: .regular (44pt) | .compact (~32pt)
     SegmentedPicker(items: tabs, selection: $tab) { tab in tab.unread > 0 ? "\(tab.unread)" : nil } // badge; "" = dot
     SegmentedPicker(items: tabs, selection: $tab) { tab, _ in
         HStack { Image(systemName: tab.systemImage); Text(tab.title) }
@@ -216,7 +218,7 @@ Carousel row (horizontal, browse-only; reveals a sliver of the next item; edge-f
 
 Carousel board (App-Store-style two-directional layout: vertical shelves, each scrolls horizontally):
     CarouselBoard {
-        CarouselShelf("Featured", items: apps) { app in FeaturedCard(app) }          // peeking
+        CarouselShelf("Featured", shelfID: "featured", items: apps) { app in FeaturedCard(app) } // peeking
         CarouselShelf("Top Free", items: apps, actionLabel: "See All",               // fixed tiles + action
                       sizing: .fixedWidth(120), onSeeAll: { openAll() }) { app in IconTile(app) }
         CarouselShelf("Continue Watching", items: videos, rows: 2, rowHeight: 180,
@@ -225,6 +227,7 @@ Carousel board (App-Store-style two-directional layout: vertical shelves, each s
         CarouselShelf("Editor's Pick") { EditorsBanner() }                           // fully custom row
     }
     // Shelves are heterogeneous — each may carry its own item type and item view.
+    // Use unique shelfID values when titles can change or repeat; nil defaults to the title.
     // Use CarouselBoardContent (no inner ScrollView) to embed shelves in a scroll you already own.
 
 Container:

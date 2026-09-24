@@ -55,7 +55,8 @@ struct ToastModifier<ToastContent: View>: ViewModifier {
                         }
                 }
             }
-            .animation(theme.motion.standardAnimation, value: isPresented)
+            .animation(theme.motion.animation(reducingMotion: reduceMotion), value: isPresented)
+            .animation(theme.motion.animation(reducingMotion: reduceMotion), value: dragOffset == 0)
     }
 
     /// Speaks the toast to VoiceOver when it appears, so the transient message
@@ -95,13 +96,13 @@ struct ToastModifier<ToastContent: View>: ViewModifier {
                 if shouldDismiss {
                     dismiss()
                 } else {
-                    withAnimation(theme.motion.standardAnimation) { dragOffset = 0 }
+                    dragOffset = 0
                 }
             }
     }
 
     private func dismiss() {
-        withAnimation(theme.motion.standardAnimation) { isPresented = false }
+        isPresented = false
         dragOffset = 0
     }
 }

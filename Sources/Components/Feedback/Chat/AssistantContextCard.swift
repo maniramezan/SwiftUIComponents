@@ -65,7 +65,7 @@ public struct AssistantContextCard: View {
     public var body: some View {
         VStack(alignment: .leading, spacing: theme.spacing.oneUnit) {
             Text(title)
-                .font(theme.typography.title3.weight(.semibold))
+                .font(theme.typography.title3Semibold)
                 .foregroundStyle(theme.colors.textPrimary)
 
             if let highlight, !highlight.isEmpty {

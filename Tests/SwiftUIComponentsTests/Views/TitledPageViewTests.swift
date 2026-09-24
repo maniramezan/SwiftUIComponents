@@ -741,3 +741,15 @@ func stepScrollAdvancesActivePage() {
     scrollView.stepScroll(edge: .trailing)
     #expect(jumpedTo == 1)
 }
+
+@Test("Resolved styles preserve color and leading-inset overrides")
+@MainActor
+func resolvedStylePreservesOverrides() {
+    let theme = DefaultTheme()
+    let style = TitledPageViewMath.resolveStyle(
+        override: PaginationStyle(titleColor: .red, titleLeadingPadding: 24),
+        theme: theme
+    )
+    #expect(style.titleColor == .red)
+    #expect(style.titleLeadingPadding == 24)
+}
