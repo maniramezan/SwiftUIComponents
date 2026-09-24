@@ -13,10 +13,14 @@ enum ShowcaseComponent: String, CaseIterable, Identifiable {
     case menuPicker = "Menu Picker"
     case selectionList = "Selection List"
     case pillChips = "Pill Chips"
+    case textInputField = "Text Input Field"
 
     // MARK: - Display
     case badges = "Badges"
     case textStyles = "Text Styles"
+    case listRow = "List Row"
+    case avatar = "Avatar"
+    case sectionHeader = "Section Header"
 
     // MARK: - Surfaces
     case surfaces = "Surfaces"
@@ -32,6 +36,8 @@ enum ShowcaseComponent: String, CaseIterable, Identifiable {
     case ghostLoading = "Ghost Loading"
     case emptyState = "Empty State"
     case toast = "Toast"
+    case progress = "Progress"
+    case asyncContent = "Async Content"
 
     // MARK: - Pagination
     case pagedView = "Paged View"
@@ -55,9 +61,13 @@ enum ShowcaseComponent: String, CaseIterable, Identifiable {
         case .menuPicker: return "list.bullet"
         case .selectionList: return "checklist"
         case .pillChips: return "capsule.fill"
+        case .textInputField: return "character.cursor.ibeam"
         case .segmentedPicker: return "rectangle.split.3x1.fill"
         case .badges: return "seal.fill"
         case .textStyles: return "textformat"
+        case .listRow: return "list.bullet.rectangle"
+        case .avatar: return "person.crop.circle"
+        case .sectionHeader: return "text.justify.leading"
         case .surfaces: return "square.on.square"
         case .adaptiveSurface: return "square.stack.3d.up"
         case .selectableCard: return "checkmark.square"
@@ -69,6 +79,8 @@ enum ShowcaseComponent: String, CaseIterable, Identifiable {
         case .ghostLoading: return "rectangle.dashed"
         case .emptyState: return "tray"
         case .toast: return "bell.badge.fill"
+        case .progress: return "chart.bar.fill"
+        case .asyncContent: return "arrow.triangle.2.circlepath"
         case .pagedView: return "rectangle.split.3x1"
         case .chat: return "bubble.left.and.bubble.right"
         case .carouselRow: return "rectangle.portrait.on.rectangle.portrait"
@@ -81,13 +93,13 @@ enum ShowcaseComponent: String, CaseIterable, Identifiable {
         switch self {
         case .buttons, .compactAction:
             return "Actions"
-        case .searchBar, .toggle, .menuPicker, .selectionList, .pillChips:
+        case .searchBar, .toggle, .menuPicker, .selectionList, .pillChips, .textInputField:
             return "Controls"
-        case .badges, .textStyles:
+        case .badges, .textStyles, .listRow, .avatar, .sectionHeader:
             return "Display"
         case .surfaces, .adaptiveSurface, .selectableCard, .flipCard, .containers:
             return "Surfaces"
-        case .errorBanner, .errorSection, .loading, .ghostLoading, .emptyState, .toast:
+        case .errorBanner, .errorSection, .loading, .ghostLoading, .emptyState, .toast, .progress, .asyncContent:
             return "Feedback"
         case .pagedView, .segmentedPicker:
             return "Pagination"
