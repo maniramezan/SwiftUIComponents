@@ -179,7 +179,7 @@ private struct AssistantConversationErrorTurnBubble: View {
                 Text(message)
                     .font(theme.typography.subheadline)
                 Button(retryTitle, action: onRetry)
-                    .font(theme.typography.subheadline.weight(.medium))
+                    .font(theme.typography.subheadlineMedium)
                     .buttonStyle(.bordered)
                     .controlSize(.small)
                     .disabled(!isRetryEnabled)
