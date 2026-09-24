@@ -47,7 +47,7 @@ jobs:
           esac
 
       - name: Prepare validation script
-        run: chmod +x Scripts/validate.sh Scripts/coverage.sh Scripts/check-coverage.py Scripts/check-localizations.py
+        run: chmod +x Scripts/validate.sh Scripts/coverage.sh Scripts/check-coverage.py Scripts/check-localizations.py Scripts/check-doc-comments.py
 
       - name: Run validation script
         run: ./Scripts/validate.sh ${{ github.event_name == 'pull_request' && '--skip-tests' || '' }}

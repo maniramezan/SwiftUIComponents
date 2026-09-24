@@ -1,14 +1,15 @@
 # SwiftUIComponents
 
-Themeable, cross-platform SwiftUI building blocks targeting **macOS 15**, **iOS 18**, and **Mac Catalyst 18**. The package ships three SwiftPM library products: `DesignSystem` (tokens), `Components` (reusable views and modifiers), and `ComponentShowcase` (example screens and internal previews).
+Themeable, cross-platform SwiftUI building blocks targeting **macOS 15**, **iOS 18**, and **Mac Catalyst 18**. The package ships four SwiftPM library products: `DesignSystem` (tokens), `Components` (reusable views and modifiers), `SwiftUIComponentsDynamic` (one dynamic image vending both, for apps whose own modules are dynamic frameworks), and `ComponentShowcase` (example screens).
 
 ## Libraries
 
 | Library | Purpose |
 |---|---|
 | **DesignSystem** | Spacing, radius, stroke, motion, color, and typography token protocols with sensible defaults, including native-aligned segmented control colors. Inject a custom `Theme` to rebrand the entire component set. |
-| **Components** | Production-ready views and modifiers built on `DesignSystem` — buttons, inputs, badges, cards, containers, chat UI, and feedback states. |
-| **ComponentShowcase** | Internal showcase screens used to demonstrate and validate components in one place. Treat this as a demo/reference target, not a dependency for production app code. |
+| **Components** | Production-ready views and modifiers built on `DesignSystem` — buttons, text fields, pickers, list rows, avatars, progress, badges, cards, containers, paging, carousels, chat UI, and feedback states. |
+| **SwiftUIComponentsDynamic** | `DesignSystem` + `Components` as a single dynamic library. Link it instead of the two static products when your own modules are dynamic frameworks (see `docs/ai-integration.md`). |
+| **ComponentShowcase** | Showcase screens with live controls for every component; host `ShowcaseRootView()` in a scratch app to browse them. Treat this as a demo/reference target, not a dependency for production app code. |
 
 ## Architecture
 
@@ -66,7 +67,8 @@ struct ContentView: View {
 Components ship with VoiceOver support built in — labels, traits, hidden decorative
 elements, Reduce Motion handling, and adjustable/scroll actions on the paged and
 segmented controls. The package localizes its **own** chrome (the dismiss button,
-loading/typing announcements, error prefixes, paginator and clear-search labels)
+loading/typing announcements, chat speaker names, the default search placeholder,
+error prefixes, paginator and clear-search labels)
 through a String Catalog resolved from `Bundle.module`; supported locales are
 translated in `Sources/Components/Resources/Localizable.xcstrings` and validated
 in CI.
@@ -88,6 +90,7 @@ swift build -Xswiftc -warnings-as-errors   # compile with warnings as errors
 swift test --parallel                        # run the test suite
 swift test --enable-code-coverage            # generate coverage data
 swift format lint --strict Sources Tests     # check formatting
+./Scripts/validate.sh                        # everything CI runs (format, strings, docs, build, tests)
 ```
 
 ## Documentation
@@ -99,7 +102,7 @@ swift package generate-documentation --target DesignSystem --warnings-as-errors
 swift package generate-documentation --target Components --warnings-as-errors
 ```
 
-All public symbols must have `///` doc comments; CI enforces this via `--warnings-as-errors`.
+All public symbols must have `///` doc comments; CI enforces this with `Scripts/check-doc-comments.py`, and DocC's `--warnings-as-errors` catches broken symbol links.
 
 ## CI
 
