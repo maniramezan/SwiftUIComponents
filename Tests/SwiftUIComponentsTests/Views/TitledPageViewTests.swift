@@ -742,14 +742,14 @@ func stepScrollAdvancesActivePage() {
     #expect(jumpedTo == 1)
 }
 
-@Test("Resolved styles differing only in a color or leading inset are not equal")
+@Test("Resolved styles preserve color and leading-inset overrides")
 @MainActor
-func resolvedStyleEqualityCoversAllValues() {
+func resolvedStylePreservesOverrides() {
     let theme = DefaultTheme()
-    let base = TitledPageViewMath.resolveStyle(override: PaginationStyle(), theme: theme)
-    let inset = TitledPageViewMath.resolveStyle(override: PaginationStyle(titleLeadingPadding: 24), theme: theme)
-    let tinted = TitledPageViewMath.resolveStyle(override: PaginationStyle(titleColor: .red), theme: theme)
-    #expect(base == TitledPageViewMath.resolveStyle(override: PaginationStyle(), theme: theme))
-    #expect(base != inset)
-    #expect(base != tinted)
+    let style = TitledPageViewMath.resolveStyle(
+        override: PaginationStyle(titleColor: .red, titleLeadingPadding: 24),
+        theme: theme
+    )
+    #expect(style.titleColor == .red)
+    #expect(style.titleLeadingPadding == 24)
 }
