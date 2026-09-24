@@ -41,17 +41,17 @@ public struct AssistantLimitPromptCard: View {
     public var body: some View {
         VStack(alignment: .leading, spacing: theme.spacing.oneUnit) {
             Text(message)
-                .font(theme.typography.subheadline.weight(.medium))
+                .font(theme.typography.subheadlineMedium)
                 .foregroundStyle(theme.colors.textPrimary)
             Text(supportingText)
                 .font(theme.typography.subheadline)
                 .foregroundStyle(theme.colors.textSecondary)
             Button(primaryActionTitle, action: onPrimaryAction)
-                .font(theme.typography.subheadline.weight(.medium))
+                .font(theme.typography.subheadlineMedium)
                 .buttonStyle(.borderedProminent)
                 .tint(theme.colors.primary)
             Button(secondaryActionTitle, action: onSecondaryAction)
-                .font(theme.typography.subheadline.weight(.medium))
+                .font(theme.typography.subheadlineMedium)
                 .buttonStyle(.bordered)
         }
         .designNoticeCard(background: theme.colors.containerSecondary)

@@ -50,11 +50,11 @@ public struct AssistantUpgradeNotice: View {
                 Image(systemName: systemImage)
                     .foregroundStyle(theme.colors.primary)
                 Text(message)
-                    .font(theme.typography.subheadline.weight(.medium))
+                    .font(theme.typography.subheadlineMedium)
                     .foregroundStyle(theme.colors.textPrimary)
             }
             Button(upgradeTitle, action: onUpgrade)
-                .font(theme.typography.subheadline.weight(.medium))
+                .font(theme.typography.subheadlineMedium)
                 .buttonStyle(.bordered)
                 .controlSize(.small)
         }
