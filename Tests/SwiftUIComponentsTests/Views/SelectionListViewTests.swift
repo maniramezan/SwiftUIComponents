@@ -189,3 +189,9 @@ func toggleExpansionRuns() {
     view.toggleExpansion("fruit")
     view.toggleExpansion("fruit")
 }
+
+@Test("expanded chevron rotates toward the bottom in both layout directions")
+func expandedChevronRotationFollowsLayoutDirection() {
+    #expect(SelectionRowContent.expandedRotation(for: .leftToRight) == 90)
+    #expect(SelectionRowContent.expandedRotation(for: .rightToLeft) == -90)
+}
