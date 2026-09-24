@@ -97,8 +97,11 @@ public struct SelectionListContentView<ID: Hashable>: View {
     public var body: some View {
         VStack(spacing: theme.spacing.oneUnit) {
             if isSearchable {
-                SearchBar(text: $query, placeholder: searchPlaceholder)
-                    .padding(.horizontal, theme.spacing.twoUnits)
+                SearchBar(
+                    text: $query,
+                    placeholder: searchPlaceholder ?? String(localized: Strings.Search.placeholder)
+                )
+                .padding(.horizontal, theme.spacing.twoUnits)
             }
             // Each expandable parent is a single `ExpandableNodeRow` cell that owns its
             // children and animates its own height from a 0…1 progress. Driving the cell
