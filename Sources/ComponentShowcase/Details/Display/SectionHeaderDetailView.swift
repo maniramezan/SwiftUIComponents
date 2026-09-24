@@ -32,8 +32,9 @@ struct SectionHeaderDetailView: View {
             ShowcaseSection("Configurable header") {
                 SectionHeader(
                     title: title,
+                    // SectionHeader omits the button when either the label or the action is nil.
                     actionLabel: showsAction ? "See All" : nil,
-                    onAction: showsAction ? { actionCount += 1 } : nil,
+                    onAction: { actionCount += 1 },
                     titleFont: titleFont
                 )
                 Text("Action taps: \(actionCount)")

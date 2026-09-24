@@ -71,10 +71,11 @@ private struct ThemeProgressBar: View {
             }
         }
         .accessibilityElement(children: .combine)
-        .accessibilityValue(accessibilityValue)
+        .accessibilityValue(valueText)
     }
 
-    private var accessibilityValue: Text {
+    /// The spoken value: a rounded percentage, or "Loading" while indeterminate.
+    private var valueText: Text {
         guard let fractionCompleted else { return Text(Strings.Button.loading) }
         return Text(ThemeProgressMetrics.clamped(fractionCompleted), format: .percent.precision(.fractionLength(0)))
     }
