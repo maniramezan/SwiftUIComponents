@@ -42,15 +42,23 @@ public struct FlowLayout: Layout {
     }
 
     /// Returns the size needed to place all subviews within the proposed width.
+    ///
+    /// A bounded width proposal is reported back unchanged. An unspecified or
+    /// infinite proposal (inside a horizontal `ScrollView`, or under `.fixedSize()`)
+    /// lays every item on one line and reports that line's width, instead of an
+    /// arbitrary placeholder width.
     public func sizeThatFits(
         proposal: ProposedViewSize,
         subviews: Subviews,
         cache _: inout ()
     ) -> CGSize {
-        // Use a large finite width when the proposal is unspecified or infinite
-        // so the height isn't inflated into something unbounded.
-        let effectiveWidth = proposal.width.flatMap { $0.isFinite ? $0 : nil } ?? 10_000
-        return arrangeViews(maxWidth: effectiveWidth, subviews: subviews).size
+        let maxWidth = Self.boundedWidth(proposal.width)
+        return Self.arrange(
+            sizes: Self.measure(subviews, maxWidth: maxWidth),
+            maxWidth: maxWidth,
+            spacing: spacing,
+            lineSpacing: lineSpacing
+        ).size
     }
 
     /// Places subviews in wrapped rows inside the provided bounds.
@@ -61,13 +69,14 @@ public struct FlowLayout: Layout {
         cache _: inout ()
     ) {
         // Use the actual allocated width so positions match the rendered width.
-        let result = arrangeViews(maxWidth: bounds.width, subviews: subviews)
+        let sizes = Self.measure(subviews, maxWidth: bounds.width)
+        let result = Self.arrange(sizes: sizes, maxWidth: bounds.width, spacing: spacing, lineSpacing: lineSpacing)
 
         for (index, subview) in subviews.enumerated() {
             let position = result.positions[index]
             subview.place(
                 at: CGPoint(x: bounds.minX + position.x, y: bounds.minY + position.y),
-                proposal: .unspecified
+                proposal: ProposedViewSize(sizes[index])
             )
         }
     }
@@ -77,19 +86,49 @@ public struct FlowLayout: Layout {
 
 extension FlowLayout {
 
-    fileprivate func arrangeViews(maxWidth: CGFloat, subviews: Subviews) -> (
-        size: CGSize, positions: [CGPoint]
-    ) {
+    /// Treats a missing or infinite proposal as unbounded.
+    nonisolated static func boundedWidth(_ proposed: CGFloat?) -> CGFloat {
+        guard let proposed, proposed.isFinite else { return .infinity }
+        return proposed
+    }
+
+    /// Measures each subview at its ideal size, re-measuring any item wider than
+    /// `maxWidth` against that width so long content (e.g. a multi-word tag) wraps
+    /// inside the line instead of overflowing it.
+    static func measure(_ subviews: Subviews, maxWidth: CGFloat) -> [CGSize] {
+        subviews.map { subview in
+            let ideal = subview.sizeThatFits(.unspecified)
+            guard maxWidth.isFinite, ideal.width > maxWidth else { return ideal }
+            return subview.sizeThatFits(ProposedViewSize(width: maxWidth, height: nil))
+        }
+    }
+
+    /// Positions items of the given sizes left-to-right, wrapping onto a new line
+    /// whenever the next item would overflow `maxWidth`.
+    ///
+    /// - Parameters:
+    ///   - sizes: The size of each item, in order.
+    ///   - maxWidth: The line width, or `.infinity` for a single unbounded line.
+    ///   - spacing: Horizontal gap between items on a line.
+    ///   - lineSpacing: Vertical gap between lines.
+    /// - Returns: The item origins, plus the overall size — `maxWidth` wide when it
+    ///   is finite, otherwise the width of the widest line.
+    nonisolated static func arrange(
+        sizes: [CGSize],
+        maxWidth: CGFloat,
+        spacing: CGFloat,
+        lineSpacing: CGFloat
+    ) -> (size: CGSize, positions: [CGPoint]) {
         var positions = [CGPoint]()
+        positions.reserveCapacity(sizes.count)
         var currentX: CGFloat = .zero
         var currentY: CGFloat = .zero
         var lineHeight: CGFloat = .zero
         var totalHeight: CGFloat = .zero
+        var widestLine: CGFloat = .zero
 
-        for subview in subviews {
-            let size = subview.sizeThatFits(.unspecified)
-
-            // Wrap to a new line when the next subview would overflow. The
+        for size in sizes {
+            // Wrap to a new line when the next item would overflow. The
             // `currentX > 0` guard prevents wrapping an item that is already at
             // the line start but still wider than the available width — in
             // that case we render it overflowing rather than emitting an empty
@@ -101,12 +140,14 @@ extension FlowLayout {
             }
 
             positions.append(CGPoint(x: currentX, y: currentY))
+            widestLine = max(widestLine, currentX + size.width)
             currentX += size.width + spacing
             lineHeight = max(lineHeight, size.height)
             totalHeight = max(totalHeight, currentY + lineHeight)
         }
 
-        return (CGSize(width: maxWidth, height: totalHeight), positions)
+        let width = maxWidth.isFinite ? maxWidth : widestLine
+        return (CGSize(width: width, height: totalHeight), positions)
     }
 }
 
