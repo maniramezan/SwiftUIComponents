@@ -15,3 +15,4 @@ DerivedData/
 # Do not commit the PNGs — they are injected into DocC at docs-build time only.
 Tests/SwiftUIComponentsTests/Snapshots/__Snapshots__/
 Sources/Components/Components.docc/Resources/*.png
+__pycache__/
