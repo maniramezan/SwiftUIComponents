@@ -136,7 +136,6 @@ Buttons:
 
 Search:
     SearchBar(text: $query, placeholder: "Search", isFocused: $isFocused, onSubmit: { })
-    SearchBar(text: $query)   // placeholder nil → the package's localized "Search"
 
 Labeled text field (title above, helper or error text below; error wins and is read to VoiceOver):
     TextInputField("Email", text: $email, prompt: "name@example.com",
@@ -169,8 +168,7 @@ Filter chip:
     PillChip("Label", isSelected: isSelected) { /* action */ }
     ActionPill(action: openItem) { HStack { Text("Type").bold(); Text("Value") } }
 
-Picker (item must conform to MenuPickerItem: Hashable & Identifiable, var title: String; the package
-ships no conformances for Int/String — wrap them in your own type):
+Picker (item must conform to MenuPickerItem: Hashable & Identifiable, var title: String):
     MenuPicker(items: allItems, currentValue: $selected)
     MenuPicker(items: allItems, currentValue: $selected, onWidthChange: { newWidth in pickerWidth = newWidth })
     // preferredStyle: .automatic (default) falls back to a wheel sheet past ~30 items; .menu always
@@ -198,8 +196,6 @@ Selection list (for `.sheet`/drawer or inline; single- or multiple-choice; rows 
 
 Segmented picker (horizontal, single-selection; scrolls with fading edges when overflowing; auto-scrolls active segment into view):
     SegmentedPicker(items: Filter.allCases, selection: $filter)
-    SegmentedPicker(items: tabs, selection: $tab, sizing: .fillProportionally, density: .compact)
-    // sizing: .fit (default) | .fillEqually | .fillProportionally   density: .regular (44pt) | .compact (~32pt)
     SegmentedPicker(items: tabs, selection: $tab) { tab in tab.unread > 0 ? "\(tab.unread)" : nil } // badge; "" = dot
     SegmentedPicker(items: tabs, selection: $tab) { tab, _ in
         HStack { Image(systemName: tab.systemImage); Text(tab.title) }
@@ -209,7 +205,7 @@ Carousel row (horizontal, browse-only; reveals a sliver of the next item; edge-f
     CarouselRow(apps) { app in FeaturedCard(app) }                     // Identifiable convenience
     CarouselRow(values, id: \.self, sizing: .peek(visibleCount: 2)) { v in Card(v) }
     CarouselRow(icons, sizing: .fixedWidth(120), snapping: .free) { i in Tile(i) }
-    CarouselRow(apps, rows: 2, rowHeight: 180) { app in Card(app) }    // stacked rows need rowHeight (else: one row + logged fault)
+    CarouselRow(apps, rows: 2, rowHeight: 180) { app in Card(app) }    // stacked rows require rowHeight
     // sizing: .peek(visibleCount:peek:) (default, one item + sliver) | .fixedWidth(_) | .fitContent
     // snapping: .viewAligned (default, snaps + keeps peek) | .free (momentum only)
     // rows: defaults to 1; set rowHeight whenever rows > 1
@@ -372,8 +368,8 @@ Use the showcase for reference, not reuse:
 ### Accessibility & Localization
 
 - Components include VoiceOver support out of the box (labels, traits, hidden decorations, Reduce Motion, adjustable/scroll actions on paged + segmented controls).
-- The package localizes only its own chrome (dismiss button, loading/typing announcements, chat speaker names, default search placeholder, error prefix, paginator + clear-search labels) via a String Catalog in `Bundle.module`; supported locales are translated and validated in CI.
-- Content you pass in is rendered verbatim and is your app's responsibility to localize: `ThemeButton` titles, a custom `SearchBar` placeholder, `SelectionNode` titles, `TextInputField` titles and messages, `ListRow` text, `AvatarView` names, `ConfirmToolbarButton` accessibility label. Pass already-localized values (e.g. `String(localized:)`).
+- The package localizes only its own chrome (dismiss button, loading/typing announcements, error prefix, paginator + clear-search labels) via a String Catalog in `Bundle.module`; supported locales are translated and validated in CI.
+- Content you pass in is rendered verbatim and is your app's responsibility to localize: `ThemeButton` titles, `SearchBar` placeholder, `SelectionNode` titles, `TextInputField` titles and messages, `ListRow` text, `AvatarView` names, `ConfirmToolbarButton` accessibility label. Pass already-localized values (e.g. `String(localized:)`).
 
 ### Do Not
 
@@ -382,7 +378,6 @@ Use the showcase for reference, not reuse:
 - Don't access `theme.colors` or `theme.typography` outside @MainActor — they are @MainActor-isolated.
 - Don't skip `.designTheme()` — a default exists but won't match your brand.
 - Don't conform `MenuPickerItem` items with only `Identifiable` — `Hashable` is also required.
-- Don't pass `Int`/`String` ranges straight to `MenuPicker`/`SegmentedPicker` — the package ships no stdlib conformances; wrap values in your own `MenuPickerItem` type.
 - Don't hand-roll a title-above-field form input or a settings row — use `TextInputField` and `ListRow`.
 - Don't put reusable shipping components in the showcase target — promote them into `Components` first.
 - Don't pass a String literal to ThemeButton's @ViewBuilder init — use the String convenience init.
