@@ -186,3 +186,39 @@ func stepAdvancesSelection() {
     row.step(by: 0)
     #expect(selected.id == items[2].id)
 }
+
+// MARK: - Proportional sizing
+
+@Test("fillProportionally scales ideal widths to fill the available width")
+func proportionalWidthsFillAvailableSpace() {
+    let widths = ProportionalHStackLayout.widths(idealWidths: [40, 80], availableWidth: 250, spacing: 10)
+    // (250 - 10) / 120 = 2× each ideal width.
+    #expect(widths == [80, 160])
+    #expect(ProportionalHStackLayout.totalWidth(widths, spacing: 10) == 250)
+}
+
+@Test("fillProportionally keeps ideal widths for an unbounded proposal")
+func proportionalWidthsKeepIdealWhenUnbounded() {
+    #expect(ProportionalHStackLayout.widths(idealWidths: [40, 80], availableWidth: nil, spacing: 10) == [40, 80])
+    #expect(
+        ProportionalHStackLayout.widths(idealWidths: [40, 80], availableWidth: .infinity, spacing: 10) == [40, 80]
+    )
+}
+
+@Test("fillProportionally leaves zero-width content untouched")
+func proportionalWidthsHandleZeroContent() {
+    #expect(ProportionalHStackLayout.widths(idealWidths: [0, 0], availableWidth: 200, spacing: 4) == [0, 0])
+    #expect(ProportionalHStackLayout.widths(idealWidths: [], availableWidth: 200, spacing: 4).isEmpty)
+}
+
+@Test("Every sizing mode renders")
+@MainActor
+func everySizingModeRenders() {
+    let items = (1...3).map { MenuPickerTestItem(id: $0, title: String(repeating: "W", count: $0 * 3)) }
+    let binding = Binding(get: { items[0] }, set: { _ in })
+    for sizing in SegmentSizing.allCases {
+        for density in SegmentDensity.allCases {
+            renderForCoverage(SegmentedPicker(items: items, selection: binding, sizing: sizing, density: density))
+        }
+    }
+}

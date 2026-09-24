@@ -149,6 +149,8 @@ Filter chip:
     ActionPill(action: openItem) { HStack { Text("Type").bold(); Text("Value") } }
 
 Picker (item must conform to MenuPickerItem: Hashable & Identifiable, var title: String):
+    // The package does not conform Int or String to MenuPickerItem. Wrap scalar values:
+    struct NumberOption: MenuPickerItem { let id: Int; var title: String { String(id) } }
     MenuPicker(items: allItems, currentValue: $selected)
     MenuPicker(items: allItems, currentValue: $selected, onWidthChange: { newWidth in pickerWidth = newWidth })
     // preferredStyle: .automatic (default) falls back to a wheel sheet past ~30 items; .menu always
@@ -176,6 +178,8 @@ Selection list (for `.sheet`/drawer or inline; single- or multiple-choice; rows 
 
 Segmented picker (horizontal, single-selection; scrolls with fading edges when overflowing; auto-scrolls active segment into view):
     SegmentedPicker(items: Filter.allCases, selection: $filter)
+    SegmentedPicker(items: tabs, selection: $tab, sizing: .fillProportionally, density: .compact)
+    // sizing: .fit (default) | .fillEqually | .fillProportionally; density: .regular | .compact
     SegmentedPicker(items: tabs, selection: $tab) { tab, _ in
         HStack { Image(systemName: tab.systemImage); Text(tab.title) }
     }
