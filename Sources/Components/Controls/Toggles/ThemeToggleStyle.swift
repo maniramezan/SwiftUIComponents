@@ -11,6 +11,7 @@ import SwiftUI
 public struct ThemeToggleStyle: ToggleStyle {
     @Environment(\.isEnabled) private var isEnabled
     @Environment(\.designTheme) private var theme
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     /// Creates a themed toggle style.
     public init() {}
@@ -20,9 +21,7 @@ public struct ThemeToggleStyle: ToggleStyle {
     /// - Parameter configuration: The label and binding provided by the `Toggle`.
     public func makeBody(configuration: Configuration) -> some View {
         Button {
-            withAnimation(theme.motion.standardAnimation) {
-                configuration.isOn.toggle()
-            }
+            configuration.isOn.toggle()
         } label: {
             HStack(spacing: theme.spacing.oneAndHalfUnits) {
                 configuration.label
@@ -33,6 +32,7 @@ public struct ThemeToggleStyle: ToggleStyle {
             }
         }
         .buttonStyle(.plain)
+        .animation(theme.motion.animation(reducingMotion: reduceMotion), value: configuration.isOn)
         .opacity(isEnabled ? 1 : theme.motion.disabledOpacity)
         .accessibilityRepresentation {
             Toggle(isOn: configuration.$isOn) {
