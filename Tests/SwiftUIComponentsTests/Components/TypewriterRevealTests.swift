@@ -44,5 +44,6 @@ struct TypewriterRevealTests {
     func batchesAtHighRates() {
         #expect(TypewriterRevealPacing.charactersPerTick(charactersPerSecond: 600) == 10)
         #expect(TypewriterRevealPacing.tickInterval(charactersPerSecond: 600) == .seconds(10.0 / 600.0))
+        #expect(TypewriterRevealPacing.charactersPerTick(charactersPerSecond: .max) > 0)
     }
 }

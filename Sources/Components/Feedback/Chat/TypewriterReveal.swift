@@ -81,7 +81,8 @@ enum TypewriterRevealPacing {
     /// Characters revealed on each update for the requested rate, at least one.
     nonisolated static func charactersPerTick(charactersPerSecond: Int) -> Int {
         let rate = max(charactersPerSecond, 1)
-        return max(1, (rate + maximumTicksPerSecond - 1) / maximumTicksPerSecond)
+        // Ceiling division without adding to `rate`, which could overflow for Int.max.
+        return 1 + (rate - 1) / maximumTicksPerSecond
     }
 
     /// Time between updates, chosen so `charactersPerTick` characters per update
