@@ -4,14 +4,14 @@ Themeable, cross-platform SwiftUI views and modifiers built on top of `DesignSys
 
 ## Overview
 
-`Components` provides production-ready UI building blocks — buttons, inputs, badges, cards, and layout containers — that automatically adapt to whatever `Theme` is injected through the environment.
+`Components` provides production-ready UI building blocks — buttons, inputs, list rows, avatars, progress, cards, layout containers, paging, carousels, feedback states, and chat UI — that automatically adapt to whatever `Theme` is injected through the environment.
 
 ### Interactive Showcase
 
-Clone the repository and run the **ComponentShowcase** executable target to interact with every component live:
+Clone the repository and open the package in Xcode to interact with every component live. `ComponentShowcase` is a library target: preview `ShowcaseRootView` (or any `*DetailView`) in the canvas, or host `ShowcaseRootView()` from a scratch app target.
 
 ```bash
-open Package.swift   # Opens in Xcode — select the ComponentShowcase scheme and run
+open Package.swift   # Opens in Xcode
 ```
 
 ## Topics
@@ -30,6 +30,7 @@ open Package.swift   # Opens in Xcode — select the ComponentShowcase scheme an
 ### Controls
 
 - ``SearchBar``
+- ``TextInputField``
 - ``ThemeToggleStyle``
 
 ### Selection
@@ -47,6 +48,8 @@ open Package.swift   # Opens in Xcode — select the ComponentShowcase scheme an
 ### Indicators
 
 - ``Badge``
+- ``AvatarView``
+- ``ThemeProgressViewStyle``
 
 ### Typography
 
@@ -72,6 +75,12 @@ open Package.swift   # Opens in Xcode — select the ComponentShowcase scheme an
 - ``ContainerStyle``
 - ``FlowLayout``
 - ``SectionHeader``
+- ``ListRow``
+
+### Navigation
+
+- ``DismissToolbarButton``
+- ``ConfirmToolbarButton``
 
 ### Pagination
 
@@ -103,6 +112,7 @@ open Package.swift   # Opens in Xcode — select the ComponentShowcase scheme an
 - ``LoadingView``
 - ``GhostLoadingBlock``
 - ``AsyncContentView``
+- ``LoadMoreFooter``
 - ``ErrorBanner``
 - ``ErrorSection``
 - ``NoticeCard``
