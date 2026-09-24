@@ -1,6 +1,7 @@
 import Foundation
 
 /// Typed access to localized strings stored in the package string catalog.
+@usableFromInline
 enum Strings {
     enum Toolbar {
         static let close = LocalizedStringResource(
@@ -27,7 +28,9 @@ enum Strings {
         }
     }
 
+    @usableFromInline
     enum Search {
+        @usableFromInline
         static let placeholder = LocalizedStringResource(
             "Search",
             bundle: .atURL(Bundle.module.bundleURL),
