@@ -136,6 +136,13 @@ Buttons:
 
 Search:
     SearchBar(text: $query, placeholder: "Search", isFocused: $isFocused, onSubmit: { })
+    SearchBar(text: $query)   // placeholder nil → the package's localized "Search"
+
+Labeled text field (title above, helper or error text below; error wins and is read to VoiceOver):
+    TextInputField("Email", text: $email, prompt: "name@example.com",
+                   helperText: "Used for sign-in only.", errorMessage: emailError)   // errorMessage: String?
+    TextInputField("Password", text: $password, isSecure: true)
+    // Apply .textContentType / .keyboardType / .submitLabel to the TextInputField; they flow through.
 
 Toggle:
     Toggle("Label", isOn: $isOn).toggleStyle(ThemeToggleStyle())
@@ -144,11 +151,26 @@ Badge:
     Badge("New")                    // standard
     Badge("Pro", isProminent: true) // primary color fill
 
+Avatar (circular; image, else initials of `name`, else a person symbol; VoiceOver label = name):
+    AvatarView(name: "Ada Lovelace")                          // "AL" monogram, .medium
+    AvatarView(name: member.name, image: photo, size: .large) // sizes: .small | .medium | .large
+
+Linear progress (a ProgressViewStyle; nil fractionCompleted sweeps, static under Reduce Motion):
+    ProgressView("Uploading", value: sent, total: size)
+        .progressViewStyle(ThemeProgressViewStyle())
+    ProgressView().progressViewStyle(ThemeProgressViewStyle(tint: theme.colors.success))
+
+List row (leading symbol + title/subtitle + any trailing accessory; min hit-target height):
+    ListRow("Storage", subtitle: "12 items", systemImage: "internaldrive") { Text("1.2 GB") }
+    ListRow("Notifications", systemImage: "bell") { Toggle("Notifications", isOn: $on).labelsHidden() }
+    NavigationLink { Detail() } label: { ListRow("About", systemImage: "info.circle") }
+
 Filter chip:
     PillChip("Label", isSelected: isSelected) { /* action */ }
     ActionPill(action: openItem) { HStack { Text("Type").bold(); Text("Value") } }
 
-Picker (item must conform to MenuPickerItem: Hashable & Identifiable, var title: String):
+Picker (item must conform to MenuPickerItem: Hashable & Identifiable, var title: String; the package
+ships no conformances for Int/String — wrap them in your own type):
     MenuPicker(items: allItems, currentValue: $selected)
     MenuPicker(items: allItems, currentValue: $selected, onWidthChange: { newWidth in pickerWidth = newWidth })
     // preferredStyle: .automatic (default) falls back to a wheel sheet past ~30 items; .menu always
@@ -176,6 +198,9 @@ Selection list (for `.sheet`/drawer or inline; single- or multiple-choice; rows 
 
 Segmented picker (horizontal, single-selection; scrolls with fading edges when overflowing; auto-scrolls active segment into view):
     SegmentedPicker(items: Filter.allCases, selection: $filter)
+    SegmentedPicker(items: tabs, selection: $tab, sizing: .fillProportionally, density: .compact)
+    // sizing: .fit (default) | .fillEqually | .fillProportionally   density: .regular (44pt) | .compact (~32pt)
+    SegmentedPicker(items: tabs, selection: $tab) { tab in tab.unread > 0 ? "\(tab.unread)" : nil } // badge; "" = dot
     SegmentedPicker(items: tabs, selection: $tab) { tab, _ in
         HStack { Image(systemName: tab.systemImage); Text(tab.title) }
     }
@@ -184,7 +209,7 @@ Carousel row (horizontal, browse-only; reveals a sliver of the next item; edge-f
     CarouselRow(apps) { app in FeaturedCard(app) }                     // Identifiable convenience
     CarouselRow(values, id: \.self, sizing: .peek(visibleCount: 2)) { v in Card(v) }
     CarouselRow(icons, sizing: .fixedWidth(120), snapping: .free) { i in Tile(i) }
-    CarouselRow(apps, rows: 2, rowHeight: 180) { app in Card(app) }    // stacked rows require rowHeight
+    CarouselRow(apps, rows: 2, rowHeight: 180) { app in Card(app) }    // stacked rows need rowHeight (else: one row + logged fault)
     // sizing: .peek(visibleCount:peek:) (default, one item + sliver) | .fixedWidth(_) | .fitContent
     // snapping: .viewAligned (default, snaps + keeps peek) | .free (momentum only)
     // rows: defaults to 1; set rowHeight whenever rows > 1
@@ -231,6 +256,7 @@ Feedback:
     }
     ErrorBanner("Something went wrong.")
     ErrorSection(message: "Could not load data.")
+    LoadMoreFooter(triggerID: hasMore ? nextCursor : nil, isLoadingMore: isLoading) { loadMore() } // after the last row
 
 Toast (transient overlay; roles: .info | .success | .warning | .error):
     ToastView("Saved", role: .success)               // standalone card
@@ -308,20 +334,28 @@ Motion tokens:
 
 ### Common Patterns
 
-Filter chip group:
-    ScrollView(.horizontal, showsIndicators: false) {
-        HStack(spacing: theme.spacing.oneUnit) {
-            ForEach(filters) { f in
-                PillChip(f.label, isSelected: selected == f) { selected = f }
-            }
+Filter chip group (wrapping; use a horizontal ScrollView + HStack instead for a single scrolling line):
+    FlowLayout(spacing: theme.spacing.oneUnit, lineSpacing: theme.spacing.oneUnit) {
+        ForEach(filters) { f in
+            PillChip(f.label, isSelected: selected == f) { selected = f }
         }
-        .padding(.horizontal, theme.spacing.twoUnits)
     }
 
 Themed text field:
-    TextField("Email", text: $email)
+    TextInputField("Email", text: $email, errorMessage: emailError)   // labeled, with validation text
+    TextField("Email", text: $email)                                  // bare field on the input surface
         .padding(theme.spacing.oneAndHalfUnits)
         .designInputSurface()
+
+Async screen with pagination:
+    AsyncContentView(state: viewModel.state) { items in
+        LazyVStack {
+            ForEach(items) { ListRow($0.title, subtitle: $0.detail) }
+            LoadMoreFooter(triggerID: viewModel.nextCursor, isLoadingMore: viewModel.isLoadingMore) {
+                viewModel.loadMore()
+            }
+        }
+    } loadingContent: { LoadingView() } errorContent: { ErrorBanner($0.localizedDescription) }
 
 Loading / empty / content:
     if isLoading { LoadingView("Fetching…") }
@@ -332,13 +366,14 @@ Loading / empty / content:
 
 Use the showcase for reference, not reuse:
     // Good: copy interaction patterns from ComponentShowcase into app code using Components APIs.
-    // Avoid: importing ComponentShowcase into the app target.
+    // Good: host `ShowcaseRootView()` in a scratch/debug app target to browse every component live.
+    // Avoid: importing ComponentShowcase into the shipping app target.
 
 ### Accessibility & Localization
 
 - Components include VoiceOver support out of the box (labels, traits, hidden decorations, Reduce Motion, adjustable/scroll actions on paged + segmented controls).
-- The package localizes only its own chrome (dismiss button, loading/typing announcements, error prefix, paginator + clear-search labels) via a String Catalog in `Bundle.module`; supported locales are translated and validated in CI.
-- Content you pass in is rendered verbatim and is your app's responsibility to localize: `ThemeButton` titles, `SearchBar` placeholder, `SelectionNode` titles, `ConfirmToolbarButton` accessibility label. Pass already-localized values (e.g. `String(localized:)`).
+- The package localizes only its own chrome (dismiss button, loading/typing announcements, chat speaker names, default search placeholder, error prefix, paginator + clear-search labels) via a String Catalog in `Bundle.module`; supported locales are translated and validated in CI.
+- Content you pass in is rendered verbatim and is your app's responsibility to localize: `ThemeButton` titles, a custom `SearchBar` placeholder, `SelectionNode` titles, `TextInputField` titles and messages, `ListRow` text, `AvatarView` names, `ConfirmToolbarButton` accessibility label. Pass already-localized values (e.g. `String(localized:)`).
 
 ### Do Not
 
@@ -347,6 +382,8 @@ Use the showcase for reference, not reuse:
 - Don't access `theme.colors` or `theme.typography` outside @MainActor — they are @MainActor-isolated.
 - Don't skip `.designTheme()` — a default exists but won't match your brand.
 - Don't conform `MenuPickerItem` items with only `Identifiable` — `Hashable` is also required.
+- Don't pass `Int`/`String` ranges straight to `MenuPicker`/`SegmentedPicker` — the package ships no stdlib conformances; wrap values in your own `MenuPickerItem` type.
+- Don't hand-roll a title-above-field form input or a settings row — use `TextInputField` and `ListRow`.
 - Don't put reusable shipping components in the showcase target — promote them into `Components` first.
 - Don't pass a String literal to ThemeButton's @ViewBuilder init — use the String convenience init.
 - Don't pass unlocalized literals as component content (titles, placeholders, accessibility labels) — these are rendered verbatim, so localize them on your side.
