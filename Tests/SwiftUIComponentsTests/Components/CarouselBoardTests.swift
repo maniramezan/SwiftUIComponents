@@ -135,3 +135,18 @@ func duplicateShelfTitlesStayDistinct() {
     ]).map(\.id)
     #expect(Set(ids).count == 2)
 }
+
+@MainActor
+@Test("Explicit shelf identity survives title changes for every initializer")
+func explicitShelfIDSurvivesTitleChanges() {
+    let keyed = CarouselShelf("Original", shelfID: "stable", items: [1], id: \.self) { Text("\($0)") }
+    let identifiable = CarouselShelf("Renamed", shelfID: "stable", items: CarouselTestItem.samples) {
+        Text($0.title)
+    }
+    let custom = CarouselShelf("Localized", shelfID: "stable") { Color.clear }
+    #expect(keyed.shelfID == identifiable.shelfID)
+    #expect(identifiable.shelfID == custom.shelfID)
+    let ids = IdentifiedCarouselShelf.identify([keyed])
+    let renamedIDs = IdentifiedCarouselShelf.identify([custom])
+    #expect(ids[0].id == renamedIDs[0].id)
+}

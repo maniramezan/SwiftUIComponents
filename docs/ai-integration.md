@@ -191,7 +191,7 @@ Carousel row (horizontal, browse-only; reveals a sliver of the next item; edge-f
 
 Carousel board (App-Store-style two-directional layout: vertical shelves, each scrolls horizontally):
     CarouselBoard {
-        CarouselShelf("Featured", items: apps) { app in FeaturedCard(app) }          // peeking
+        CarouselShelf("Featured", shelfID: "featured", items: apps) { app in FeaturedCard(app) } // peeking
         CarouselShelf("Top Free", items: apps, actionLabel: "See All",               // fixed tiles + action
                       sizing: .fixedWidth(120), onSeeAll: { openAll() }) { app in IconTile(app) }
         CarouselShelf("Continue Watching", items: videos, rows: 2, rowHeight: 180,
@@ -200,6 +200,7 @@ Carousel board (App-Store-style two-directional layout: vertical shelves, each s
         CarouselShelf("Editor's Pick") { EditorsBanner() }                           // fully custom row
     }
     // Shelves are heterogeneous — each may carry its own item type and item view.
+    // Use unique shelfID values when titles can change or repeat; nil defaults to the title.
     // Use CarouselBoardContent (no inner ScrollView) to embed shelves in a scroll you already own.
 
 Container:
