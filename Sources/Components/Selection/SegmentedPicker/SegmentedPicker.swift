@@ -2,26 +2,6 @@ import DesignSystem
 import OSLog
 import SwiftUI
 
-/// Controls how a ``SegmentedPicker`` sizes its segments along the horizontal axis.
-public enum SegmentSizing {
-    /// Each segment sizes to fit its content (default).
-    case fit
-    /// All segments expand to an equal width, together filling the available space.
-    case fillEqually
-    /// Segments fill the available width while remaining proportional to their intrinsic content sizes.
-    case fillProportionally
-}
-
-/// Controls the vertical density (height) of a ``SegmentedPicker``.
-public enum SegmentDensity {
-    /// Standard height with a 44pt minimum tap target (default).
-    case regular
-    /// Reduced height (~32pt), matching the platform's native segmented control.
-    /// The tap target shrinks with the control, so prefer ``regular`` where a
-    /// generous tap area matters.
-    case compact
-}
-
 /// A horizontally laid-out, single-selection picker that renders each segment
 /// using a caller-supplied view builder.
 ///
@@ -69,12 +49,6 @@ public struct SegmentedPicker<Item: MenuPickerItem, Label: View>: View {
     private let label: (Item, Bool) -> Label
     private let sizing: SegmentSizing
     private let density: SegmentDensity
-
-    @State private var geometry = ScrollGeometrySnapshot()
-
-    @Environment(\.designTheme) private var theme
-    @Environment(\.layoutDirection) private var layoutDirection
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     nonisolated private static var logger: Logger {
         Logger(subsystem: "com.swiftuicomponents", category: "SegmentedPicker")
@@ -317,7 +291,12 @@ private struct SegmentedPickerRow<Item: MenuPickerItem, Label: View>: View {
     @Environment(\.designTheme) private var theme
 
     var body: some View {
-        HStack(spacing: theme.spacing.halfUnit) {
+        // `AnyLayout` keeps the segments' identity stable if `sizing` changes at runtime.
+        let layout =
+            sizing == .fillProportionally
+            ? AnyLayout(ProportionalHStackLayout(spacing: theme.spacing.halfUnit))
+            : AnyLayout(HStackLayout(spacing: theme.spacing.halfUnit))
+        layout {
             ForEach(items) { item in
                 SegmentedPickerSegment(
                     item: item,
@@ -372,7 +351,9 @@ private struct SegmentedPickerSegment<Item: MenuPickerItem, Label: View>: View {
                 .font(theme.typography.control)
                 .lineLimit(1)
                 .fixedSize(horizontal: sizing == .fit, vertical: false)
-                .frame(maxWidth: sizing == .fillEqually ? .infinity : nil)
+                // Both fill modes let a segment take the width it is offered: an `HStack`
+                // shares the space equally, `ProportionalHStackLayout` hands out scaled widths.
+                .frame(maxWidth: sizing == .fit ? nil : .infinity)
                 .padding(.horizontal, theme.spacing.oneAndHalfUnits)
                 .padding(.vertical, density == .compact ? theme.spacing.halfUnit : theme.spacing.oneUnit)
                 .overlay(alignment: .topTrailing) {
@@ -500,31 +481,50 @@ extension SegmentedPicker {
 
 // MARK: - Preview
 
+/// Numbered sample segment for previews.
+private struct PreviewSegment: MenuPickerItem {
+    let id: Int
+    var title: String { id.isMultiple(of: 3) ? "Segment \(id)" : "Item \(id)" }
+
+    static func range(_ range: ClosedRange<Int>) -> [PreviewSegment] {
+        range.map { PreviewSegment(id: $0) }
+    }
+}
+
 #Preview("Segmented Picker") {
-    @Previewable @State var compactSelection: Int = 2
-    @Previewable @State var overflowSelection: Int = 5
-    @Previewable @State var fullWidthSelection: Int = 2
+    @Previewable @State var compactSelection = PreviewSegment(id: 2)
+    @Previewable @State var overflowSelection = PreviewSegment(id: 5)
+    @Previewable @State var fullWidthSelection = PreviewSegment(id: 2)
+    @Previewable @State var proportionalSelection = PreviewSegment(id: 1)
 
     PreviewContent { theme in
         VStack(alignment: .leading, spacing: theme.spacing.threeUnits) {
             Text("Fits in the row")
                 .designTextStyle(.headline)
-            SegmentedPicker(items: 1...4, selection: $compactSelection)
+            SegmentedPicker(items: PreviewSegment.range(1...4), selection: $compactSelection)
 
             Text("Fill equally")
                 .designTextStyle(.headline)
-            SegmentedPicker(items: 1...4, selection: $fullWidthSelection, sizing: .fillEqually)
+            SegmentedPicker(items: PreviewSegment.range(1...4), selection: $fullWidthSelection, sizing: .fillEqually)
+
+            Text("Fill proportionally")
+                .designTextStyle(.headline)
+            SegmentedPicker(
+                items: PreviewSegment.range(1...4),
+                selection: $proportionalSelection,
+                sizing: .fillProportionally
+            )
 
             Text("Scrolls horizontally")
                 .designTextStyle(.headline)
-            SegmentedPicker(items: 1...12, selection: $overflowSelection)
+            SegmentedPicker(items: PreviewSegment.range(1...12), selection: $overflowSelection)
         }
         .padding(theme.spacing.twoUnits)
     }
 }
 
 #Preview("Segmented Picker — Badges") {
-    @Previewable @State var selection: Int = 1
+    @Previewable @State var selection = PreviewSegment(id: 1)
 
     let badgeCounts: [Int: String] = [2: "3", 4: "", 5: "99+"]
 
@@ -532,8 +532,8 @@ extension SegmentedPicker {
         VStack(alignment: .leading, spacing: theme.spacing.threeUnits) {
             Text("Count badge, dot badge, no badge")
                 .designTextStyle(.headline)
-            SegmentedPicker(items: 1...6, selection: $selection) { item in
-                badgeCounts[item]
+            SegmentedPicker(items: PreviewSegment.range(1...6), selection: $selection) { item in
+                badgeCounts[item.id]
             }
         }
         .padding(theme.spacing.twoUnits)
