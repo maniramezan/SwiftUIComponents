@@ -21,9 +21,7 @@ public struct ThemeToggleStyle: ToggleStyle {
     /// - Parameter configuration: The label and binding provided by the `Toggle`.
     public func makeBody(configuration: Configuration) -> some View {
         Button {
-            withAnimation(theme.motion.animation(reducingMotion: reduceMotion)) {
-                configuration.isOn.toggle()
-            }
+            configuration.isOn.toggle()
         } label: {
             HStack(spacing: theme.spacing.oneAndHalfUnits) {
                 configuration.label
@@ -34,6 +32,7 @@ public struct ThemeToggleStyle: ToggleStyle {
             }
         }
         .buttonStyle(.plain)
+        .animation(theme.motion.animation(reducingMotion: reduceMotion), value: configuration.isOn)
         .opacity(isEnabled ? 1 : theme.motion.disabledOpacity)
         .accessibilityRepresentation {
             Toggle(isOn: configuration.$isOn) {
