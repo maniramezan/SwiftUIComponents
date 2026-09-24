@@ -35,7 +35,7 @@ public struct CarouselShelf: CarouselShelfConvertible {
     /// initializer and its `View`/`Hashable` conformance requirements.
     private let makeRow: @MainActor () -> AnyView
 
-    /// A stable identifier derived from the shelf title.
+    /// A stable shelf identifier. Defaults to the title unless the caller supplies one.
     public let shelfID: AnyHashable
 
     // MARK: - Data-backed initializers
@@ -45,6 +45,8 @@ public struct CarouselShelf: CarouselShelfConvertible {
     /// - Parameters:
     ///   - title: The shelf's header title. Rendered verbatim — localize before
     ///     passing.
+    ///   - shelfID: Stable identity for this shelf. When `nil`, the title is used.
+    ///     Supply an explicit unique value when titles can change or repeat.
     ///   - items: The items shown in the shelf's row.
     ///   - id: A key path to a stable, hashable identifier for each item.
     ///   - actionLabel: Optional trailing action title (e.g. "See All"). The
@@ -59,6 +61,7 @@ public struct CarouselShelf: CarouselShelfConvertible {
     @MainActor
     public init<Item, ID: Hashable, ItemContent: View>(
         _ title: String,
+        shelfID: AnyHashable? = nil,
         items: [Item],
         id: KeyPath<Item, ID>,
         actionLabel: String? = nil,
@@ -73,7 +76,7 @@ public struct CarouselShelf: CarouselShelfConvertible {
         self.actionLabel = actionLabel
         self.onSeeAll = onSeeAll
         self.titleFont = titleFont
-        self.shelfID = AnyHashable(title)
+        self.shelfID = shelfID ?? AnyHashable(title)
         self.makeRow = {
             AnyView(
                 CarouselRow(
@@ -94,6 +97,8 @@ public struct CarouselShelf: CarouselShelfConvertible {
     /// - Parameters:
     ///   - title: The shelf's header title. Rendered verbatim — localize before
     ///     passing.
+    ///   - shelfID: Stable identity for this shelf. When `nil`, the title is used.
+    ///     Supply an explicit unique value when titles can change or repeat.
     ///   - items: The items shown in the shelf's row.
     ///   - actionLabel: Optional trailing action title (e.g. "See All"). The
     ///     action appears only when both this and `onSeeAll` are non-`nil`.
@@ -106,6 +111,7 @@ public struct CarouselShelf: CarouselShelfConvertible {
     @MainActor
     public init<Item: Identifiable, ItemContent: View>(
         _ title: String,
+        shelfID: AnyHashable? = nil,
         items: [Item],
         actionLabel: String? = nil,
         sizing: CarouselItemSizing = .peek(),
@@ -117,6 +123,7 @@ public struct CarouselShelf: CarouselShelfConvertible {
     ) {
         self.init(
             title,
+            shelfID: shelfID,
             items: items,
             id: \.id,
             actionLabel: actionLabel,
@@ -137,6 +144,8 @@ public struct CarouselShelf: CarouselShelfConvertible {
     /// - Parameters:
     ///   - title: The shelf's header title. Rendered verbatim — localize before
     ///     passing.
+    ///   - shelfID: Stable identity for this shelf. When `nil`, the title is used.
+    ///     Supply an explicit unique value when titles can change or repeat.
     ///   - actionLabel: Optional trailing action title. The action appears only
     ///     when both this and `onSeeAll` are non-`nil`.
     ///   - onSeeAll: Optional handler for the trailing action.
@@ -145,6 +154,7 @@ public struct CarouselShelf: CarouselShelfConvertible {
     @MainActor
     public init<RowContent: View>(
         _ title: String,
+        shelfID: AnyHashable? = nil,
         actionLabel: String? = nil,
         onSeeAll: (() -> Void)? = nil,
         titleFont: Font? = nil,
@@ -154,7 +164,7 @@ public struct CarouselShelf: CarouselShelfConvertible {
         self.actionLabel = actionLabel
         self.onSeeAll = onSeeAll
         self.titleFont = titleFont
-        self.shelfID = AnyHashable(title)
+        self.shelfID = shelfID ?? AnyHashable(title)
         self.makeRow = { AnyView(content()) }
     }
 

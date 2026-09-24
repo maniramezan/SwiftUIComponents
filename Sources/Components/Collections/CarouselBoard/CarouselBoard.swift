@@ -76,9 +76,37 @@ public struct CarouselBoardContent: View {
     /// The SwiftUI body for the embeddable shelf stack.
     public var body: some View {
         LazyVStack(alignment: .leading, spacing: theme.spacing.threeUnits) {
-            ForEach(Array(shelves.enumerated()), id: \.offset) { _, shelf in
-                shelf.makeShelf()
+            // Keyed by `shelfID` rather than position, so a shelf inserted or removed
+            // conditionally doesn't shift every shelf below it onto a new identity (and
+            // reset their horizontal scroll positions).
+            ForEach(IdentifiedCarouselShelf.identify(shelves)) { entry in
+                entry.shelf.makeShelf()
             }
+        }
+    }
+}
+
+/// A shelf paired with a stable identity for `ForEach`.
+struct IdentifiedCarouselShelf: Identifiable {
+
+    /// The shelf's own ``CarouselShelfConvertible/shelfID`` plus how many earlier
+    /// shelves share it, so two shelves with the same title still get distinct
+    /// identities.
+    struct ID: Hashable {
+        let shelfID: AnyHashable
+        let occurrence: Int
+    }
+
+    let id: ID
+    let shelf: any CarouselShelfConvertible
+
+    /// Pairs each shelf with its identity, in order.
+    static func identify(_ shelves: [any CarouselShelfConvertible]) -> [IdentifiedCarouselShelf] {
+        var occurrences: [AnyHashable: Int] = [:]
+        return shelves.map { shelf in
+            let occurrence = occurrences[shelf.shelfID, default: 0]
+            occurrences[shelf.shelfID] = occurrence + 1
+            return IdentifiedCarouselShelf(id: ID(shelfID: shelf.shelfID, occurrence: occurrence), shelf: shelf)
         }
     }
 }
