@@ -23,13 +23,14 @@ public struct SearchBar: View {
     /// Creates a themed search bar.
     /// - Parameters:
     ///   - text: Two-way binding to the current search string.
-    ///   - placeholder: Hint text shown when the field is empty. Defaults to `"Search"`.
+    ///   - placeholder: Hint text shown when the field is empty. Defaults to the package's
+    ///     localized "Search" string.
     ///   - isFocused: Optional external binding that mirrors the field's focus state.
     ///     Pass a binding to programmatically focus or blur the field.
     ///   - onSubmit: Closure called when the user submits the search (e.g. taps Return).
     public init(
         text: Binding<String>,
-        placeholder: String = "Search",
+        placeholder: String = String(localized: Strings.Search.placeholder),
         isFocused: Binding<Bool>? = nil,
         onSubmit: (() -> Void)? = nil
     ) {
@@ -49,6 +50,7 @@ public struct SearchBar: View {
                 .font(theme.typography.field)
                 .foregroundStyle(theme.colors.textPrimary)
                 .autocorrectionDisabled()
+                .submitLabel(.search)
                 .focused($internalFocus)
                 .onSubmit { onSubmit?() }
             if !text.isEmpty {

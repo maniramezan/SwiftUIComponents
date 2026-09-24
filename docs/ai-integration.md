@@ -135,7 +135,7 @@ Buttons:
     Button("Label") { }.buttonStyle(ThemeButtonStyle(role: .primary))
 
 Search:
-    SearchBar(text: $query, placeholder: "Search", isFocused: $isFocused, onSubmit: { })
+    SearchBar(text: $query, isFocused: $isFocused, onSubmit: { }) // localized placeholder by default
 
 Toggle:
     Toggle("Label", isOn: $isOn).toggleStyle(ThemeToggleStyle())

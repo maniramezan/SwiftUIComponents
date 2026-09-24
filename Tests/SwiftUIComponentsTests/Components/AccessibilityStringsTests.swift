@@ -40,4 +40,16 @@ struct AccessibilityStringsTests {
         let resolved = String(localized: Strings.FlipCard.flipHint)
         #expect(resolved == "Double tap to flip the card")
     }
+
+    @Test("chat speaker labels resolve per role")
+    func chatSpeakerLabels() {
+        #expect(String(localized: Strings.Chat.speaker(.user)) == "You")
+        #expect(String(localized: Strings.Chat.speaker(.assistant)) == "Assistant")
+        #expect(String(localized: Strings.Chat.speaker(.system)) == "System")
+    }
+
+    @Test("default search placeholder resolves to \"Search\"")
+    func searchPlaceholder() {
+        #expect(String(localized: Strings.Search.placeholder) == "Search")
+    }
 }
