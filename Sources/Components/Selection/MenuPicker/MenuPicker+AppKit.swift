@@ -19,6 +19,7 @@ import SwiftUI
         func makeNSView(context: Context) -> NSPopUpButton {
             let button = NSPopUpButton(frame: .zero, pullsDown: false)
             button.translatesAutoresizingMaskIntoConstraints = false
+            button.alignment = .center
             button.setContentHuggingPriority(.required, for: .horizontal)
             button.setContentCompressionResistancePriority(.required, for: .horizontal)
             button.target = context.coordinator
@@ -32,14 +33,17 @@ import SwiftUI
         func updateNSView(_ view: NSPopUpButton, context: Context) {
             context.coordinator.items = items
             view.removeAllItems()
-            for item in items {
+            var selectedIndex: Int?
+            for (index, item) in items.enumerated() {
                 view.addItem(withTitle: item.title)
+                if selectedIndex == nil, item.id == currentValue.id {
+                    selectedIndex = index
+                }
             }
-            if let index = items.firstIndex(where: { $0.id == currentValue.id }) {
-                view.selectItem(at: index)
+            if let selectedIndex {
+                view.selectItem(at: selectedIndex)
             }
             view.font = triggerFont
-            view.alignment = .center
             view.sizeToFit()
             context.coordinator.widthConstraint?.constant = width
         }
