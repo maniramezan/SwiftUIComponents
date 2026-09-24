@@ -20,6 +20,7 @@ done
 swift package resolve
 swift format lint --configuration .swift-format --recursive --strict --parallel Sources Tests
 python3 Scripts/check-localizations.py
+python3 -m unittest discover -s Scripts/tests -p "test_check_doc_comments.py"
 python3 Scripts/check-doc-comments.py
 swift build -Xswiftc -warnings-as-errors
 # Run all tests except ComponentSnapshotTests, which always exits non-zero
