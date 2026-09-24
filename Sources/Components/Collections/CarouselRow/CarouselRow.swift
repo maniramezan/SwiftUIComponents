@@ -1,4 +1,5 @@
 import DesignSystem
+import OSLog
 import SwiftUI
 
 /// A horizontally scrolling row of items that reveals a sliver of the next item
@@ -50,6 +51,10 @@ where Data: RandomAccessCollection, ID: Hashable, Content: View {
     @Environment(\.layoutDirection) var layoutDirection
     @Environment(\.accessibilityReduceMotion) var reduceMotion
 
+    nonisolated private static var logger: Logger {
+        Logger(subsystem: "com.swiftuicomponents", category: "CarouselRow")
+    }
+
     // MARK: - Initializer
 
     /// Creates a carousel row over a collection keyed by an explicit key path.
@@ -67,7 +72,8 @@ where Data: RandomAccessCollection, ID: Hashable, Content: View {
     ///     top-to-bottom before advancing horizontally. Values below `1` are
     ///     clamped to `1`. Defaults to a single row.
     ///   - rowHeight: The height of one row. Required when `rows` is greater
-    ///     than `1` so the horizontal grid has a bounded height; ignored for a
+    ///     than `1` so the horizontal grid has a bounded height — without it the
+    ///     row logs a fault and lays items out in a single row. Ignored for a
     ///     single row, which sizes to its tallest item.
     ///   - content: A view builder invoked for each item.
     public init(
@@ -80,10 +86,14 @@ where Data: RandomAccessCollection, ID: Hashable, Content: View {
         rowHeight: CGFloat? = nil,
         @ViewBuilder content: @escaping (Data.Element) -> Content
     ) {
-        precondition(
-            rows <= 1 || rowHeight != nil,
-            "CarouselRow requires a rowHeight when rows is greater than 1."
-        )
+        if rows > 1, rowHeight == nil {
+            // Log rather than trap: a missing height should degrade to a single row in a
+            // shipping app, not crash it. `CarouselRowLane` already falls back when
+            // `rowHeight` is `nil`.
+            Self.logger.fault(
+                "CarouselRow needs a rowHeight when rows is \(rows, privacy: .public); showing one row."
+            )
+        }
         self.items = items
         self.idKeyPath = id
         self.sizing = sizing

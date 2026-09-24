@@ -109,3 +109,29 @@ func boardMixesHeterogeneousShelves() {
         CarouselShelf("Numbers", items: [1, 2, 3], id: \.self) { Text("\($0)") }
     }
 }
+
+// MARK: - Shelf identity
+
+@MainActor
+@Test("Shelf identity follows shelfID, not position")
+func shelfIdentityFollowsShelfID() {
+    let withBanner = IdentifiedCarouselShelf.identify([
+        CarouselShelf("Banner") { Color.clear },
+        CarouselShelf("Featured") { Color.clear },
+    ])
+    let withoutBanner = IdentifiedCarouselShelf.identify([
+        CarouselShelf("Featured") { Color.clear }
+    ])
+    // Removing the shelf above must not change the identity of the one below.
+    #expect(withBanner[1].id == withoutBanner[0].id)
+}
+
+@MainActor
+@Test("Shelves sharing a title still get distinct identities")
+func duplicateShelfTitlesStayDistinct() {
+    let ids = IdentifiedCarouselShelf.identify([
+        CarouselShelf("Same") { Color.clear },
+        CarouselShelf("Same") { Color.clear },
+    ]).map(\.id)
+    #expect(Set(ids).count == 2)
+}
