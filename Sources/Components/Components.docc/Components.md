@@ -84,6 +84,7 @@ open Package.swift   # Opens in Xcode — select the ComponentShowcase scheme an
 - ``TitledPageSwipeHintConfig``
 - ``SegmentedPicker``
 - ``SegmentSizing``
+- ``SegmentDensity``
 
 ### Collections
 
