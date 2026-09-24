@@ -28,9 +28,7 @@ struct ListRowDetailView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: theme.spacing.twoUnits) {
             ShowcaseSection("Configurable row") {
-                Button {
-                    tapCount += 1
-                } label: {
+                if accessory == .toggle {
                     ListRow(
                         title,
                         subtitle: showsSubtitle ? subtitle : nil,
@@ -39,10 +37,25 @@ struct ListRowDetailView: View {
                     ) {
                         ListRowDetailAccessory(kind: accessory, isOn: $isOn)
                     }
+                    .padding(.horizontal, theme.spacing.oneAndHalfUnits)
+                    .designCardSurface()
+                } else {
+                    Button {
+                        tapCount += 1
+                    } label: {
+                        ListRow(
+                            title,
+                            subtitle: showsSubtitle ? subtitle : nil,
+                            systemImage: showsIcon ? "internaldrive" : nil,
+                            iconTint: usesCustomTint ? theme.colors.warning : nil
+                        ) {
+                            ListRowDetailAccessory(kind: accessory, isOn: $isOn)
+                        }
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.horizontal, theme.spacing.oneAndHalfUnits)
+                    .designCardSurface()
                 }
-                .buttonStyle(.plain)
-                .padding(.horizontal, theme.spacing.oneAndHalfUnits)
-                .designCardSurface()
 
                 Text("Row taps: \(tapCount)")
                     .designTextStyle(.caption)
