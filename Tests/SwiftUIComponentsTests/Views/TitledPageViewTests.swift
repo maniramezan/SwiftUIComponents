@@ -741,3 +741,15 @@ func stepScrollAdvancesActivePage() {
     scrollView.stepScroll(edge: .trailing)
     #expect(jumpedTo == 1)
 }
+
+@Test("Resolved styles differing only in a color or leading inset are not equal")
+@MainActor
+func resolvedStyleEqualityCoversAllValues() {
+    let theme = DefaultTheme()
+    let base = TitledPageViewMath.resolveStyle(override: PaginationStyle(), theme: theme)
+    let inset = TitledPageViewMath.resolveStyle(override: PaginationStyle(titleLeadingPadding: 24), theme: theme)
+    let tinted = TitledPageViewMath.resolveStyle(override: PaginationStyle(titleColor: .red), theme: theme)
+    #expect(base == TitledPageViewMath.resolveStyle(override: PaginationStyle(), theme: theme))
+    #expect(base != inset)
+    #expect(base != tinted)
+}
