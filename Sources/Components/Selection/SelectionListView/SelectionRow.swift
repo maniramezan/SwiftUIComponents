@@ -53,7 +53,7 @@ struct SelectionRow: View {
 ///
 /// A dedicated `View` type — rather than an inline computed property — so
 /// SwiftUI can diff and update it independently of the enclosing `Button`.
-private struct SelectionRowContent: View {
+struct SelectionRowContent: View {
     let title: String
     let subtitle: String?
     let leadingGlyph: String?
@@ -62,6 +62,7 @@ private struct SelectionRowContent: View {
     let disclosure: Bool?
 
     @Environment(\.designTheme) private var theme
+    @Environment(\.layoutDirection) private var layoutDirection
 
     var body: some View {
         HStack(spacing: theme.spacing.oneAndHalfUnits) {
@@ -92,12 +93,23 @@ private struct SelectionRowContent: View {
                     .font(theme.typography.subheadline)
                     .fontWeight(.semibold)
                     .foregroundStyle(theme.colors.textSecondary)
-                    .rotationEffect(.degrees(disclosure ? 90 : 0))
+                    .rotationEffect(.degrees(disclosure ? Self.expandedRotation(for: layoutDirection) : 0))
                     .accessibilityHidden(true)
             }
         }
         .padding(.leading, isIndented ? theme.spacing.twoUnits : 0)
         .contentShape(Rectangle())
         .frame(minHeight: theme.motion.minimumHitTarget)
+    }
+}
+
+extension SelectionRowContent {
+    /// Degrees that turn the `chevron.forward` glyph to point down when expanded.
+    ///
+    /// The glyph mirrors to point left under a right-to-left layout while
+    /// `rotationEffect` does not, so the rotation flips sign to still end up
+    /// pointing down.
+    nonisolated static func expandedRotation(for layoutDirection: LayoutDirection) -> Double {
+        layoutDirection == .rightToLeft ? -90 : 90
     }
 }
