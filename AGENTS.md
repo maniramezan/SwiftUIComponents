@@ -99,7 +99,7 @@ SwiftUI only builds on Apple platforms. In a Linux container (for example a clou
 - Hosted rendering goes through `renderForCoverage(_:size:)` (`Tests/SwiftUIComponentsTests/Support/ViewRenderingSupport.swift`); use `@testable import Components` to reach internal math helpers.
 
 ## Before You Finish
-- New public API: `///` docs, DocC topic in `Components.md`/`DesignSystem.md`, an entry in `docs/ai-integration.md`, a showcase page with live controls, and tests. The `new-component` skill (`.claude/skills/new-component/SKILL.md`) walks through it.
+- New public API: `///` docs, DocC topic in `Components.md`/`DesignSystem.md`, an entry in `docs/ai-integration.md`, a showcase page with live controls, and tests. The `new-component` skill (`.agents/skills/new-component/SKILL.md`) walks through it.
 - Behavior change or fix: a regression test, and a Conventional Commit whose type matches (`fix:` vs `feat:`; `!` for source-breaking changes).
 - Search the diff for product/domain leakage (see **Product Isolation**).
 
