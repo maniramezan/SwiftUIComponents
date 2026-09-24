@@ -43,14 +43,14 @@ public struct SelectionListView<ID: Hashable>: View {
     ///   - nodes: The root nodes to display. Leaves select directly; parents expand inline.
     ///   - selectedID: Identifier of the currently selected leaf or child, marked with a checkmark. Pass `nil` for no selection.
     ///   - isSearchable: When `true`, shows an inline search field that filters across both levels. Defaults to `false`.
-    ///   - searchPlaceholder: Hint shown in the search field when it is empty. Defaults to `"Search"`.
+    ///   - searchPlaceholder: Hint shown in the search field when it is empty. When `nil` (the default), a localized "Search" is shown.
     ///   - onSelect: Closure invoked with the chosen leaf or child identifier. Replace the selection and perform your own dismissal here.
     public init(
         title: String,
         nodes: some RandomAccessCollection<SelectionNode<ID>>,
         selectedID: ID? = nil,
         isSearchable: Bool = false,
-        searchPlaceholder: String = "Search",
+        searchPlaceholder: String? = nil,
         onSelect: @escaping (ID) -> Void
     ) {
         self.title = title
@@ -69,14 +69,14 @@ public struct SelectionListView<ID: Hashable>: View {
     ///   - nodes: The root nodes to display. Leaves select directly; parents expand inline.
     ///   - selectedIDs: Identifiers of the currently selected leaves or children, each marked with a checkmark.
     ///   - isSearchable: When `true`, shows an inline search field that filters across both levels. Defaults to `false`.
-    ///   - searchPlaceholder: Hint shown in the search field when it is empty. Defaults to `"Search"`.
+    ///   - searchPlaceholder: Hint shown in the search field when it is empty. When `nil` (the default), a localized "Search" is shown.
     ///   - onToggle: Closure invoked with the tapped leaf or child identifier. Toggle its membership in your selection; the view stays open.
     public init(
         title: String,
         nodes: some RandomAccessCollection<SelectionNode<ID>>,
         selectedIDs: Set<ID>,
         isSearchable: Bool = false,
-        searchPlaceholder: String = "Search",
+        searchPlaceholder: String? = nil,
         onToggle: @escaping (ID) -> Void
     ) {
         self.title = title
