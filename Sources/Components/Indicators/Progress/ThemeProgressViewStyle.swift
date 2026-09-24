@@ -92,30 +92,39 @@ private struct ThemeProgressTrack: View {
     var body: some View {
         GeometryReader { proxy in
             let width = proxy.size.width
+            let isIndeterminate = fractionCompleted == nil
+            let fillWidth =
+                width
+                * CGFloat(
+                    fractionCompleted ?? ThemeProgressMetrics.sweepWidthFraction
+                )
+
             ZStack(alignment: .leading) {
                 Capsule(style: .continuous)
                     .fill(theme.colors.containerSecondary)
-                if let fractionCompleted {
+                TimelineView(
+                    .animation(
+                        minimumInterval: 1 / 60,
+                        paused: !isIndeterminate || reduceMotion
+                    )
+                ) { context in
+                    let phase =
+                        isIndeterminate && !reduceMotion
+                        ? ThemeProgressMetrics.phase(at: context.date)
+                        : 0
+                    let offset =
+                        isIndeterminate && !reduceMotion
+                        ? ThemeProgressMetrics.sweepOffset(trackWidth: width, phase: phase)
+                        : 0
+
                     Capsule(style: .continuous)
                         .fill(tint)
-                        .frame(width: width * CGFloat(fractionCompleted))
-                        .animation(theme.motion.animation(reducingMotion: reduceMotion), value: fractionCompleted)
-                } else if reduceMotion {
-                    Capsule(style: .continuous)
-                        .fill(tint)
-                        .frame(width: width * ThemeProgressMetrics.sweepWidthFraction)
-                } else {
-                    TimelineView(.animation) { context in
-                        Capsule(style: .continuous)
-                            .fill(tint)
-                            .frame(width: width * ThemeProgressMetrics.sweepWidthFraction)
-                            .offset(
-                                x: ThemeProgressMetrics.sweepOffset(
-                                    trackWidth: width,
-                                    phase: ThemeProgressMetrics.phase(at: context.date)
-                                )
-                            )
-                    }
+                        .frame(width: fillWidth)
+                        .offset(x: offset)
+                        .animation(
+                            theme.motion.animation(reducingMotion: reduceMotion),
+                            value: fractionCompleted
+                        )
                 }
             }
             .clipShape(Capsule(style: .continuous))
