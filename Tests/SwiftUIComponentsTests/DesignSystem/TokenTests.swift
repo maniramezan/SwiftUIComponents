@@ -58,6 +58,43 @@ func motionProtocolExtensionProvidesDefaults() {
     #expect(motion.animation(reducingMotion: false) == motion.standardAnimation)
 }
 
+@Test("Default motion ships the paging and snap-back springs")
+func defaultMotionShipsInteractiveSprings() {
+    let motion = DefaultMotion()
+
+    #expect(motion.pagingSpring == .paging)
+    #expect(motion.snapBackSpring == .snapBack)
+    // A cancelled gesture is not a navigation: it settles faster and overshoots less.
+    #expect(motion.snapBackSpring.response < motion.pagingSpring.response)
+    #expect(motion.snapBackSpring.dampingFraction > motion.pagingSpring.dampingFraction)
+}
+
+@Test("DefaultMotion supports custom spring overrides")
+func defaultMotionSupportsSpringOverrides() {
+    let stiff = Spring(response: 0.1, dampingFraction: 1, blendDuration: 0)
+    let motion = DefaultMotion(pagingSpring: stiff, snapBackSpring: stiff)
+
+    #expect(motion.pagingSpring == stiff)
+    #expect(motion.snapBackSpring == stiff)
+}
+
+@Test("A minimal Motion conformer inherits the default springs")
+func motionProtocolExtensionProvidesSpringDefaults() {
+    let motion = MinimalMotion()
+
+    #expect(motion.pagingSpring == .paging)
+    #expect(motion.snapBackSpring == .snapBack)
+}
+
+@Test("A Spring materializes the matching interactive-spring animation")
+func springBuildsInteractiveSpringAnimation() {
+    let spring = Spring(response: 0.3, dampingFraction: 0.75, blendDuration: 0.2)
+
+    #expect(
+        spring.animation
+            == .interactiveSpring(response: 0.3, dampingFraction: 0.75, blendDuration: 0.2))
+}
+
 @Test("A minimal ColorTheme conformer inherits the shadow default")
 @MainActor
 func colorThemeExtensionProvidesShadowDefault() {

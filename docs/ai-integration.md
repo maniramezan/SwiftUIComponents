@@ -333,6 +333,8 @@ Modifiers:
 
 Motion tokens:
     theme.motion.animation(reducingMotion: reduceMotion)  // reduced vs standard animation
+    theme.motion.pagingSpring.animation                    // spring committing a gesture-driven page change
+    theme.motion.snapBackSpring.animation                  // spring returning content to rest after a cancelled gesture
 
 ### Common Patterns
 
