@@ -64,6 +64,7 @@ open Package.swift   # Opens in Xcode
 - ``CapsuleSurface``
 - ``InputSurface``
 - ``AdaptiveSurface``
+- ``AdaptiveSurfaceShape``
 - ``SelectableCardSurface``
 - ``FlipCard``
 - ``DisclosureCard``
