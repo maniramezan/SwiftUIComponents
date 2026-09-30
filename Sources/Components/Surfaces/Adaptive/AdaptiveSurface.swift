@@ -9,6 +9,17 @@ import SwiftUI
 ///     .designAdaptiveSurface(tint: .blue.opacity(0.2), interactive: true)
 /// ```
 ///
+/// Choose a shared outline for compact controls, with an optional border on material fallbacks:
+///
+/// ```swift
+/// Image(systemName: "chevron.forward")
+///     .padding()
+///     .designAdaptiveSurface(interactive: true, shape: .circle)
+/// Text("Option")
+///     .padding()
+///     .designAdaptiveSurface(shape: .capsule, fallbackBorderColor: .white)
+/// ```
+///
 /// Reduce Transparency selects regular material and suppresses glass tint and interaction.
 ///
 /// Respects the `UIDesignRequiresCompatibility` Info.plist key — when set to `true`, the
@@ -142,6 +153,12 @@ public extension View {
             Text("With Tint")
                 .padding(theme.spacing.twoUnits)
                 .designAdaptiveSurface(tint: .blue.opacity(0.2))
+            Text("Capsule")
+                .padding(theme.spacing.twoUnits)
+                .designAdaptiveSurface(shape: .capsule, fallbackBorderColor: theme.colors.textPrimary)
+            Image(systemName: "chevron.forward")
+                .padding(theme.spacing.twoUnits)
+                .designAdaptiveSurface(interactive: true, shape: .circle)
             Text("Interactive")
                 .padding(theme.spacing.twoUnits)
                 .designAdaptiveSurface(interactive: true)
