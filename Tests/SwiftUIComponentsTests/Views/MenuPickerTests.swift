@@ -207,3 +207,38 @@ func appKitTriggerWidthReservesChrome() {
     )
     #expect(withChrome - withoutChrome == chrome)
 }
+
+// MARK: - Explicit wheel presentation
+
+@Suite("Explicit wheel presentation")
+@MainActor
+struct MenuPickerWheelTests {
+    @Test("Wheel presentation ignores the automatic item-count threshold", arguments: [0, 1, 3, 30, 31, 200])
+    func wheelIgnoresThreshold(count: Int) {
+        #expect(MenuPicker<MenuPickerTestItem>.usesWheelSheet(for: .wheel, itemCount: count))
+        #expect(!MenuPicker<MenuPickerTestItem>.usesWheelSheet(for: .menu, itemCount: count))
+        #expect(MenuPicker<MenuPickerTestItem>.usesWheelSheet(for: .automatic, itemCount: count) == (count > 30))
+    }
+
+    @Test("Explicit wheel style renders a short list and reports width")
+    func rendersShortList() {
+        let items = makeItems(3)
+        var widths: [CGFloat] = []
+        renderForCoverage(
+            MenuPicker(
+                items: items, currentValue: .constant(items[0]), preferredStyle: .wheel,
+                onWidthChange: { widths.append($0) }
+            )
+        )
+        RunLoop.current.run(until: Date().addingTimeInterval(0.05))
+        #expect(!widths.isEmpty)
+        #expect(widths.allSatisfy { $0 > 0 })
+    }
+
+    @Test("Explicit wheel style tolerates an empty list and missing selection")
+    func toleratesInvalidInput() {
+        let selected = MenuPickerTestItem(id: 99, title: "Unlisted")
+        _ = MenuPicker(items: [MenuPickerTestItem](), currentValue: .constant(selected), preferredStyle: .wheel)
+        _ = MenuPicker(items: makeItems(3), currentValue: .constant(selected), preferredStyle: .wheel)
+    }
+}
