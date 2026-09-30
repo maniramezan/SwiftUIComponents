@@ -333,8 +333,20 @@ Modifiers:
 
 Motion tokens:
     theme.motion.animation(reducingMotion: reduceMotion)  // reduced vs standard animation
-    theme.motion.pagingSpring.animation                    // spring committing a gesture-driven page change
-    theme.motion.snapBackSpring.animation                  // spring returning content to rest after a cancelled gesture
+    reduceMotion ? nil : theme.motion.pagingSpring.animation    // commit a gesture-driven page change
+    reduceMotion ? nil : theme.motion.snapBackSpring.animation  // return after a cancelled gesture
+
+`MotionSpring` is a `Hashable`, `Sendable` value with mutable `response`, `dampingFraction`,
+and `blendDuration` parameters. Its `animation` property creates an interactive spring;
+it does not automatically honor Reduce Motion. Both motion spring requirements have defaults
+so existing `Motion` conformers continue to compile. Override them with:
+
+```swift
+let motion = DefaultMotion(
+    pagingSpring: MotionSpring(response: 0.32, dampingFraction: 0.88, blendDuration: 0.12),
+    snapBackSpring: .snapBack
+)
+```
 
 ### Common Patterns
 

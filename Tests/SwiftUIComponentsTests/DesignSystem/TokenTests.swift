@@ -71,7 +71,7 @@ func defaultMotionShipsInteractiveSprings() {
 
 @Test("DefaultMotion supports custom spring overrides")
 func defaultMotionSupportsSpringOverrides() {
-    let stiff = Spring(response: 0.1, dampingFraction: 1, blendDuration: 0)
+    let stiff: MotionSpring = MotionSpring(response: 0.1, dampingFraction: 1, blendDuration: 0)
     let motion = DefaultMotion(pagingSpring: stiff, snapBackSpring: stiff)
 
     #expect(motion.pagingSpring == stiff)
@@ -86,13 +86,39 @@ func motionProtocolExtensionProvidesSpringDefaults() {
     #expect(motion.snapBackSpring == .snapBack)
 }
 
-@Test("A Spring materializes the matching interactive-spring animation")
+@Test("A MotionSpring materializes the matching interactive-spring animation")
 func springBuildsInteractiveSpringAnimation() {
-    let spring = Spring(response: 0.3, dampingFraction: 0.75, blendDuration: 0.2)
+    let spring = MotionSpring(response: 0.3, dampingFraction: 0.75, blendDuration: 0.2)
 
     #expect(
         spring.animation
             == .interactiveSpring(response: 0.3, dampingFraction: 0.75, blendDuration: 0.2))
+}
+
+@Test("Spring tokens coexist with SwiftUI springs and retain value semantics")
+func springTokensCoexistWithSwiftUISprings() {
+    let token: MotionSpring = .paging
+    let native: Spring = Spring(duration: 0.3)
+    var custom = token
+    custom.response = 0.5
+    custom.dampingFraction = 1
+    custom.blendDuration = 0
+
+    #expect(native.duration == 0.3)
+    #expect(token == .paging)
+    #expect(custom != token)
+    #expect(Set([token, .paging, custom]).count == 2)
+    #expect(custom.animation == .interactiveSpring(response: 0.5, dampingFraction: 1, blendDuration: 0))
+}
+
+@Test("Custom springs dispatch through the Motion protocol")
+func customSpringsDispatchThroughMotionProtocol() {
+    let paging = MotionSpring(response: 0.4, dampingFraction: 0.8, blendDuration: 0.1)
+    let snapBack = MotionSpring(response: 0.2, dampingFraction: 1, blendDuration: 0)
+    let motion: any Motion = DefaultMotion(pagingSpring: paging, snapBackSpring: snapBack)
+
+    #expect(motion.pagingSpring == paging)
+    #expect(motion.snapBackSpring == snapBack)
 }
 
 @Test("A minimal ColorTheme conformer inherits the shadow default")

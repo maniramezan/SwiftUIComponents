@@ -16,15 +16,15 @@ public protocol Motion: Sendable {
     @MainActor var reducedMotionAnimation: Animation { get }
     /// Spring used to commit a gesture-driven page transition (carousel, pager, segmented page).
     ///
-    /// Defaults to ``Spring/paging``. Components that page on a drag should resolve their
+    /// Defaults to ``MotionSpring/paging``. Components that page on a drag should resolve their
     /// transition from this rather than calling `Animation.interactiveSpring` with literal
     /// parameters, so every pager in an app settles with the same feel.
-    var pagingSpring: Spring { get }
+    var pagingSpring: MotionSpring { get }
     /// Spring used to return content to rest after a gesture ends without committing.
     ///
-    /// Defaults to ``Spring/snapBack``. Paired with ``pagingSpring``: the same gesture produces one
+    /// Defaults to ``MotionSpring/snapBack``. Paired with ``pagingSpring``: the same gesture produces one
     /// of the two depending on whether it crossed the commit threshold.
-    var snapBackSpring: Spring { get }
+    var snapBackSpring: MotionSpring { get }
 }
 
 public extension Motion {
@@ -38,12 +38,12 @@ public extension Motion {
     @MainActor var reducedMotionAnimation: Animation { .easeInOut(duration: 0.15) }
 
     /// Spring used to commit a gesture-driven page transition.
-    /// Defaults to ``Spring/paging`` when a theme does not override it.
-    var pagingSpring: Spring { .paging }
+    /// Defaults to ``MotionSpring/paging`` when a theme does not override it.
+    var pagingSpring: MotionSpring { .paging }
 
     /// Spring used to return content to rest after a gesture ends without committing.
-    /// Defaults to ``Spring/snapBack`` when a theme does not override it.
-    var snapBackSpring: Spring { .snapBack }
+    /// Defaults to ``MotionSpring/snapBack`` when a theme does not override it.
+    var snapBackSpring: MotionSpring { .snapBack }
 
     /// The animation to use for simple state changes given the current Reduce
     /// Motion setting — `reducedMotionAnimation` when `reducingMotion` is
@@ -67,9 +67,9 @@ public struct DefaultMotion: Motion {
     private let standardDuration: TimeInterval
     private let reducedMotionDuration: TimeInterval
     /// Spring used to commit a gesture-driven page transition.
-    public let pagingSpring: Spring
+    public let pagingSpring: MotionSpring
     /// Spring used to return content to rest after a gesture ends without committing.
-    public let snapBackSpring: Spring
+    public let snapBackSpring: MotionSpring
 
     /// Standard animation used by simple state changes.
     @MainActor public var standardAnimation: Animation {
@@ -89,8 +89,8 @@ public struct DefaultMotion: Motion {
         pressedOpacity: Double = 0.82,
         standardDuration: TimeInterval = 0.2,
         reducedMotionDuration: TimeInterval = 0.15,
-        pagingSpring: Spring = .paging,
-        snapBackSpring: Spring = .snapBack
+        pagingSpring: MotionSpring = .paging,
+        snapBackSpring: MotionSpring = .snapBack
     ) {
         self.minimumHitTarget = minimumHitTarget
         self.disabledOpacity = disabledOpacity

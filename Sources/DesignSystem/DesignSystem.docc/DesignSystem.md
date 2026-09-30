@@ -36,7 +36,7 @@ A platform-agnostic design token layer providing spacing, radius, stroke, motion
 
 - ``Motion``
 - ``DefaultMotion``
-- ``Spring``
+- ``MotionSpring``
 
 ### State
 
