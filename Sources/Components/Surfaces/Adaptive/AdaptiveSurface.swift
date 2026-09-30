@@ -9,12 +9,18 @@ import SwiftUI
 ///     .designAdaptiveSurface(tint: .blue.opacity(0.2), interactive: true)
 /// ```
 ///
+/// Reduce Transparency selects regular material and suppresses glass tint and interaction.
+///
 /// Respects the `UIDesignRequiresCompatibility` Info.plist key — when set to `true`, the
 /// material fallback is always used regardless of OS version.
 public struct AdaptiveSurface: ViewModifier {
     private let tint: Color?
     private let interactive: Bool
     private let cornerRadius: CGFloat?
+    private let shape: AdaptiveSurfaceShape
+    private let fallbackBorderColor: Color?
+    private let fallbackBorderWidth: CGFloat?
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
     @Environment(\.designTheme) private var theme
 
     /// Creates an adaptive surface modifier.
@@ -22,10 +28,23 @@ public struct AdaptiveSurface: ViewModifier {
     ///   - tint: Optional tint color applied to the glass effect.
     ///   - interactive: When `true`, the glass responds to pointer hover and press events.
     ///   - cornerRadius: Corner radius override. Defaults to `theme.radius.oneAndHalfUnits`.
-    public init(tint: Color? = nil, interactive: Bool = false, cornerRadius: CGFloat? = nil) {
+    ///   - shape: Surface outline. Defaults to a rounded rectangle.
+    ///   - fallbackBorderColor: Optional outline drawn only over the material fallback.
+    ///   - fallbackBorderWidth: Outline width; `nil` uses `theme.stroke.thin`.
+    public init(
+        tint: Color? = nil,
+        interactive: Bool = false,
+        cornerRadius: CGFloat? = nil,
+        shape: AdaptiveSurfaceShape = .roundedRectangle,
+        fallbackBorderColor: Color? = nil,
+        fallbackBorderWidth: CGFloat? = nil
+    ) {
         self.tint = tint
         self.interactive = interactive
         self.cornerRadius = cornerRadius
+        self.shape = shape
+        self.fallbackBorderColor = fallbackBorderColor
+        self.fallbackBorderWidth = fallbackBorderWidth
     }
 
     /// Applies the adaptive surface to the wrapped content — glass on iOS/macOS 26+,
@@ -33,15 +52,46 @@ public struct AdaptiveSurface: ViewModifier {
     @ViewBuilder
     public func body(content: Content) -> some View {
         let radius = cornerRadius ?? theme.radius.oneAndHalfUnits
-        let useCompatibility = Bundle.requiresDesignCompatibility
-        if #available(iOS 26, macOS 26, *), !useCompatibility {
-            content.glassEffect(buildGlass(), in: .rect(cornerRadius: radius))
-        } else {
-            content.background(
-                .ultraThinMaterial,
-                in: RoundedRectangle(cornerRadius: radius, style: .continuous)
+        let outline = shape.resolved(cornerRadius: radius)
+        if #available(iOS 26, macOS 26, *),
+            Self.usesLiquidGlass(
+                supportsLiquidGlass: true,
+                requiresCompatibility: Bundle.requiresDesignCompatibility,
+                reduceTransparency: reduceTransparency
             )
+        {
+            content.glassEffect(buildGlass(), in: outline)
+        } else {
+            content
+                .background(Self.fallbackMaterialStyle(reduceTransparency: reduceTransparency).material, in: outline)
+                .overlay {
+                    if let fallbackBorderColor {
+                        outline.stroke(fallbackBorderColor, lineWidth: fallbackBorderWidth ?? theme.stroke.thin)
+                    }
+                }
         }
+    }
+
+    nonisolated static func usesLiquidGlass(
+        supportsLiquidGlass: Bool, requiresCompatibility: Bool, reduceTransparency: Bool
+    ) -> Bool {
+        supportsLiquidGlass && !requiresCompatibility && !reduceTransparency
+    }
+
+    enum FallbackMaterialStyle {
+        case regular
+        case ultraThin
+
+        var material: Material {
+            switch self {
+            case .regular: .regular
+            case .ultraThin: .ultraThin
+            }
+        }
+    }
+
+    nonisolated static func fallbackMaterialStyle(reduceTransparency: Bool) -> FallbackMaterialStyle {
+        reduceTransparency ? .regular : .ultraThin
     }
 
     @available(iOS 26, macOS 26, *)
@@ -63,12 +113,23 @@ public extension View {
     ///   - tint: Optional tint color applied to the glass effect on supported systems.
     ///   - interactive: Whether supported glass surfaces respond to pointer and press interaction.
     ///   - cornerRadius: Optional corner radius override; defaults to the active theme radius.
+    ///   - shape: Surface outline. `cornerRadius` applies only to rounded rectangles.
+    ///   - fallbackBorderColor: Optional outline drawn only over the material fallback.
+    ///   - fallbackBorderWidth: Outline width; `nil` uses `theme.stroke.thin`.
     func designAdaptiveSurface(
         tint: Color? = nil,
         interactive: Bool = false,
-        cornerRadius: CGFloat? = nil
+        cornerRadius: CGFloat? = nil,
+        shape: AdaptiveSurfaceShape = .roundedRectangle,
+        fallbackBorderColor: Color? = nil,
+        fallbackBorderWidth: CGFloat? = nil
     ) -> some View {
-        modifier(AdaptiveSurface(tint: tint, interactive: interactive, cornerRadius: cornerRadius))
+        modifier(
+            AdaptiveSurface(
+                tint: tint, interactive: interactive, cornerRadius: cornerRadius, shape: shape,
+                fallbackBorderColor: fallbackBorderColor, fallbackBorderWidth: fallbackBorderWidth
+            )
+        )
     }
 }
 

@@ -372,6 +372,10 @@ Modifiers:
     .designSelectableCardSurface(isSelected: true)
     // glass on iOS/macOS 26+, .ultraThinMaterial below
     .designAdaptiveSurface()
+    .designAdaptiveSurface(shape: .circle, interactive: true)
+    .designAdaptiveSurface(shape: .capsule, fallbackBorderColor: .white)
+    // Reduce Transparency uses regular material; compatibility mode uses a material fallback.
+    // cornerRadius applies to .roundedRectangle; fallbackBorderWidth defaults to theme.stroke.thin.
     // .glass button on 26+, .bordered below; honors UIDesignRequiresCompatibility
     .designAdaptiveButtonStyle(prominent: true)
     // sweep highlight across skeleton content (see "Feedback")
