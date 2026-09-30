@@ -372,7 +372,7 @@ Modifiers:
     .designSelectableCardSurface(isSelected: true)
     // glass on iOS/macOS 26+, .ultraThinMaterial below
     .designAdaptiveSurface()
-    .designAdaptiveSurface(shape: .circle, interactive: true)
+    .designAdaptiveSurface(interactive: true, shape: .circle)
     .designAdaptiveSurface(shape: .capsule, fallbackBorderColor: .white)
     // Reduce Transparency uses regular material; compatibility mode uses a material fallback.
     // cornerRadius applies to .roundedRectangle; fallbackBorderWidth defaults to theme.stroke.thin.
