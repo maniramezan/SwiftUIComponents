@@ -523,7 +523,8 @@ func designPaginationStyleModifierApplies() {
     style.indicatorActiveColor = .orange
 
     let view = Color.clear.designPaginationStyle(style)
-    _ = view  // smoke: must compile and produce a valid View
+    // smoke: must compile and produce a valid View
+    _ = view
 }
 
 @Test("PaginationStyle titleLeadingPadding initializer overload compiles")

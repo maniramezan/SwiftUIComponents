@@ -78,8 +78,10 @@ public extension View {
     /// TitledPageView(pages, selection: $selection, title: \.title) { page in
     ///     PageBody(page: page)
     /// }
-    /// .designSwipeHint(.disabled)           // opt out entirely
-    /// .designSwipeHint(.init(delay: 1.0))   // fire after 1 second instead of 0.6
+    /// // opt out entirely
+    /// .designSwipeHint(.disabled)
+    /// // fire after 1 second instead of 0.6
+    /// .designSwipeHint(.init(delay: 1.0))
     /// ```
     ///
     /// - Parameter config: The hint configuration to apply.

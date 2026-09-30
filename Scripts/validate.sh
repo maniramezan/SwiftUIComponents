@@ -18,7 +18,10 @@ while [ "$#" -gt 0 ]; do
 done
 
 swift package resolve
-swift format lint --configuration .swift-format --recursive --strict --parallel Sources Tests
+swift format lint --configuration .swift-format --recursive --strict --parallel \
+    Sources Tests Scripts/format-comments.swift Package.swift
+./Scripts/format-comments.sh --test
+./Scripts/format-comments.sh --lint
 python3 Scripts/check-localizations.py
 python3 -m unittest discover -s Scripts/tests -p "test_check_doc_comments.py"
 python3 Scripts/check-doc-comments.py

@@ -124,7 +124,8 @@ func pageStrideMatchesSizing() {
 func carouselRowConstruction() {
     _ = CarouselRow(1...5, id: \.self) { Text("\($0)") }
     _ = CarouselRow(CarouselTestItem.samples) { Text($0.title) }
-    _ = CarouselRow([Int](), id: \.self) { Text("\($0)") }  // empty → EmptyView path
+    // empty → EmptyView path
+    _ = CarouselRow([Int](), id: \.self) { Text("\($0)") }
 }
 
 // MARK: - Rendering (rows / rowHeight)

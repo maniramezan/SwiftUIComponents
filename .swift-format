@@ -7,6 +7,7 @@
     "multiElementCollectionTrailingCommas": true,
     "rules": {
         "AvoidRetroactiveConformances": false,
-        "NoAccessLevelOnExtensionDeclaration": false
+        "NoAccessLevelOnExtensionDeclaration": false,
+        "NoBlockComments": true
     }
 }

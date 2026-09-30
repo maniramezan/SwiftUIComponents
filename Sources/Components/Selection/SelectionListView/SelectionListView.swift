@@ -27,7 +27,8 @@ import SwiftUI
 /// // Multiple choice
 /// .sheet(isPresented: $isPresented) {
 ///     SelectionListView(title: "Categories", nodes: nodes, selectedIDs: choices) { id in
-///         choices.formSymmetricDifference([id])   // toggle; sheet stays open
+///         // toggle; sheet stays open
+///         choices.formSymmetricDifference([id])
 ///     }
 /// }
 /// ```

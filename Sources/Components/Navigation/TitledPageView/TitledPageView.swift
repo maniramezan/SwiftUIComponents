@@ -26,9 +26,12 @@ import SwiftUI
 /// TitledPageView(pages, selection: $selection, title: \.title) { page in
 ///     PageBody(page: page)
 /// }
-/// .designSwipeHint(.disabled)                  // opt out entirely
-/// .designSwipeHint(.init(delay: 1.5))          // fire later
-/// .designSwipeHint(.init(distance: 60))        // peek further
+/// // opt out entirely
+/// .designSwipeHint(.disabled)
+/// // fire later
+/// .designSwipeHint(.init(delay: 1.5))
+/// // peek further
+/// .designSwipeHint(.init(distance: 60))
 /// ```
 ///
 /// ## Theming
