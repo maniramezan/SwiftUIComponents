@@ -14,7 +14,7 @@ import SwiftUI
 /// ```swift
 /// Image(systemName: "chevron.forward")
 ///     .padding()
-///     .designAdaptiveSurface(shape: .circle, interactive: true)
+///     .designAdaptiveSurface(interactive: true, shape: .circle)
 /// Text("Option")
 ///     .padding()
 ///     .designAdaptiveSurface(shape: .capsule, fallbackBorderColor: .white)
@@ -158,7 +158,7 @@ public extension View {
                 .designAdaptiveSurface(shape: .capsule, fallbackBorderColor: theme.colors.textPrimary)
             Image(systemName: "chevron.forward")
                 .padding(theme.spacing.twoUnits)
-                .designAdaptiveSurface(shape: .circle, interactive: true)
+                .designAdaptiveSurface(interactive: true, shape: .circle)
             Text("Interactive")
                 .padding(theme.spacing.twoUnits)
                 .designAdaptiveSurface(interactive: true)
