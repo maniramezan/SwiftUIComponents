@@ -69,7 +69,8 @@ SwiftUI only builds on Apple platforms. In a Linux container (for example a clou
 - Follow the Swift API Design Guidelines: UpperCamelCase for types, lowerCamelCase for functions and variables, protocols named for capabilities (`SelectableMenuItem`).
 - Prefer value semantics (`struct`, `enum`) and immutable `let` bindings; use four-space indentation and limit each file to one public type.
 - Document all public APIs with `///` comments that describe behavior, inputs, and assumptions.
-- Run `swift format --in-place Sources Tests` (or Xcode's formatter) before committing to keep diffs clean.
+- Put every comment on its own line, including comments in documentation examples. Never use inline or trailing comments.
+- Run `./Scripts/format.sh` before committing. It moves inline comments to separate lines, then runs `swift format`. CI enforces both rules through `Scripts/validate.sh`.
 - When a view introduces supporting private subviews or helpers, define them as their own `View`/`ViewModifier`-conforming types (see **Performance & View Composition** below), organized in `extension` blocks or `// MARK:` sections at the bottom of the file.
 
 ## Product Isolation (Non-Negotiable)

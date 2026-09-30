@@ -121,7 +121,8 @@ Read [`AGENTS.md`](AGENTS.md) for coding standards, documentation requirements, 
 
 - Every public symbol needs a `///` doc comment.
 - Every change needs tests (`swift test`).
-- Run `swift format --in-place Sources Tests` before committing.
+- Put comments on separate lines, including documentation examples.
+- Run `./Scripts/format.sh` before committing; it enforces comment placement and runs `swift format`.
 - Warnings are treated as errors in CI.
 
 ## License
