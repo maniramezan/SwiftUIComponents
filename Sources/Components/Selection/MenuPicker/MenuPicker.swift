@@ -22,6 +22,15 @@ import SwiftUI
 ///
 /// MenuPicker(items: Flavor.allCases, currentValue: $flavor)
 /// ```
+///
+/// Request a consistent presentation even when the item count changes:
+///
+/// ```swift
+/// MenuPicker(items: Flavor.allCases, currentValue: $flavor, preferredStyle: .wheel)
+/// MenuPicker(items: Flavor.allCases, currentValue: $flavor, preferredStyle: .menu)
+/// ```
+///
+/// `.wheel` presents a wheel sheet on iOS and Mac Catalyst. On macOS it uses the native dropdown.
 public struct MenuPicker<Item: MenuPickerItem>: View {
 
     // MARK: - Styling Constants
@@ -302,8 +311,14 @@ private struct PreviewHour: MenuPickerItem {
 #Preview {
     @Previewable @State var currentValue = PreviewHour(id: 9)
     PreviewContent { theme in
-        MenuPicker(items: (9...17).map { PreviewHour(id: $0) }, currentValue: $currentValue)
-            .padding(theme.spacing.twoUnits)
-            .background(Color.pink)
+        VStack(spacing: theme.spacing.twoUnits) {
+            MenuPicker(items: (9...17).map { PreviewHour(id: $0) }, currentValue: $currentValue)
+            MenuPicker(
+                items: (9...17).map { PreviewHour(id: $0) }, currentValue: $currentValue,
+                preferredStyle: .wheel
+            )
+        }
+        .padding(theme.spacing.twoUnits)
+        .background(Color.pink)
     }
 }
