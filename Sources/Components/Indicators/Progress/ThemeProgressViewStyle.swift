@@ -13,7 +13,8 @@ import SwiftUI
 /// ProgressView("Uploading", value: uploaded, total: size)
 ///     .progressViewStyle(ThemeProgressViewStyle())
 ///
-/// ProgressView()      // indeterminate
+/// // indeterminate
+/// ProgressView()
 ///     .progressViewStyle(ThemeProgressViewStyle(tint: theme.colors.success))
 /// ```
 ///

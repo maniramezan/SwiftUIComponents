@@ -23,8 +23,10 @@ SwiftUIComponents currently ships three SwiftPM library products:
 
 For application code, import the first two:
 
-    import DesignSystem   // tokens: spacing, radius, stroke, motion, colors, typography
-    import Components     // views and modifiers — depends on DesignSystem
+    // tokens: spacing, radius, stroke, motion, colors, typography
+    import DesignSystem
+    // views and modifiers — depends on DesignSystem
+    import Components
 
 Platforms: iOS 18+, macOS 15+, Mac Catalyst 18+. Swift language mode: 6 (strict concurrency).
 
@@ -88,12 +90,18 @@ are unchanged either way:
 ### Reading Tokens in Custom Views
 
     @Environment(\.designTheme) var theme
-    theme.spacing.twoUnits    // CGFloat
-    theme.colors.primary      // Color  (@MainActor)
-    theme.colors.segmentUnselectedBackground // Color (@MainActor)
-    theme.colors.overlayHeavy // Color  (@MainActor)
-    theme.typography.body     // Font   (@MainActor)
-    theme.typography.captionBold // Font (@MainActor)
+    // CGFloat
+    theme.spacing.twoUnits
+    // Color  (@MainActor)
+    theme.colors.primary
+    // Color (@MainActor)
+    theme.colors.segmentUnselectedBackground
+    // Color  (@MainActor)
+    theme.colors.overlayHeavy
+    // Font   (@MainActor)
+    theme.typography.body
+    // Font (@MainActor)
+    theme.typography.captionBold
 
 `ColorTheme` also exposes role tokens beyond the core palette — `interactiveSubtle` (a
 faint wash of `primary` for chip fills and selected rows), the overlay scrims
@@ -139,7 +147,8 @@ Search:
 
 Labeled text field (title above, helper or error text below; error wins and is read to VoiceOver):
     TextInputField("Email", text: $email, prompt: "name@example.com",
-                   helperText: "Used for sign-in only.", errorMessage: emailError)   // errorMessage: String?
+                   // errorMessage: String?
+                   helperText: "Used for sign-in only.", errorMessage: emailError)
     TextInputField("Password", text: $password, isSecure: true)
     // Apply .textContentType / .keyboardType / .submitLabel to the TextInputField; they flow through.
 
@@ -147,12 +156,16 @@ Toggle:
     Toggle("Label", isOn: $isOn).toggleStyle(ThemeToggleStyle())
 
 Badge:
-    Badge("New")                    // standard
-    Badge("Pro", isProminent: true) // primary color fill
+    // standard
+    Badge("New")
+    // primary color fill
+    Badge("Pro", isProminent: true)
 
 Avatar (circular; image, else initials of `name`, else a person symbol; VoiceOver label = name):
-    AvatarView(name: "Ada Lovelace")                          // "AL" monogram, .medium
-    AvatarView(name: member.name, image: photo, size: .large) // sizes: .small | .medium | .large
+    // "AL" monogram, .medium
+    AvatarView(name: "Ada Lovelace")
+    // sizes: .small | .medium | .large
+    AvatarView(name: member.name, image: photo, size: .large)
 
 Linear progress (a ProgressViewStyle; nil fractionCompleted sweeps, static under Reduce Motion):
     ProgressView("Uploading", value: sent, total: size)
@@ -165,7 +178,9 @@ List row (leading symbol + title/subtitle + any trailing accessory; min hit-targ
     NavigationLink { Detail() } label: { ListRow("About", systemImage: "info.circle") }
 
 Filter chip:
-    PillChip("Label", isSelected: isSelected) { /* action */ }
+    PillChip("Label", isSelected: isSelected) {
+        // action
+    }
     ActionPill(action: openItem) { HStack { Text("Type").bold(); Text("Value") } }
 
 Picker (item must conform to MenuPickerItem: Hashable & Identifiable, var title: String; the package
@@ -201,29 +216,36 @@ Segmented picker (horizontal, single-selection; scrolls with fading edges when o
     SegmentedPicker(items: Filter.allCases, selection: $filter)
     SegmentedPicker(items: tabs, selection: $tab, sizing: .fillProportionally, density: .compact)
     // sizing: .fit (default) | .fillEqually | .fillProportionally; density: .regular (44pt) | .compact (~32pt)
-    SegmentedPicker(items: tabs, selection: $tab) { tab in tab.unread > 0 ? "\(tab.unread)" : nil } // badge; "" = dot
+    // badge; "" = dot
+    SegmentedPicker(items: tabs, selection: $tab) { tab in tab.unread > 0 ? "\(tab.unread)" : nil }
     SegmentedPicker(items: tabs, selection: $tab) { tab, _ in
         HStack { Image(systemName: tab.systemImage); Text(tab.title) }
     }
 
 Carousel row (horizontal, browse-only; reveals a sliver of the next item; edge-fade veil):
-    CarouselRow(apps) { app in FeaturedCard(app) }                     // Identifiable convenience
+    // Identifiable convenience
+    CarouselRow(apps) { app in FeaturedCard(app) }
     CarouselRow(values, id: \.self, sizing: .peek(visibleCount: 2)) { v in Card(v) }
     CarouselRow(icons, sizing: .fixedWidth(120), snapping: .free) { i in Tile(i) }
-    CarouselRow(apps, rows: 2, rowHeight: 180) { app in Card(app) }    // stacked rows require rowHeight
+    // stacked rows require rowHeight
+    CarouselRow(apps, rows: 2, rowHeight: 180) { app in Card(app) }
     // sizing: .peek(visibleCount:peek:) (default, one item + sliver) | .fixedWidth(_) | .fitContent
     // snapping: .viewAligned (default, snaps + keeps peek) | .free (momentum only)
     // rows: defaults to 1; set rowHeight whenever rows > 1
 
 Carousel board (App-Store-style two-directional layout: vertical shelves, each scrolls horizontally):
     CarouselBoard {
-        CarouselShelf("Featured", shelfID: "featured", items: apps) { app in FeaturedCard(app) } // peeking
-        CarouselShelf("Top Free", items: apps, actionLabel: "See All",               // fixed tiles + action
+        // peeking
+        CarouselShelf("Featured", shelfID: "featured", items: apps) { app in FeaturedCard(app) }
+        // fixed tiles + action
+        CarouselShelf("Top Free", items: apps, actionLabel: "See All",
                       sizing: .fixedWidth(120), onSeeAll: { openAll() }) { app in IconTile(app) }
         CarouselShelf("Continue Watching", items: videos, rows: 2, rowHeight: 180,
                       titleFont: .title3) { video in VideoCard(video) }
-        CarouselShelf("Top Stories", items: stories) { story in ArticleCard(story) }  // different item TYPE
-        CarouselShelf("Editor's Pick") { EditorsBanner() }                           // fully custom row
+        // different item TYPE
+        CarouselShelf("Top Stories", items: stories) { story in ArticleCard(story) }
+        // fully custom row
+        CarouselShelf("Editor's Pick") { EditorsBanner() }
     }
     // Shelves are heterogeneous — each may carry its own item type and item view.
     // Use unique shelfID values when titles can change or repeat; nil defaults to the title.
@@ -234,14 +256,17 @@ Container:
     // styles: .plain | .card (default) | .elevated (shadow) | .outlined
 
 Flip card (two-sided flashcard; tap or VoiceOver "Flip" action toggles it):
-    FlipCard {                               // self-managing — tracks its own flipped state
+    // self-managing — tracks its own flipped state
+    FlipCard {
         Text("Bonjour")
     } back: {
         Text("Hello")
     }
     FlipCard(initiallyFaceUp: false, axis: .vertical) { front } back: { back }
-    FlipCard(isFaceUp: $isFaceUp) { front } back: { back }   // controlled — drive the face externally
-    FlipCard(animation: .spring(duration: 0.5)) { front } back: { back }  // override flip timing
+    // controlled — drive the face externally
+    FlipCard(isFaceUp: $isFaceUp) { front } back: { back }
+    // override flip timing
+    FlipCard(animation: .spring(duration: 0.5)) { front } back: { back }
     // axis: .horizontal (default, sweeps left/right) | .vertical (sweeps top/bottom)
     // animation: defaults to theme.motion.standardAnimation when omitted
     // Each face is wrapped in a card surface; Reduce Motion replaces the 3D flip with a cross-fade.
@@ -258,16 +283,21 @@ Feedback:
     }
     ErrorBanner("Something went wrong.")
     ErrorSection(message: "Could not load data.")
-    LoadMoreFooter(triggerID: hasMore ? nextCursor : nil, isLoadingMore: isLoading) { loadMore() } // after the last row
+    // after the last row
+    LoadMoreFooter(triggerID: hasMore ? nextCursor : nil, isLoadingMore: isLoading) { loadMore() }
 
 Toast (transient overlay; roles: .info | .success | .warning | .error):
-    ToastView("Saved", role: .success)               // standalone card
+    // standalone card
+    ToastView("Saved", role: .success)
     ToastView("Item deleted", role: .info, action: .init("Undo") { restore() })
-    .toast("Saved", role: .success, isPresented: $showToast)            // bottom, auto-dismiss 3s
+    // bottom, auto-dismiss 3s
+    .toast("Saved", role: .success, isPresented: $showToast)
     .toast("Upload failed", role: .error, isPresented: $showError, edge: .top, duration: .seconds(5))
     .toast("Item deleted", role: .info, isPresented: $showToast,
-           action: .init("Undo") { restore() })                         // actions persist until dismissed
-    .toast(isPresented: $showToast) { ToastView("Custom", role: .info) } // custom content
+           // actions persist until dismissed
+           action: .init("Undo") { restore() })
+    // custom content
+    .toast(isPresented: $showToast) { ToastView("Custom", role: .info) }
     // Apply .toast to a full-bleed parent (it anchors an overlay); top/bottom placement is safe-area-aware; honors Reduce Motion; swipe-to-dismiss always on.
     // A11y: announces to VoiceOver on appear and supports the escape (two-finger scrub) gesture to dismiss.
 
@@ -293,15 +323,19 @@ Assistant conversation UI (streaming chat feature: quick-action chips + turn log
     // Turn model must be Identifiable & Equatable; state drives which bubble variant renders per turn
     AssistantConversationList(
         turns: turns, isInteractionEnabled: !isBusy, idleHint: "Tap an action to get started.",
-        userLabel: { $0.actionLabel }, responseState: { $0.state },   // state: .idle | .streaming(String) | .complete(String) | .error(String)
+        // state: .idle | .streaming(String) | .complete(String) | .error(String)
+        userLabel: { $0.actionLabel }, responseState: { $0.state },
         retryTitle: "Retry", onRetry: { retry($0.id) },
-        autoPromotingHeadings: ["Summary", "Details"],                 // optional, for structured completed responses
-        contentLayoutDirection: .rightToLeft                           // optional, RTL message text in an LTR app
+        // optional, for structured completed responses
+        autoPromotingHeadings: ["Summary", "Details"],
+        // optional, RTL message text in an LTR app
+        contentLayoutDirection: .rightToLeft
     )
     // Actions must be Identifiable. Each action can be available, used, disabled, or hidden.
     AssistantQuickActionChipRow(
         actions: actions, isInteractionEnabled: !isBusy,
-        state: { actionState(for: $0) }, // return .available to renew an action
+        // return .available to renew an action
+        state: { actionState(for: $0) },
         label: { $0.displayName }, systemImage: { $0.systemImage }, onSelect: { run($0) }
     )
     AssistantContextCard(title: "Example item", highlight: "Label", bodyText: "The sentence this item appeared in.", bodyStyle: .quoted, footnote: "From: Reference source")
@@ -315,38 +349,51 @@ Assistant conversation UI (streaming chat feature: quick-action chips + turn log
     }
 
 Modifiers:
-    .designCardSurface()                    // rounded card with border
-    .designCardSurface(showStroke: false)   // card without border
-    .designCapsuleSurface()                 // pill surface
-    .designCapsuleSurface(isSelected: true) // selected state
-    .designInputSurface()                   // text field background
-    .designNoticeCard(background: theme.colors.error)  // full-width rounded notice/banner/error card
-    .designPillMetrics()                    // capsule-pill padding + min height + content shape
-    .designTextStyle(.headline)             // font + color from theme
+    // rounded card with border
+    .designCardSurface()
+    // card without border
+    .designCardSurface(showStroke: false)
+    // pill surface
+    .designCapsuleSurface()
+    // selected state
+    .designCapsuleSurface(isSelected: true)
+    // text field background
+    .designInputSurface()
+    // full-width rounded notice/banner/error card
+    .designNoticeCard(background: theme.colors.error)
+    // capsule-pill padding + min height + content shape
+    .designPillMetrics()
+    // font + color from theme
+    .designTextStyle(.headline)
     // text roles: .title | .headline | .body | .secondary | .caption | .error
     // full type scale (font only, no color): DesignText("Label", slot: .title3Semibold)
     // slot: one case per Typography member (base slots + weight ladder); DesignText(verbatim:slot:) for un-localized
-    .designSelectableCardSurface(isSelected: true)  // card surface with a selected state
-    .designAdaptiveSurface()               // glass on iOS/macOS 26+, .ultraThinMaterial below
-    .designAdaptiveButtonStyle(prominent: true)     // .glass button on 26+, .bordered below; honors UIDesignRequiresCompatibility
-    .designGhostShimmer()                  // sweep highlight across skeleton content (see "Feedback")
+    // card surface with a selected state
+    .designSelectableCardSurface(isSelected: true)
+    // glass on iOS/macOS 26+, .ultraThinMaterial below
+    .designAdaptiveSurface()
+    // .glass button on 26+, .bordered below; honors UIDesignRequiresCompatibility
+    .designAdaptiveButtonStyle(prominent: true)
+    // sweep highlight across skeleton content (see "Feedback")
+    .designGhostShimmer()
 
 Motion tokens:
-    theme.motion.animation(reducingMotion: reduceMotion)  // reduced vs standard animation
-    reduceMotion ? nil : theme.motion.pagingSpring.animation    // commit a gesture-driven page change
-    reduceMotion ? nil : theme.motion.snapBackSpring.animation  // return after a cancelled gesture
+    // reduced vs standard animation
+    theme.motion.animation(reducingMotion: reduceMotion)
+    // commit a gesture-driven page change
+    reduceMotion ? nil : theme.motion.pagingSpring.animation
+    // return after a cancelled gesture
+    reduceMotion ? nil : theme.motion.snapBackSpring.animation
 
 `MotionSpring` is a `Hashable`, `Sendable` value with mutable `response`, `dampingFraction`,
 and `blendDuration` parameters. Its `animation` property creates an interactive spring;
 it does not automatically honor Reduce Motion. Both motion spring requirements have defaults
 so existing `Motion` conformers continue to compile. Override them with:
 
-```swift
-let motion = DefaultMotion(
-    pagingSpring: MotionSpring(response: 0.32, dampingFraction: 0.88, blendDuration: 0.12),
-    snapBackSpring: .snapBack
-)
-```
+    let motion = DefaultMotion(
+        pagingSpring: MotionSpring(response: 0.32, dampingFraction: 0.88, blendDuration: 0.12),
+        snapBackSpring: .snapBack
+    )
 
 ### Common Patterns
 
@@ -358,8 +405,10 @@ Filter chip group (wrapping; use a horizontal ScrollView + HStack instead for a 
     }
 
 Themed text field:
-    TextInputField("Email", text: $email, errorMessage: emailError)   // labeled, with validation text
-    TextField("Email", text: $email)                                  // bare field on the input surface
+    // labeled, with validation text
+    TextInputField("Email", text: $email, errorMessage: emailError)
+    // bare field on the input surface
+    TextField("Email", text: $email)
         .padding(theme.spacing.oneAndHalfUnits)
         .designInputSurface()
 
@@ -378,7 +427,11 @@ Loading / empty / content:
     else if items.isEmpty { EmptyStateView(title: "Nothing here yet", systemImage: "tray") {
         ThemeButton("Refresh") { load() }
     }}
-    else { List(items) { /* row */ } }
+    else {
+        List(items) {
+            // row
+        }
+    }
 
 Use the showcase for reference, not reuse:
     // Good: copy interaction patterns from ComponentShowcase into app code using Components APIs.

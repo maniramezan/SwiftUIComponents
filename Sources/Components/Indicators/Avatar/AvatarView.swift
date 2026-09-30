@@ -9,7 +9,8 @@ import SwiftUI
 /// When `name` has no letters to take initials from, a generic person symbol is shown.
 ///
 /// ```swift
-/// AvatarView(name: "Ada Lovelace")                        // "AL" monogram
+/// // "AL" monogram
+/// AvatarView(name: "Ada Lovelace")
 /// AvatarView(name: member.displayName, image: photo, size: .large)
 /// ```
 ///

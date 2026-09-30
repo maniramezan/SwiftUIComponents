@@ -19,11 +19,13 @@ import SwiftUI
 ///
 /// ```swift
 /// SegmentedPicker(items: Filter.allCases, selection: $filter) { item in
-///     item == .inbox ? "3" : nil   // count badge on one segment
+///     // count badge on one segment
+///     item == .inbox ? "3" : nil
 /// }
 ///
 /// SegmentedPicker(items: Filter.allCases, selection: $filter) { item in
-///     hasUpdates(item) ? "" : nil  // dot badge, no label
+///     // dot badge, no label
+///     hasUpdates(item) ? "" : nil
 /// }
 /// ```
 ///

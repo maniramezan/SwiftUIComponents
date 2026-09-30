@@ -6,10 +6,13 @@ import CoreGraphics
 /// Construct a value with one of the static factories:
 ///
 /// ```swift
-/// .peek(visibleCount: 1)        // one full item + a sliver of the next
+/// // one full item + a sliver of the next
+/// .peek(visibleCount: 1)
 /// .peek(visibleCount: 2, peek: 24)
-/// .fixedWidth(120)              // every item exactly 120 pt wide
-/// .fitContent                  // each item sizes to its own content
+/// // every item exactly 120 pt wide
+/// .fixedWidth(120)
+/// // each item sizes to its own content
+/// .fitContent
 /// ```
 public struct CarouselItemSizing: Equatable, Sendable {
 
