@@ -33,7 +33,7 @@ public struct MenuPicker<Item: MenuPickerItem>: View {
     }
 
     /// Controls which presentation `MenuPicker` uses on iOS.
-    public enum PresentationStyle: Sendable {
+    public enum PresentationStyle: CaseIterable, Hashable, Sendable {
         /// Uses a native dropdown menu for short lists and falls back to a compact wheel sheet
         /// once the list exceeds an internal item-count threshold.
         case automatic
@@ -42,6 +42,9 @@ public struct MenuPicker<Item: MenuPickerItem>: View {
         /// year picker shown side by side) so one doesn't silently diverge into a different
         /// presentation once its list happens to cross the automatic threshold.
         case menu
+        /// Always uses a compact wheel sheet on iOS and Mac Catalyst, regardless of item count.
+        /// macOS retains its native dropdown because wheel pickers are unavailable there.
+        case wheel
     }
 
     // MARK: - Items
@@ -264,7 +267,11 @@ extension MenuPicker {
         for style: PresentationStyle,
         itemCount: Int
     ) -> Bool {
-        style == .automatic && itemCount > longListThreshold
+        switch style {
+        case .automatic: itemCount > longListThreshold
+        case .menu: false
+        case .wheel: true
+        }
     }
 
     /// Computes the fixed trigger width for the AppKit `NSPopUpButton` bridge.

@@ -193,6 +193,8 @@ ships no conformances for Int/String — wrap them in your own type):
     // uses the native dropdown regardless of count — use .menu to keep a picker visually consistent
     // with a sibling MenuPicker whose item count might otherwise cross that threshold.
     MenuPicker(items: allItems, currentValue: $selected, preferredStyle: .menu)
+    // Force a wheel sheet even for short lists on iOS/Mac Catalyst; macOS uses a native dropdown.
+    MenuPicker(items: allItems, currentValue: $selected, preferredStyle: .wheel)
 
 Selection list (for `.sheet`/drawer or inline; single- or multiple-choice; rows are a SelectionNode<ID> tree — leaf nodes select on tap, parent nodes expand inline to reveal children; node has id, title, optional subtitle/leadingGlyph, children; controlled + content-only — you present it and update selection/dismiss in the callback; isSearchable filters both levels, case-insensitive):
     let nodes: [SelectionNode<String>] = [

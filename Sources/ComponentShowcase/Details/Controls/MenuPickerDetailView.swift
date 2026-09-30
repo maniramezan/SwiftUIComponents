@@ -23,6 +23,8 @@ struct MenuPickerDetailView: View {
 
     @State private var selected: FruitItem = Self.fruits[0]
     @State private var longSelected: FruitItem = Self.fruits[0]
+    @State private var presentation: MenuPicker<FruitItem>.PresentationStyle = .wheel
+    @State private var usesLongList = false
     @Environment(\.designTheme) private var theme
 
     var body: some View {
@@ -44,6 +46,21 @@ struct MenuPickerDetailView: View {
                     currentValue: $longSelected,
                     preferredStyle: .menu
                 )
+            }
+
+            ShowcaseSection("Presentation playground") {
+                Picker("Presentation", selection: $presentation) {
+                    Text("Automatic").tag(MenuPicker<FruitItem>.PresentationStyle.automatic)
+                    Text("Menu").tag(MenuPicker<FruitItem>.PresentationStyle.menu)
+                    Text("Wheel").tag(MenuPicker<FruitItem>.PresentationStyle.wheel)
+                }
+                Toggle("Long list", isOn: $usesLongList)
+                if usesLongList {
+                    MenuPicker(items: Self.longFruits, currentValue: $longSelected, preferredStyle: presentation)
+                } else {
+                    MenuPicker(items: Self.fruits, currentValue: $selected, preferredStyle: presentation)
+                }
+                Text("Wheel presentation uses a native dropdown on macOS.")
             }
 
             ShowcaseSection("Disabled") {

@@ -38,6 +38,7 @@ open Package.swift   # Opens in Xcode
 - ``MenuPicker``
 - ``MenuPickerItem``
 - ``MenuPicker/PresentationStyle``
+- ``MenuPicker/PresentationStyle/wheel``
 - ``SelectionListView``
 - ``SelectionListContentView``
 - ``SelectionNode``
