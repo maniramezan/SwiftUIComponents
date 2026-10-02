@@ -39,7 +39,7 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(url: "https://github.com/maniramezan/SwiftTestCommons.git", from: "0.2.0"),
+        .package(url: "https://github.com/maniramezan/SwiftTestCommons.git", from: "0.1.0"),
         .package(url: "https://github.com/swiftlang/swift-docc-plugin", from: "1.4.3"),
         .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", from: "1.19.3"),
     ],
