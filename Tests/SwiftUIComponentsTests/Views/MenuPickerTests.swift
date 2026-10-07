@@ -9,6 +9,22 @@ struct MenuPickerTestItem: MenuPickerItem {
     let title: String
 }
 
+@Test("Picker targets reserve minimum width and height without capping readable content")
+func triggerSizeRespectsContentAndHitTarget() {
+    #expect(
+        MenuPicker<MenuPickerTestItem>.triggerSize(
+            content: CGSize(width: 20, height: 36), minimumHitTarget: 44
+        ) == CGSize(width: 44, height: 44))
+    #expect(
+        MenuPicker<MenuPickerTestItem>.triggerSize(
+            content: CGSize(width: 115, height: 80), minimumHitTarget: 44
+        ) == CGSize(width: 115, height: 80))
+    #expect(
+        MenuPicker<MenuPickerTestItem>.triggerSize(
+            content: .zero, minimumHitTarget: 60
+        ) == CGSize(width: 60, height: 60))
+}
+
 private func makeItems(_ count: Int, startingAt start: Int = 1) -> [MenuPickerTestItem] {
     (start..<start + count).map { MenuPickerTestItem(id: $0, title: "Option \($0)") }
 }

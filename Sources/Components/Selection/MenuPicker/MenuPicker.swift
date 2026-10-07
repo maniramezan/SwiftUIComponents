@@ -120,6 +120,7 @@ public struct MenuPicker<Item: MenuPickerItem>: View {
                         width: requiredWidth,
                         horizontalPadding: theme.spacing.oneAndHalfUnits,
                         verticalPadding: theme.spacing.oneUnit,
+                        minimumHitTarget: theme.motion.minimumHitTarget,
                         triggerFont: theme.typography.control,
                         isPresented: $isListPresented
                     )
@@ -130,6 +131,7 @@ public struct MenuPicker<Item: MenuPickerItem>: View {
                         longestLabel: longestLabel,
                         horizontalPadding: theme.spacing.oneAndHalfUnits,
                         verticalPadding: theme.spacing.oneUnit,
+                        minimumHitTarget: theme.motion.minimumHitTarget,
                         triggerFont: theme.typography.controlUIFont,
                         foregroundColor: theme.colors.textPrimary,
                         width: requiredWidth,
@@ -234,7 +236,8 @@ private extension MenuPicker {
     private extension MenuPicker {
         func measureWidth(for font: UIFont) -> CGFloat {
             let textWidth = (longestLabel as NSString).size(withAttributes: [.font: font]).width
-            return textWidth + (theme.spacing.oneAndHalfUnits * 2) + theme.spacing.halfUnit
+            return max(
+                theme.motion.minimumHitTarget, textWidth + (theme.spacing.oneAndHalfUnits * 2) + theme.spacing.halfUnit)
         }
     }
 #elseif canImport(AppKit)
@@ -264,6 +267,11 @@ private struct LongestLabelWidthKey: PreferenceKey {
 // MARK: - Helpers
 
 extension MenuPicker {
+    /// Preserves readable content while reserving a real native interaction target.
+    nonisolated static func triggerSize(content: CGSize, minimumHitTarget: CGFloat) -> CGSize {
+        CGSize(width: max(content.width, minimumHitTarget), height: max(content.height, minimumHitTarget))
+    }
+
     /// Determines the longest formatted label to stabilize layout width.
     nonisolated static func longestLabel(in items: [Item]) -> String {
         items
