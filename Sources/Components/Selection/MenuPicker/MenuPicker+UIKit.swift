@@ -12,6 +12,7 @@ import SwiftUI
         let longestLabel: String
         let horizontalPadding: CGFloat
         let verticalPadding: CGFloat
+        let minimumHitTarget: CGFloat
         let triggerFont: UIFont
         let foregroundColor: Color
         let width: CGFloat
@@ -80,7 +81,9 @@ import SwiftUI
 
         func sizeThatFits(_ proposal: ProposedViewSize, uiView: UIButton, context: Context) -> CGSize? {
             let targetHeight = uiView.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize).height
-            return CGSize(width: width, height: targetHeight)
+            return MenuPicker<Item>.triggerSize(
+                content: CGSize(width: width, height: targetHeight), minimumHitTarget: minimumHitTarget
+            )
         }
     }
 
@@ -94,6 +97,7 @@ import SwiftUI
         let width: CGFloat
         let horizontalPadding: CGFloat
         let verticalPadding: CGFloat
+        let minimumHitTarget: CGFloat
         let triggerFont: Font
         @Binding var isPresented: Bool
 
@@ -102,11 +106,11 @@ import SwiftUI
                 Text(title)
                     .font(triggerFont)
                     .lineLimit(1)
-                    .minimumScaleFactor(0.6)
-                    .allowsTightening(true)
                     .padding(.horizontal, horizontalPadding)
                     .padding(.vertical, verticalPadding)
                     .frame(width: width, alignment: .center)
+                    .frame(minHeight: minimumHitTarget)
+                    .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             .accessibilityHint(Text(Strings.MenuPicker.changeSelectionHint))
