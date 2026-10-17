@@ -1,5 +1,4 @@
 import SwiftUI
-import TestCommonsUI
 import Testing
 
 @testable import Components
@@ -715,24 +714,29 @@ func swipeHintPlaysWhenEnabled() async throws {
     defaults.removeObject(forKey: storageKey)
     defer { defaults.set(previousValue, forKey: storageKey) }
 
-    let hosted = HostedView(
-        TitledPageView(pages, selection: binding, title: \PagedFixturePage.title) { page in
-            Text(page.title)
-        }
-        .designSwipeHint(.init(delay: 0.01)),
-        size: CGSize(width: 320, height: 200)
+    var offset: CGFloat = 0
+    var isPlaying = false
+    let content = TitledPageViewPagedContent(
+        pages: pages,
+        idKeyPath: \PagedFixturePage.id,
+        titleKeyPath: \PagedFixturePage.title,
+        titleAlignment: .automatic,
+        indicatorStyle: .dots,
+        customTitle: nil,
+        customFooter: nil,
+        content: { page in Text(page.title) },
+        selection: binding,
+        scrollOffsetX: .constant(0),
+        viewportWidth: .constant(300),
+        unidirectionalBaseIndex: .constant(0),
+        swipeHintOffset: Binding(get: { offset }, set: { offset = $0 }),
+        isSwipeHintPlaying: Binding(get: { isPlaying }, set: { isPlaying = $0 })
     )
-    defer { hosted.close() }
-    _ = hosted.renderPNG()
-    // Parallel rendering tests can delay the appearance task on the main actor.
-    let clock = ContinuousClock()
-    let deadline = clock.now.advanced(by: .seconds(5))
-    while !defaults.bool(forKey: storageKey), clock.now < deadline {
-        try await Task.sleep(for: .milliseconds(20))
-    }
+
+    await content.playSwipeHintIfNeeded(reduceMotion: false)
     #expect(defaults.bool(forKey: storageKey))
-    // Keep the view mounted through the peek, spring-back, and settle sequence.
-    try await Task.sleep(for: .seconds(1.2))
+    #expect(offset == 0)
+    #expect(!isPlaying)
 }
 
 @Test("stepScroll advances the active page via onJump")

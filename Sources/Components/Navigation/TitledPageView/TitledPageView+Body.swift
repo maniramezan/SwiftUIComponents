@@ -173,7 +173,7 @@ struct TitledPageViewPagedContent<Element, ID: Hashable, PageContent: View>: Vie
         }
         .accessibilityElement(children: .contain)
         .task {
-            await playSwipeHintIfNeeded()
+            await playSwipeHintIfNeeded(reduceMotion: reduceMotion)
         }
     }
 
@@ -259,7 +259,7 @@ struct TitledPageViewPagedContent<Element, ID: Hashable, PageContent: View>: Vie
     /// Plays a brief peek animation that reveals the leading edge of the next page,
     /// then springs back. Fires once on first appearance when: hints are enabled,
     /// there are 2+ pages, the user is still on page 0, and Reduce Motion is off.
-    private func playSwipeHintIfNeeded() async {
+    func playSwipeHintIfNeeded(reduceMotion: Bool) async {
         guard swipeHintConfig.isEnabled, pages.count > 1, !reduceMotion else { return }
         let hintDistance = swipeHintConfig.distance ?? theme.spacing.fiveUnits
         do {
