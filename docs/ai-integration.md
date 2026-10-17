@@ -480,3 +480,9 @@ Use the showcase for reference, not reuse:
 | **Component reference** | Gives the AI exact initializer signatures so it generates code that compiles |
 | **Common patterns** | Idiomatic examples prevent the AI from inventing plausible-but-wrong usage |
 | **Do not** | Anti-patterns that produce non-compiling or poorly-branded results |
+
+### Paging swipe hint persistence
+
+`TitledPageView` automatically plays its swipe hint once per host app installation,
+shared across instances and app launches. It records playback when the animation begins;
+disabled hints, Reduce Motion, and single-page collections do not consume it.

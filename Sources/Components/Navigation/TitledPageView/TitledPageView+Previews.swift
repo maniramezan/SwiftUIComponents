@@ -110,9 +110,9 @@ private let titledPageViewPreviewPages: [TitledPageViewPreviewPage] = [
             }
             .id(hintToken)
             .frame(height: 240)
-            // To replay the hint in previews, tap the button below — it re-creates the view
-            // with a fresh identity, which restarts the hint task from the beginning.
+            // Replay explicitly clears the persisted lesson before recreating the view.
             Button("Replay hint") {
+                UserDefaults.standard.removeObject(forKey: TitledPageSwipeHintHistory.storageKey)
                 selection = 0
                 hintToken = UUID()
             }
@@ -146,6 +146,7 @@ private let titledPageViewPreviewPages: [TitledPageViewPreviewPage] = [
             .designSwipeHint(.init(delay: 0.3, distance: 72))
             .frame(height: 240)
             Button("Replay hint") {
+                UserDefaults.standard.removeObject(forKey: TitledPageSwipeHintHistory.storageKey)
                 selection = 0
                 hintToken = UUID()
             }
