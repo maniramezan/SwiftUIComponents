@@ -1,4 +1,5 @@
 import SwiftUI
+import TestCommonsUI
 import Testing
 
 @testable import Components
@@ -708,14 +709,24 @@ func unmatchedSelectionRendersFallbackIndex() {
 func swipeHintPlaysWhenEnabled() async throws {
     let pages = makePages(2)
     let binding = Binding(get: { pages[0].id }, set: { _ in })
-    renderForCoverage(
+    let defaults = UserDefaults.standard
+    let storageKey = TitledPageSwipeHintHistory.storageKey
+    let previousValue = defaults.object(forKey: storageKey)
+    defaults.removeObject(forKey: storageKey)
+    defer { defaults.set(previousValue, forKey: storageKey) }
+
+    let hosted = HostedView(
         TitledPageView(pages, selection: binding, title: \PagedFixturePage.title) { page in
             Text(page.title)
         }
-        .designSwipeHint(.init(delay: 0.01))
+        .designSwipeHint(.init(delay: 0.01)),
+        size: CGSize(width: 320, height: 200)
     )
-    // Let the swipe-hint task run its delay → peek → spring-back → settle sequence.
+    defer { hosted.close() }
+    _ = hosted.renderPNG()
+    // Keep the view mounted while its appearance task plays and records the hint.
     try await Task.sleep(for: .seconds(1.2))
+    #expect(defaults.bool(forKey: storageKey))
 }
 
 @Test("stepScroll advances the active page via onJump")
