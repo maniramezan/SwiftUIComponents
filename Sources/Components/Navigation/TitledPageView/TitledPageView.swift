@@ -14,10 +14,11 @@ import SwiftUI
 ///
 /// ## Swipe hint
 ///
-/// On first appearance, `TitledPageView` plays a brief animation that peeks the
+/// Once per host app installation, `TitledPageView` plays a brief animation that peeks the
 /// next page, signalling to users that the content is horizontally swipeable.
 /// The hint fires automatically when there are two or more pages and the view
-/// is on the first page. It is suppressed when Reduce Motion is enabled.
+/// is on the first page. Completion is shared across instances and persists across app launches.
+/// It is suppressed when Reduce Motion is enabled.
 ///
 /// Configure or disable the hint with the `designSwipeHint(_:)` view modifier
 /// and a ``TitledPageSwipeHintConfig`` value:

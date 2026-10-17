@@ -70,7 +70,8 @@ public extension View {
     /// Configures the automatic swipe-hint animation on ``TitledPageView``.
     ///
     /// When enabled (the default), ``TitledPageView`` plays a brief peek animation
-    /// shortly after first appearing to hint that the content is horizontally swipeable.
+    /// once per host app installation to hint that the content is horizontally swipeable.
+    /// Playback history is shared across instances and persists across app launches.
     /// The animation is automatically suppressed when the user enables **Reduce Motion**
     /// in Accessibility settings.
     ///

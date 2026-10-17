@@ -708,14 +708,35 @@ func unmatchedSelectionRendersFallbackIndex() {
 func swipeHintPlaysWhenEnabled() async throws {
     let pages = makePages(2)
     let binding = Binding(get: { pages[0].id }, set: { _ in })
-    renderForCoverage(
-        TitledPageView(pages, selection: binding, title: \PagedFixturePage.title) { page in
-            Text(page.title)
-        }
-        .designSwipeHint(.init(delay: 0.01))
+    let defaults = UserDefaults.standard
+    let storageKey = TitledPageSwipeHintHistory.storageKey
+    let previousValue = defaults.object(forKey: storageKey)
+    defaults.removeObject(forKey: storageKey)
+    defer { defaults.set(previousValue, forKey: storageKey) }
+
+    var offset: CGFloat = 0
+    var isPlaying = false
+    let content = TitledPageViewPagedContent(
+        pages: pages,
+        idKeyPath: \PagedFixturePage.id,
+        titleKeyPath: \PagedFixturePage.title,
+        titleAlignment: .automatic,
+        indicatorStyle: .dots,
+        customTitle: nil,
+        customFooter: nil,
+        content: { page in Text(page.title) },
+        selection: binding,
+        scrollOffsetX: .constant(0),
+        viewportWidth: .constant(300),
+        unidirectionalBaseIndex: .constant(0),
+        swipeHintOffset: Binding(get: { offset }, set: { offset = $0 }),
+        isSwipeHintPlaying: Binding(get: { isPlaying }, set: { isPlaying = $0 })
     )
-    // Let the swipe-hint task run its delay → peek → spring-back → settle sequence.
-    try await Task.sleep(for: .seconds(1.2))
+
+    await content.playSwipeHintIfNeeded(reduceMotion: false)
+    #expect(defaults.bool(forKey: storageKey))
+    #expect(offset == 0)
+    #expect(!isPlaying)
 }
 
 @Test("stepScroll advances the active page via onJump")
