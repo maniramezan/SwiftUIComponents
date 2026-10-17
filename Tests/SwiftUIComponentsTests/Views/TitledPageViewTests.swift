@@ -724,9 +724,15 @@ func swipeHintPlaysWhenEnabled() async throws {
     )
     defer { hosted.close() }
     _ = hosted.renderPNG()
-    // Keep the view mounted while its appearance task plays and records the hint.
-    try await Task.sleep(for: .seconds(1.2))
+    // Parallel rendering tests can delay the appearance task on the main actor.
+    let clock = ContinuousClock()
+    let deadline = clock.now.advanced(by: .seconds(5))
+    while !defaults.bool(forKey: storageKey), clock.now < deadline {
+        try await Task.sleep(for: .milliseconds(20))
+    }
     #expect(defaults.bool(forKey: storageKey))
+    // Keep the view mounted through the peek, spring-back, and settle sequence.
+    try await Task.sleep(for: .seconds(1.2))
 }
 
 @Test("stepScroll advances the active page via onJump")
