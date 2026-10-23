@@ -67,14 +67,15 @@ struct ContentView: View {
 Components ship with VoiceOver support built in — labels, traits, hidden decorative
 elements, Reduce Motion handling, and adjustable/scroll actions on the paged and
 segmented controls. The package localizes its **own** chrome (the dismiss button,
-loading/typing announcements, chat speaker names, the default search placeholder,
-error prefixes, paginator and clear-search labels)
+loading/typing announcements, chat speaker names, the default search and chat-composer
+placeholders, chat-composer send/voice button labels, error prefixes, paginator and
+clear-search labels)
 through a String Catalog resolved from `Bundle.module`; supported locales are
 translated in `Sources/Components/Resources/Localizable.xcstrings` and validated
 in CI.
 
 **Content you pass in is your responsibility to localize.** Strings such as a
-`ThemeButton` title, a `SearchBar` placeholder, `SelectionNode` titles, or a
+`ThemeButton` title, a `SearchBar` or `ChatComposer` placeholder, `SelectionNode` titles, or a
 `ConfirmToolbarButton` accessibility label are rendered verbatim — pass already-localized
 values (e.g. `String(localized:)`) so they read correctly in every language and to
 VoiceOver.

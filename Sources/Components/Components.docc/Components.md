@@ -124,6 +124,9 @@ open Package.swift   # Opens in Xcode
 - ``ChatBubble``
 - ``ChatBubbleView``
 - ``ChatMessageRole``
+- ``ChatComposer``
+- ``ChatComposerVoiceInput``
+- ``ChatComposerVoiceState``
 - ``TypingDotsView``
 - ``TypingIndicatorBubbleView``
 - ``StructuredChatBubbleView``

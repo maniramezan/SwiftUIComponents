@@ -52,4 +52,9 @@ struct AccessibilityStringsTests {
     func searchPlaceholder() {
         #expect(String(localized: Strings.Search.placeholder) == "Search")
     }
+
+    @Test("default chat composer placeholder resolves to \"Message\"")
+    func chatComposerPlaceholder() {
+        #expect(String(localized: Strings.ChatComposer.placeholder) == "Message")
+    }
 }

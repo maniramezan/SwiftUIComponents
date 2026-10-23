@@ -45,6 +45,7 @@ enum ShowcaseComponent: String, CaseIterable, Identifiable {
 
     // MARK: - Chat
     case chat = "Chat"
+    case chatComposer = "Chat Composer"
 
     // MARK: - Collections
     case carouselRow = "Carousel Row"
@@ -83,6 +84,7 @@ enum ShowcaseComponent: String, CaseIterable, Identifiable {
         case .asyncContent: return "arrow.triangle.2.circlepath"
         case .pagedView: return "rectangle.split.3x1"
         case .chat: return "bubble.left.and.bubble.right"
+        case .chatComposer: return "mic.circle"
         case .carouselRow: return "rectangle.portrait.on.rectangle.portrait"
         case .carouselBoard: return "rectangle.grid.1x2"
         }
@@ -103,7 +105,7 @@ enum ShowcaseComponent: String, CaseIterable, Identifiable {
             return "Feedback"
         case .pagedView, .segmentedPicker:
             return "Pagination"
-        case .chat:
+        case .chat, .chatComposer:
             return "Chat"
         case .carouselRow, .carouselBoard:
             return "Collections"
