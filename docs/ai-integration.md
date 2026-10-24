@@ -340,6 +340,17 @@ Assistant conversation UI (streaming chat feature: quick-action chips + turn log
         state: { actionState(for: $0) },
         label: { $0.displayName }, systemImage: { $0.systemImage }, onSelect: { run($0) }
     )
+    // Message field + send; add voiceInput for a mic that becomes stop + level ring while listening.
+    // Write the live transcript into `draft`; the composer never clears it, so do that in onSend.
+    ChatComposer(text: $draft, prompt: "Message", isEnabled: !isBusy) { send(draft); draft = "" }
+    ChatComposer(
+        text: $draft,
+        voiceInput: ChatComposerVoiceInput(
+            // .idle / .listening(level: 0...1) / .processing / .unavailable
+            state: voiceState,
+            onStart: { startDictation() }, onStop: { stopDictation() }
+        )
+    ) { send(draft) }
     AssistantContextCard(title: "Example item", highlight: "Label", bodyText: "The sentence this item appeared in.", bodyStyle: .quoted, footnote: "From: Reference source")
     AssistantStatusBanner(message: "The assistant is temporarily unavailable.")
     AssistantUnavailableBanner(reason: "Turn on X in Settings to use this.", settingsAction: .init(title: "Open Settings", action: { openSettings() }))
@@ -447,8 +458,8 @@ Use the showcase for reference, not reuse:
 ### Accessibility & Localization
 
 - Components include VoiceOver support out of the box (labels, traits, hidden decorations, Reduce Motion, adjustable/scroll actions on paged + segmented controls).
-- The package localizes only its own chrome (dismiss button, loading/typing announcements, error prefix, paginator + clear-search labels) via a String Catalog in `Bundle.module`; supported locales are translated and validated in CI.
-- Content you pass in is rendered verbatim and is your app's responsibility to localize: `ThemeButton` titles, `SearchBar` placeholder, `SelectionNode` titles, `TextInputField` titles and messages, `ListRow` text, `AvatarView` names, `ConfirmToolbarButton` accessibility label. Pass already-localized values (e.g. `String(localized:)`).
+- The package localizes only its own chrome (dismiss button, loading/typing announcements, error prefix, paginator + clear-search labels, chat-composer placeholder + send/voice button labels) via a String Catalog in `Bundle.module`; supported locales are translated and validated in CI.
+- Content you pass in is rendered verbatim and is your app's responsibility to localize: `ThemeButton` titles, `SearchBar` and `ChatComposer` placeholders, `SelectionNode` titles, `TextInputField` titles and messages, `ListRow` text, `AvatarView` names, `ConfirmToolbarButton` accessibility label. Pass already-localized values (e.g. `String(localized:)`).
 
 ### Do Not
 
@@ -464,7 +475,8 @@ Use the showcase for reference, not reuse:
 - Don't nest `CarouselRow` inside another horizontal `ScrollView` — it measures its own finite width to size items, which an unbounded horizontal proposal can't provide. It works in any finite-width slot, including a flexible `HStack` slot next to fixed siblings.
 - Don't nest `CarouselBoard` inside another vertical `ScrollView` — it owns its own scroll. Use `CarouselBoardContent` to embed shelves in a scroll you already manage.
 - Don't wrap chat bubbles in `.environment(\.layoutDirection, .rightToLeft)` to render a right-to-left reply — that mirrors the row and flips which side of the screen each role sits on. Pass `contentLayoutDirection: .rightToLeft` per bubble instead; role alignment is leading/trailing, so a genuinely right-to-left *localization* still mirrors correctly on its own.
-- Don't reimplement a streaming chat feature (turn log, quick-action chips, status banners) from scratch — compose `AssistantConversationList`, `AssistantQuickActionChipRow`, `AssistantContextCard`, `AssistantUnavailableBanner`, and `AssistantUpgradeNotice` instead; they're generic over your own turn/action model.
+- Don't reimplement a streaming chat feature (turn log, quick-action chips, status banners, message field) from scratch — compose `AssistantConversationList`, `AssistantQuickActionChipRow`, `AssistantContextCard`, `AssistantUnavailableBanner`, `AssistantUpgradeNotice`, and `ChatComposer` instead; they're generic over your own turn/action model.
+- Don't let users type while `ChatComposer` is listening — it pauses editing for you; keep writing the live transcript into the text binding and let them edit after recognition stops.
 ```
 
 ---

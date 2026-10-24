@@ -82,6 +82,42 @@ enum Strings {
         }
     }
 
+    @usableFromInline
+    enum ChatComposer {
+        @usableFromInline
+        static let placeholder = LocalizedStringResource(
+            "Message",
+            bundle: .atURL(Bundle.module.bundleURL),
+            comment:
+                "Placeholder shown in an empty chat message field when the caller supplies no placeholder of its own."
+        )
+
+        static let sendButton = LocalizedStringResource(
+            "Send",
+            bundle: .atURL(Bundle.module.bundleURL),
+            comment: "Accessibility label for the button that sends the typed chat message."
+        )
+
+        static let startVoiceButton = LocalizedStringResource(
+            "Start voice input",
+            bundle: .atURL(Bundle.module.bundleURL),
+            comment: "Accessibility label for the microphone button that starts dictating a chat message."
+        )
+
+        static let stopVoiceButton = LocalizedStringResource(
+            "Stop voice input",
+            bundle: .atURL(Bundle.module.bundleURL),
+            comment: "Accessibility label for the button that stops dictating a chat message while listening."
+        )
+
+        static let processingVoice = LocalizedStringResource(
+            "Processing speech",
+            bundle: .atURL(Bundle.module.bundleURL),
+            comment:
+                "Accessibility label for the progress indicator shown while dictated speech is turned into text."
+        )
+    }
+
     enum Chat {
         static let typingIndicator = LocalizedStringResource(
             "Typing",
