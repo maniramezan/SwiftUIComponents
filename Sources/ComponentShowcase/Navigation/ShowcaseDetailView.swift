@@ -68,6 +68,7 @@ private struct ShowcaseDetailContent: View {
         case .asyncContent: AsyncContentDetailView()
         case .pagedView: PagedViewDetailView()
         case .chat: ChatPlaygroundDetailView()
+        case .chatComposer: ChatComposerDetailView()
         case .carouselRow: CarouselRowDetailView()
         case .carouselBoard: CarouselBoardDetailView()
         }

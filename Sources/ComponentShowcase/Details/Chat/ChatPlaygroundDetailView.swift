@@ -255,7 +255,9 @@ private struct ChatPlayground: View {
             }
 
             if composerMode.showsTextField {
-                ChatPlaygroundComposer(draftText: $draftText, onSend: sendDraft)
+                ChatComposer(text: $draftText, onSend: sendDraft)
+                    .padding(.horizontal, theme.spacing.oneUnit)
+                    .padding(.bottom, theme.spacing.oneUnit)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
@@ -544,41 +546,6 @@ private struct ChatPlaygroundBubble: View {
                 contentLayoutDirection: contentLayoutDirection
             )
         }
-    }
-}
-
-// MARK: - Composer
-
-/// The text-field composer pinned to the bottom of ``ChatPlayground``.
-///
-/// A dedicated `View` type — rather than an inline `@ViewBuilder` property —
-/// so typing a draft re-renders only the composer, not the whole scrollback.
-private struct ChatPlaygroundComposer: View {
-    @Binding var draftText: String
-    let onSend: () -> Void
-    @Environment(\.designTheme) private var theme
-
-    var body: some View {
-        HStack(spacing: theme.spacing.oneUnit) {
-            TextField("Message…", text: $draftText)
-                .textFieldStyle(.roundedBorder)
-                .onSubmit(onSend)
-
-            Button(action: onSend) {
-                Image(systemName: "arrow.up.circle.fill")
-                    .font(theme.typography.title2)
-                    .foregroundStyle(isDraftEmpty ? theme.colors.textSecondary : theme.colors.primary)
-            }
-            .buttonStyle(.plain)
-            .disabled(isDraftEmpty)
-            .accessibilityLabel(Text("Send"))
-        }
-        .padding(.horizontal, theme.spacing.oneUnit)
-        .padding(.bottom, theme.spacing.oneUnit)
-    }
-
-    private var isDraftEmpty: Bool {
-        draftText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 }
 

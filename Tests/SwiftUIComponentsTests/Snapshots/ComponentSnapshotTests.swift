@@ -62,6 +62,28 @@ struct ComponentSnapshotTests {
         assertComponentSnapshot(view, size: CGSize(width: 320, height: 80))
     }
 
+    // MARK: - Chat Composer
+
+    @Test
+    @MainActor func designChatComposer() {
+        let view = VStack(spacing: 12) {
+            ChatComposer(text: .constant("")) {}
+            ChatComposer(
+                text: .constant(""),
+                voiceInput: ChatComposerVoiceInput(state: .idle, onStart: {}, onStop: {})
+            ) {}
+            ChatComposer(
+                text: .constant("Dictated so far"),
+                voiceInput: ChatComposerVoiceInput(
+                    state: .listening(level: 0.7), onStart: {}, onStop: {})
+            ) {}
+        }
+        .padding()
+        .frame(width: 320)
+
+        assertComponentSnapshot(view, size: CGSize(width: 320, height: 220))
+    }
+
     // MARK: - Toggle
 
     @Test
