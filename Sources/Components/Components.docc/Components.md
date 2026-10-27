@@ -61,6 +61,10 @@ open Package.swift   # Opens in Xcode
 
 ### Surfaces
 
+- ``SphereView``
+- ``OrbitingSphere``
+- ``SphereOrbitStyle``
+
 - ``CardSurface``
 - ``CapsuleSurface``
 - ``InputSurface``

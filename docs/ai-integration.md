@@ -38,6 +38,29 @@ Platforms: iOS 18+, macOS 15+, Mac Catalyst 18+. Swift language mode: 6 (strict 
 - Apply `.designTheme(...)` once near the root of a feature or app. Components read the active theme from the environment.
 - Prefer composing with existing components and modifiers before creating app-local lookalikes.
 
+### Spheres and Orbits
+
+`SphereView(diameter:tint:content:)` draws a shaded sphere with arbitrary upright content.
+Its default diameter is `theme.spacing.sixUnits * 2`, and tint defaults to `theme.colors.primary`.
+
+`OrbitingSphere(_:style:size:radius:isAnimating:revolutionDuration:phase:showsOrbit:center:satellite:)`
+accepts an array of uniquely identifiable models and real SwiftUI center/satellite views.
+Use `.spatial` for a tilting orbit with perspective and occlusion, or `.ring` for a flat circle.
+The canvas defaults to `theme.spacing.sixUnits * 6`; orbit radius defaults to 30% of that canvas
+for `.spatial`, 38% for `.ring`. Motion defaults to `theme.motion.orbitalRevolutionDuration`
+(12 seconds per turn); Reduce Motion, VoiceOver, and inactive scenes pause it automatically.
+Set `isAnimating: false` for interactive controls. Pausing and resuming preserves the phase.
+Sizing the center and satellites to fit the canvas is the caller's responsibility.
+
+    OrbitingSphere(items, style: .ring, isAnimating: false) {
+        SphereView { Image(systemName: "plus") }
+    } satellite: { item in
+        Button(item.label) { select(item) }
+    }
+
+Do not make essential content accessible only through continuously moving or occluded satellites.
+Provide stationary controls or use `.ring` with `isAnimating: false`.
+
 ### Theme Setup (required)
 
 Apply once at the root of your view hierarchy; all child components inherit it via SwiftUI environment:
