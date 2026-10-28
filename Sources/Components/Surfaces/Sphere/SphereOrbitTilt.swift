@@ -2,7 +2,7 @@ import SwiftUI
 
 /// The center angle, maximum deviation, and timing of one spatial orbit tilt.
 ///
-/// Use separate values for ``OrbitingSphere`` pitch and roll. A zero amplitude fixes
+/// Use separate values for ``SphereOrbitMotion`` pitch and roll. A zero amplitude fixes
 /// the angle at `center`. Explicit cycle durations are independent of satellite speed.
 ///
 /// ```swift

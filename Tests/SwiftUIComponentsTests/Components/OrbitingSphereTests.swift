@@ -74,6 +74,45 @@ struct OrbitingSphereTests {
         #expect(items.map(\.id) == [1, 2])
     }
 
+    @Test("Insertion and removal redistribute along the ring instead of cutting through it", arguments: [4, 6])
+    func redistributionFollowsOrbit(newCount: Int) {
+        let initialPosition = 3.0 / 5
+        let targetPosition = 3.0 / Double(newCount)
+        var modifier = SphereOrbitPlacement(
+            position: initialPosition, turns: 2.25, phase: -.pi / 2,
+            radius: 100, style: .ring, orientation: .init(pitch: 0, roll: 0)
+        )
+        #expect(modifier.animatableData == initialPosition)
+        let start = modifier.placement
+        for progress in [0.0, 0.25, 0.5, 0.75, 1.0] {
+            modifier.animatableData = initialPosition + (targetPosition - initialPosition) * progress
+            let placement = modifier.placement
+            #expect(abs(hypot(placement.offset.x, placement.offset.y) - 100) < 0.0001)
+            #expect(placement.scale == 1)
+            #expect(placement.depth == 0)
+        }
+        #expect(modifier.position == targetPosition)
+        #expect(abs(modifier.placement.offset.x - start.offset.x) > 1)
+        #expect(modifier.turns == 2.25)
+    }
+
+    @Test("Spatial redistribution preserves perspective and crosses behind the center")
+    func redistributionPreservesDepth() {
+        var modifier = SphereOrbitPlacement(
+            position: 0.25, turns: 3, phase: 0,
+            radius: 100, style: .spatial, orientation: .init(pitch: -.pi / 4, roll: .pi / 6)
+        )
+        #expect(modifier.placement.depth > 0)
+        #expect(modifier.placement.scale > 1)
+        modifier.animatableData = 0.5
+        #expect(abs(modifier.placement.depth) < 0.0001)
+        #expect(abs(modifier.placement.scale - 1) < 0.0001)
+        modifier.animatableData = 0.75
+        #expect(modifier.placement.depth < 0)
+        #expect(modifier.placement.scale < 1)
+        #expect(modifier.turns == 3)
+    }
+
     @Test("Accessibility, scene state, and caller pause requests stop motion")
     func motionPolicy() {
         #expect(
@@ -100,33 +139,91 @@ struct OrbitingSphereTests {
     func rendering() {
         for style in SphereOrbitStyle.allCases {
             renderForCoverage(
-                OrbitingSphere([Item(id: 1), Item(id: 2)], style: style, isAnimating: false) {
+                OrbitingSphere([Item(id: 1), Item(id: 2)]) {
                     SphereView { Text("Center") }
                 } satellite: { item in
                     SphereView(diameter: 44, tint: .purple) { Text(item.id.formatted()) }
-                },
+                }
+                .sphereOrbitStyle(style)
+                .sphereOrbitPaused(),
                 size: CGSize(width: 320, height: 320)
             )
         }
         renderForCoverage(
-            OrbitingSphere(
-                [Item(id: 1), Item(id: 2)], isAnimating: false,
-                pitch: .init(center: .degrees(-45), amplitude: .degrees(15), cycleDuration: 20),
-                roll: .init(center: .degrees(25))
-            ) {
+            OrbitingSphere([Item(id: 1), Item(id: 2)]) {
                 SphereView { Text("Center") }
             } satellite: { item in
                 SphereView { Text(item.id.formatted()) }
-            },
+            }
+            .sphereOrbitMotion(
+                .init(
+                    isPaused: true,
+                    pitch: .init(center: .degrees(-45), amplitude: .degrees(15), cycleDuration: 20),
+                    roll: .init(center: .degrees(25))
+                )
+            ),
             size: CGSize(width: 320, height: 320)
         )
         renderForCoverage(
-            OrbitingSphere([Item](), showsOrbit: false) {
+            OrbitingSphere([Item]()) {
                 SphereView { EmptyView() }
             } satellite: { _ in
                 EmptyView()
-            },
+            }
+            .sphereOrbitConfiguration(.init(showsOrbit: false)),
             size: CGSize(width: 320, height: 320)
         )
+    }
+
+    @Test("Renders with collection animations enabled or disabled", arguments: [true, false])
+    func changeAnimationSettings(animatesChanges: Bool) {
+        renderForCoverage(
+            OrbitingSphere([Item(id: 1), Item(id: 2)]) {
+                Text("Center")
+            } satellite: { item in
+                Text(item.id.formatted())
+            }
+            .sphereOrbitStyle(.ring)
+            .sphereOrbitMotion(.init(isPaused: true, animatesChanges: animatesChanges)),
+            size: CGSize(width: 320, height: 320)
+        )
+    }
+
+    @Test(
+        "Native frames size the orbit and automatic radius fits the shorter side",
+        arguments: [CGFloat?.none, .some(.nan)])
+    func nativeFrameControlsRadius(radius: CGFloat?) throws {
+        var centerPoint: CGPoint?
+        var satellitePoint: CGPoint?
+        renderForCoverage(
+            OrbitingSphere([Item(id: 1)]) {
+                OrbitGeometryMarker { centerPoint = $0 }
+            } satellite: { _ in
+                OrbitGeometryMarker { satellitePoint = $0 }
+            }
+            .sphereOrbitStyle(.ring)
+            .sphereOrbitPaused()
+            .sphereOrbitConfiguration(.init(radius: radius))
+            .frame(width: 240, height: 160)
+            .coordinateSpace(name: "OrbitFrameTest")
+        )
+        let center = try #require(centerPoint)
+        let satellite = try #require(satellitePoint)
+        #expect(abs(hypot(satellite.x - center.x, satellite.y - center.y) - 60.8) < 1)
+    }
+}
+
+private struct OrbitGeometryMarker: View {
+    let observe: (CGPoint) -> Void
+
+    var body: some View {
+        Color.clear
+            .frame(width: 1, height: 1)
+            .onGeometryChange(for: CGPoint.self) { geometry in
+                let frame = geometry.frame(in: .named("OrbitFrameTest"))
+                return CGPoint(x: frame.midX, y: frame.midY)
+            } action: { point in
+                observe(point)
+            }
     }
 }

@@ -43,16 +43,47 @@ Platforms: iOS 18+, macOS 15+, Mac Catalyst 18+. Swift language mode: 6 (strict 
 `SphereView(diameter:tint:content:)` draws a shaded sphere with arbitrary upright content.
 Its default diameter is `theme.spacing.sixUnits * 2`, and tint defaults to `theme.colors.primary`.
 
-`OrbitingSphere(_:style:size:radius:isAnimating:revolutionDuration:pitch:roll:phase:showsOrbit:center:satellite:)`
-accepts an array of uniquely identifiable models and real SwiftUI center/satellite views.
-Use `.spatial` for a tilting orbit with perspective and occlusion, or `.ring` for a flat circle.
-The canvas defaults to `theme.spacing.sixUnits * 6`; orbit radius defaults to 30% of that canvas
-for `.spatial`, 38% for `.ring`. Motion defaults to `theme.motion.orbitalRevolutionDuration`
-(12 seconds per turn); Reduce Motion, VoiceOver, and inactive scenes pause it automatically.
-Set `isAnimating: false` for interactive controls. Pausing and resuming preserves the phase.
-Sizing the center and satellites to fit the canvas is the caller's responsibility.
+`OrbitingSphere(_:center:satellite:)` accepts an array of uniquely identifiable models and real
+SwiftUI center/satellite views. Use your existing models; no package-specific data model is required.
+Configure appearance and behavior with modifiers rather than initializer arguments:
 
-The `pitch` and `roll` parameters each accept a `SphereOrbitTilt(center:amplitude:cycleDuration:)`.
+    OrbitingSphere(items) {
+        SphereView { Image(systemName: "plus") }
+    } satellite: { item in
+        Button(item.label) { select(item) }
+    }
+    .sphereOrbitStyle(.ring)
+    .sphereOrbitPaused()
+    .frame(width: 300, height: 300)
+
+- `.sphereOrbitStyle(_:)` selects `.spatial` for perspective and occlusion, or `.ring` for a flat circle.
+- `.sphereOrbitPaused(_ paused: Bool = true)` pauses revolution and tilt while preserving elapsed time.
+  Use it for interactive controls. Collection transitions remain enabled.
+- `.sphereOrbitConfiguration(_:)` accepts a reusable
+  `SphereOrbitConfiguration(style:radius:phase:showsOrbit:)` value for placement and the decorative guide.
+- `.sphereOrbitMotion(_:)` accepts a reusable
+  `SphereOrbitMotion(isPaused:revolutionDuration:pitch:roll:animatesChanges:)` value.
+  Presets `.continuous` and `.paused` retain animated collection changes.
+
+All four modifiers apply to descendant orbits, including through custom container views.
+The closest configuration or motion modifier wins. The style and pause modifiers change only
+their corresponding field, preserving inherited radius, tilt, timing, and transition settings.
+Place those local overrides closer to the orbit than a shared configuration modifier.
+
+The canvas accepts its parent's size proposal. Use ordinary `.frame` modifiers to size it;
+without finite constraints, its ideal square side is `theme.spacing.sixUnits * 6`.
+When only one proposed dimension is finite, the canvas uses a square. Rectangular frames center the orbit and use
+the shorter side to calculate automatic radius: 30% for `.spatial`, 38% for `.ring`.
+Sizing the center and satellites to fit is the caller's responsibility; content is not clipped.
+
+Revolution timing defaults to `theme.motion.orbitalRevolutionDuration` (12 seconds per turn).
+Reduce Motion, VoiceOver, and inactive scenes pause continuous motion automatically.
+Insertions and removals scale and fade satellites; survivors follow the orbit to their new spacing.
+Keep each model's ID stable when updating the array. Transitions work while paused, and use
+`theme.motion.animation(reducingMotion:)`. Reduce Motion fades only and updates spacing immediately.
+Set `animatesChanges: false` in the motion settings to apply collection updates immediately.
+
+The motion settings' `pitch` and `roll` each accept a `SphereOrbitTilt(center:amplitude:cycleDuration:)`.
 Angles use SwiftUI `Angle`; amplitude is the maximum deviation on either side of the center.
 Zero amplitude holds a fixed angle. Defaults are `.defaultPitch` (−0.65 ± 0.30 radians) and
 `.defaultRoll` (0 ± 0.50 radians). A `nil` cycle duration follows satellite timing: pitch completes
@@ -62,24 +93,33 @@ Both start at their center toward the positive limit, share pause/accessibility 
 ignored by `.ring`. Nonfinite centers and nonfinite/negative amplitudes log faults and use zero;
 nonpositive or nonfinite cycle durations log faults and use `nil`.
 
-    OrbitingSphere(
-        items,
-        pitch: .init(center: .degrees(-35), amplitude: .degrees(20), cycleDuration: 24),
-        roll: .init(center: .zero, amplitude: .degrees(30), cycleDuration: 40)
-    ) {
+    OrbitingSphere(items) {
         SphereView { Text("Center") }
     } satellite: { item in
         SphereView { Text(item.label) }
     }
+    .sphereOrbitConfiguration(.init(radius: 90, showsOrbit: false))
+    .sphereOrbitMotion(
+        .init(
+            revolutionDuration: 18,
+            pitch: .init(center: .degrees(-35), amplitude: .degrees(20), cycleDuration: 24),
+            roll: .init(center: .zero, amplitude: .degrees(30), cycleDuration: 40)
+        )
+    )
+    .frame(width: 320, height: 320)
 
-    OrbitingSphere(items, style: .ring, isAnimating: false) {
-        SphereView { Image(systemName: "plus") }
-    } satellite: { item in
-        Button(item.label) { select(item) }
-    }
+Migration from the previous initializer is source-breaking:
+
+| Previous initializer argument | Replacement |
+| --- | --- |
+| `style` | `.sphereOrbitStyle(...)` or configuration `style` |
+| `size` | `.frame(width: size, height: size)` |
+| `radius`, `phase`, `showsOrbit` | `SphereOrbitConfiguration` through `.sphereOrbitConfiguration(...)` |
+| `isAnimating` | `.sphereOrbitPaused(!isAnimating)` |
+| `revolutionDuration`, `pitch`, `roll`, `animatesChanges` | `SphereOrbitMotion` through `.sphereOrbitMotion(...)` |
 
 Do not make essential content accessible only through continuously moving or occluded satellites.
-Provide stationary controls or use `.ring` with `isAnimating: false`.
+Provide stationary controls or use `.sphereOrbitStyle(.ring)` with `.sphereOrbitPaused()`.
 
 ### Theme Setup (required)
 

@@ -7,107 +7,92 @@ import SwiftUI
 /// Satellite content remains upright and retains its buttons, gestures, and accessibility. Choose
 /// a stationary ring for controls; reserve continuous spatial motion for decorative experiences.
 /// Reduce Motion, VoiceOver, and an inactive scene automatically pause continuous motion.
+/// Adding or removing items scales and fades satellites while survivors follow the orbit to
+/// their new spacing. Reduce Motion uses fades without animated redistribution.
+/// Configure placement and motion with `sphereOrbitConfiguration(_:)` and `sphereOrbitMotion(_:)`.
+/// The canvas accepts its parent's size proposal; `frame` controls its size. Without a finite
+/// proposal, its ideal square side is `theme.spacing.sixUnits * 6`.
 ///
 /// ```swift
-/// OrbitingSphere(items, style: .ring, isAnimating: false) {
+/// OrbitingSphere(items) {
 ///     SphereView { Image(systemName: "plus") }
 /// } satellite: { item in
 ///     SphereView(diameter: 48) { Text(item.label) }
 /// }
+/// .sphereOrbitStyle(.ring)
+/// .sphereOrbitPaused()
 /// ```
 public struct OrbitingSphere<Item: Identifiable, Center: View, Satellite: View>: View {
-    private let items: [Item]
-    private let style: SphereOrbitStyle
-    private let size: CGFloat?
-    private let radius: CGFloat?
-    private let isAnimating: Bool
-    private let revolutionDuration: TimeInterval?
-    private let pitch: SphereOrbitTilt
-    private let roll: SphereOrbitTilt
-    private let phase: Angle
-    private let showsOrbit: Bool
+    private let items: [SphereOrbitSatelliteItem<Item>]
+    private let itemIDs: [Item.ID]
     private let center: Center
     private let satellite: (Item) -> Satellite
     @Environment(\.designTheme) private var theme
+    @Environment(\.sphereOrbitConfiguration) private var configuration
+    @Environment(\.sphereOrbitMotion) private var motion
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.accessibilityVoiceOverEnabled) private var voiceOverEnabled
     @Environment(\.scenePhase) private var scenePhase
     @State private var elapsed: TimeInterval = 0
     @State private var animationStartedAt: Date?
 
-    /// Creates an orbit with stable item identities.
+    /// Creates an orbit from caller-owned models and content.
+    ///
+    /// Apply configuration with the `sphereOrbit` modifiers and size the canvas with `frame`.
+    /// Content is not clipped; size the center and satellites to fit the chosen radius.
     ///
     /// - Parameters:
     ///   - items: Unique identifiable items. Empty input displays only the center; duplicate IDs log a fault and are ignored.
-    ///   - style: Flat ring or spatial projection. Defaults to `.spatial`.
-    ///   - size: Square canvas side. `nil` uses `theme.spacing.sixUnits * 6`.
-    ///   - radius: Orbit radius. `nil` uses 38% of the canvas for a ring or 30% for a spatial orbit.
-    ///     Invalid size/radius values log a fault and use their defaults. Content is not clipped;
-    ///     size your center and satellites to fit the chosen radius.
-    ///   - isAnimating: Whether items revolve continuously. Pause this while users interact.
-    ///   - revolutionDuration: Seconds per turn. `nil` uses `theme.motion.orbitalRevolutionDuration`.
-    ///     Invalid values log a fault and use that token.
-    ///   - pitch: Spatial up/down tilt range and timing. Defaults to ``SphereOrbitTilt/defaultPitch``.
-    ///     Ignored for `.ring`.
-    ///   - roll: Spatial in-plane tilt range and timing. Defaults to ``SphereOrbitTilt/defaultRoll``.
-    ///     Ignored for `.ring`. Both tilts share the orbit's pause and accessibility behavior.
-    ///   - phase: Starting item angle, defaulting to the top of the ring.
-    ///   - showsOrbit: Whether a decorative orbit guide is visible.
     ///   - center: Custom center content, typically a ``SphereView`` or a button containing one.
     ///   - satellite: Custom content for each item. Caller supplies localized text and labels.
     public init(
         _ items: [Item],
-        style: SphereOrbitStyle = .spatial,
-        size: CGFloat? = nil,
-        radius: CGFloat? = nil,
-        isAnimating: Bool = true,
-        revolutionDuration: TimeInterval? = nil,
-        pitch: SphereOrbitTilt = .defaultPitch,
-        roll: SphereOrbitTilt = .defaultRoll,
-        phase: Angle = .degrees(-90),
-        showsOrbit: Bool = true,
         @ViewBuilder center: () -> Center,
         @ViewBuilder satellite: @escaping (Item) -> Satellite
     ) {
-        self.items = SphereOrbitGeometry.uniqueItems(items)
-        self.style = style
-        self.size = size
-        self.radius = radius
-        self.isAnimating = isAnimating
-        self.revolutionDuration = revolutionDuration
-        self.pitch = pitch
-        self.roll = roll
-        self.phase = phase
-        self.showsOrbit = showsOrbit
+        let uniqueItems = SphereOrbitGeometry.uniqueItems(items)
+        self.items = uniqueItems.enumerated().map { index, item in
+            SphereOrbitSatelliteItem(item: item, position: Double(index) / Double(uniqueItems.count))
+        }
+        self.itemIDs = uniqueItems.map(\.id)
         self.center = center()
         self.satellite = satellite
     }
 
     /// The center and orbiting child views, with motion resolved from the environment.
     public var body: some View {
-        let side = SphereOrbitGeometry.positive(size, fallback: theme.spacing.sixUnits * 6)
-        let orbitRadius = SphereOrbitGeometry.positive(
-            radius,
-            fallback: side
-                * (style == .ring ? SphereOrbitGeometry.ringRadiusRatio : SphereOrbitGeometry.spatialRadiusRatio)
-        )
+        let phase = SphereOrbitGeometry.phase(configuration.phase.radians)
         let duration = SphereOrbitGeometry.positive(
-            revolutionDuration, fallback: theme.motion.orbitalRevolutionDuration)
+            motion.revolutionDuration, fallback: theme.motion.orbitalRevolutionDuration)
         let moving = SphereOrbitGeometry.shouldAnimate(
-            requested: isAnimating, reduceMotion: reduceMotion, voiceOver: voiceOverEnabled,
+            requested: !motion.isPaused, reduceMotion: reduceMotion, voiceOver: voiceOverEnabled,
             sceneActive: scenePhase == .active, hasItems: !items.isEmpty
         )
-        TimelineView(.animation(paused: !moving)) { context in
-            let currentElapsed = elapsed + (animationStartedAt.map { context.date.timeIntervalSince($0) } ?? 0)
-            let turns = SphereOrbitGeometry.turns(elapsed: currentElapsed, duration: duration)
-            let orientation = SphereOrbitGeometry.orientation(
-                elapsed: currentElapsed, revolutionDuration: duration, pitch: pitch, roll: roll
-            )
-            SphereOrbitFrame(
-                items: items, style: style, side: side, radius: orbitRadius, turns: turns,
-                orientation: orientation, phase: phase.radians, showsOrbit: showsOrbit,
-                center: center, satellite: satellite
-            )
+        SphereOrbitCanvasLayout(idealSide: theme.spacing.sixUnits * 6) {
+            GeometryReader { geometry in
+                let side = min(geometry.size.width, geometry.size.height)
+                let orbitRadius = SphereOrbitGeometry.positive(
+                    configuration.radius,
+                    fallback: side
+                        * (configuration.style == .ring
+                            ? SphereOrbitGeometry.ringRadiusRatio : SphereOrbitGeometry.spatialRadiusRatio)
+                )
+                TimelineView(.animation(paused: !moving)) { context in
+                    let currentElapsed = elapsed + (animationStartedAt.map { context.date.timeIntervalSince($0) } ?? 0)
+                    let turns = SphereOrbitGeometry.turns(elapsed: currentElapsed, duration: duration)
+                    let orientation = SphereOrbitGeometry.orientation(
+                        elapsed: currentElapsed, revolutionDuration: duration, pitch: motion.pitch, roll: motion.roll
+                    )
+                    SphereOrbitFrame(
+                        items: items, itemIDs: itemIDs, style: configuration.style, side: side,
+                        radius: orbitRadius, turns: turns, orientation: orientation,
+                        phase: phase,
+                        showsOrbit: configuration.showsOrbit, animatesChanges: motion.animatesChanges,
+                        center: center, satellite: satellite
+                    )
+                    .frame(width: geometry.size.width, height: geometry.size.height)
+                }
+            }
         }
         .onChange(of: moving, initial: true) { _, active in
             if active {
@@ -121,7 +106,8 @@ public struct OrbitingSphere<Item: Identifiable, Center: View, Satellite: View>:
 }
 
 private struct SphereOrbitFrame<Item: Identifiable, Center: View, Satellite: View>: View {
-    let items: [Item]
+    let items: [SphereOrbitSatelliteItem<Item>]
+    let itemIDs: [Item.ID]
     let style: SphereOrbitStyle
     let side: CGFloat
     let radius: CGFloat
@@ -129,9 +115,11 @@ private struct SphereOrbitFrame<Item: Identifiable, Center: View, Satellite: Vie
     let orientation: SphereOrbitGeometry.Orientation
     let phase: Double
     let showsOrbit: Bool
+    let animatesChanges: Bool
     let center: Center
     let satellite: (Item) -> Satellite
     @Environment(\.designTheme) private var theme
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         ZStack {
@@ -142,19 +130,33 @@ private struct SphereOrbitFrame<Item: Identifiable, Center: View, Satellite: Vie
                     .allowsHitTesting(false)
             }
             center.zIndex(0)
-            ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
-                let angle = SphereOrbitGeometry.angle(index: index, count: items.count, turns: turns, phase: phase)
-                let placement = SphereOrbitGeometry.placement(
-                    angle: angle, radius: radius, style: style, orientation: orientation
-                )
-                satellite(item)
-                    .scaleEffect(placement.scale)
-                    .offset(x: placement.offset.x, y: placement.offset.y)
-                    .zIndex(style == .ring ? 1 : placement.depth)
+            ForEach(items) { entry in
+                satellite(entry.item)
+                    .transition(reduceMotion ? .opacity : .scale(scale: 0).combined(with: .opacity))
+                    .modifier(
+                        SphereOrbitPlacement(
+                            position: entry.position, turns: turns, phase: phase,
+                            radius: radius, style: style, orientation: orientation
+                        )
+                    )
+                    .animation(
+                        animatesChanges && !reduceMotion ? theme.motion.animation(reducingMotion: reduceMotion) : nil,
+                        value: entry.position
+                    )
             }
+            .animation(
+                animatesChanges ? theme.motion.animation(reducingMotion: reduceMotion) : nil,
+                value: itemIDs
+            )
         }
         .frame(width: side, height: side)
     }
+}
+
+private struct SphereOrbitSatelliteItem<Item: Identifiable>: Identifiable {
+    let item: Item
+    let position: Double
+    var id: Item.ID { item.id }
 }
 
 private struct SphereOrbitPath: Shape {

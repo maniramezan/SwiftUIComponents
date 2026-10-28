@@ -7,12 +7,15 @@ struct OrbitingSphereDetailView: View {
     @State private var style = SphereOrbitStyle.spatial
     @State private var count = 5
     @State private var isAnimating = true
+    @State private var animatesChanges = true
     @State private var showsOrbit = true
     @State private var size = 288.0
     @State private var radius = 86.0
+    @State private var usesAutomaticRadius = true
     @State private var centerSize = 96.0
     @State private var itemSize = 40.0
     @State private var duration = 12.0
+    @State private var usesThemeTiming = true
     @State private var phase = -90.0
     @State private var tint = Color.blue
     @State private var centerLabel = "+"
@@ -23,12 +26,7 @@ struct OrbitingSphereDetailView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: theme.spacing.twoUnits) {
             ShowcaseSection("Interactive orbit") {
-                OrbitingSphere(
-                    (0..<count).map { SphereShowcaseItem(id: $0) },
-                    style: style, size: size, radius: radius, isAnimating: isAnimating,
-                    revolutionDuration: duration, pitch: pitch.configuration, roll: roll.configuration,
-                    phase: .degrees(phase), showsOrbit: showsOrbit
-                ) {
+                OrbitingSphere((0..<count).map { SphereShowcaseItem(id: $0) }) {
                     SphereView(diameter: centerSize, tint: tint) {
                         Text(centerLabel).font(theme.typography.title).foregroundStyle(theme.colors.onPrimary)
                     }
@@ -43,6 +41,21 @@ struct OrbitingSphereDetailView: View {
                     }
                     .buttonStyle(.plain)
                 }
+                .sphereOrbitStyle(style)
+                .sphereOrbitPaused(!isAnimating)
+                .sphereOrbitConfiguration(
+                    SphereOrbitConfiguration(
+                        radius: usesAutomaticRadius ? nil : radius, phase: .degrees(phase), showsOrbit: showsOrbit
+                    )
+                )
+                .sphereOrbitMotion(
+                    SphereOrbitMotion(
+                        revolutionDuration: usesThemeTiming ? nil : duration,
+                        pitch: pitch.configuration, roll: roll.configuration,
+                        animatesChanges: animatesChanges
+                    )
+                )
+                .frame(width: size, height: size)
                 .frame(maxWidth: .infinity)
                 Text(selected.isEmpty ? "Select an item to pause" : "Selected: \(selected)")
             }
@@ -52,9 +65,12 @@ struct OrbitingSphereDetailView: View {
                     Text("Ring").tag(SphereOrbitStyle.ring)
                 }
                 Toggle("Animate", isOn: $isAnimating).toggleStyle(ThemeToggleStyle())
+                Toggle("Animate item changes", isOn: $animatesChanges).toggleStyle(ThemeToggleStyle())
                 Toggle("Show orbit", isOn: $showsOrbit).toggleStyle(ThemeToggleStyle())
                 Stepper("Items: \(count)", value: $count, in: 0...10)
+                Toggle("Use theme timing", isOn: $usesThemeTiming).toggleStyle(ThemeToggleStyle())
                 LabeledContent("Seconds per turn") { Slider(value: $duration, in: 2...30) }
+                    .disabled(usesThemeTiming)
                 LabeledContent("Starting angle") { Slider(value: $phase, in: -180...180) }
             }
             ShowcaseOrbitTiltControls(title: "Pitch", settings: $pitch)
@@ -63,7 +79,9 @@ struct OrbitingSphereDetailView: View {
                 .disabled(style != .spatial)
             ShowcaseSection("Size and appearance") {
                 LabeledContent("Canvas") { Slider(value: $size, in: 200...400) }
+                Toggle("Automatic radius", isOn: $usesAutomaticRadius).toggleStyle(ThemeToggleStyle())
                 LabeledContent("Orbit radius") { Slider(value: $radius, in: 50...150) }
+                    .disabled(usesAutomaticRadius)
                 LabeledContent("Center diameter") { Slider(value: $centerSize, in: 44...180) }
                 LabeledContent("Item diameter") { Slider(value: $itemSize, in: 24...64) }
                 ColorPicker("Sphere color", selection: $tint)

@@ -22,6 +22,20 @@ nonisolated enum SphereOrbitGeometry {
     static let rollRate = 0.23
     static let pathSamples = 72
 
+    static func canvasSize(width: CGFloat?, height: CGFloat?, idealSide: CGFloat) -> CGSize {
+        let finiteWidth = width.flatMap { $0.isFinite && $0 >= 0 ? $0 : nil }
+        let finiteHeight = height.flatMap { $0.isFinite && $0 >= 0 ? $0 : nil }
+        return CGSize(width: finiteWidth ?? finiteHeight ?? idealSide, height: finiteHeight ?? finiteWidth ?? idealSide)
+    }
+
+    static func phase(_ radians: Double) -> Double {
+        guard radians.isFinite else {
+            logger.fault("Invalid orbit phase; using the top of the orbit")
+            return -.pi / 2
+        }
+        return radians
+    }
+
     static func shouldAnimate(
         requested: Bool, reduceMotion: Bool, voiceOver: Bool, sceneActive: Bool, hasItems: Bool
     ) -> Bool {
