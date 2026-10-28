@@ -20,10 +20,45 @@ struct CarouselRowDetailView: View {
         Item(id: 6, title: "Medium length"),
     ]
 
+    @State private var sizing = 0
+    @State private var count = 8
+    @State private var visibleCount = 1
+    @State private var peek = 32.0
+    @State private var width = 120.0
+    @State private var spacing = 16.0
+    @State private var rows = 1
+    @State private var rowHeight = 80.0
+    @State private var snaps = true
     @Environment(\.designTheme) private var theme
 
     var body: some View {
         VStack(alignment: .leading, spacing: theme.spacing.twoUnits) {
+            ShowcaseSection("Playground") {
+                CarouselRow(
+                    Array(items.prefix(count)),
+                    sizing: sizing == 0
+                        ? .peek(visibleCount: visibleCount, peek: peek)
+                        : sizing == 1 ? .fixedWidth(width) : .fitContent,
+                    spacing: spacing, snapping: snaps ? .viewAligned : .free,
+                    rows: rows, rowHeight: rowHeight
+                ) { item in
+                    Text(item.title).padding().frame(height: rowHeight).designCardSurface()
+                }
+                Picker("Sizing", selection: $sizing) {
+                    Text("Peek").tag(0)
+                    Text("Fixed width").tag(1)
+                    Text("Intrinsic").tag(2)
+                }
+                Stepper("Items: \(count)", value: $count, in: 0...10)
+                Stepper("Visible columns: \(visibleCount)", value: $visibleCount, in: 1...4)
+                Stepper("Rows: \(rows)", value: $rows, in: 1...4)
+                LabeledContent("Peek") { Slider(value: $peek, in: 0...80) }
+                LabeledContent("Item width") { Slider(value: $width, in: 44...240) }
+                LabeledContent("Spacing") { Slider(value: $spacing, in: 0...40) }
+                LabeledContent("Row height") { Slider(value: $rowHeight, in: 44...160) }
+                Toggle("Snap to items", isOn: $snaps)
+            }
+
             ShowcaseSection("Peek — one item, next sliver visible") {
                 CarouselRow(items, sizing: .peek(visibleCount: 1)) { item in
                     CarouselRowDetailCard(item: item, height: 160)

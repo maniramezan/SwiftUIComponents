@@ -3,10 +3,18 @@ import DesignSystem
 import SwiftUI
 
 struct BadgesDetailView: View {
+    @State private var label = "Status"
+    @State private var prominent = false
     @Environment(\.designTheme) private var theme
 
     var body: some View {
         VStack(alignment: .leading, spacing: theme.spacing.twoUnits) {
+            ShowcaseSection("Playground") {
+                TextField("Label", text: $label)
+                Toggle("Prominent", isOn: $prominent)
+                Badge(label, isProminent: prominent)
+            }
+
             ShowcaseSection("Standard") {
                 HStack(spacing: theme.spacing.oneUnit) {
                     Badge("Beta")

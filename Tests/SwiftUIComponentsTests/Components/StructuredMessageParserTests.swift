@@ -146,3 +146,43 @@ struct StructuredMessageParserTests {
         #expect(sections.count == 1)
     }
 }
+
+@Test("Structured parsing preserves preambles by choosing the complete fallback")
+func structuredPreambleFallsBack() {
+    #expect(StructuredMessageParser.sections(from: "Keep this warning.\n## A\none\n## B\ntwo") == nil)
+}
+
+@Test("Promoted labels never match ordinary prose or lowercase body openings")
+func promotionRequiresLeadingLabel() throws {
+    let source = "## A\nA summary explains this.\n## B\nSummary explains this too."
+    let sections = try #require(StructuredMessageParser.sections(from: source, autoPromotingHeadings: ["Summary"]))
+    #expect(sections.count == 2)
+    #expect(sections[0].body == "A summary explains this.")
+    #expect(sections[1].body == "Summary explains this too.")
+}
+
+@Test("Fenced headings and repeated blank lines remain body content")
+func fencedHeadingsRemainContent() throws {
+    let source = "## A\n```markdown\n## Example\n```\n\n\nend\n## B\nbody"
+    let sections = try #require(StructuredMessageParser.sections(from: source))
+    #expect(sections.count == 2)
+    #expect(sections[0].body == "```markdown\n## Example\n```\n\n\nend")
+    #expect(StructuredMessageParser.sections(from: "## A\n```\n## B\nbody") == nil)
+}
+
+@Test("Repeated heading identities are distinct and stable across parses and unrelated insertions")
+func structuredIdentitiesAreStable() throws {
+    let source = "## A\none\n## A\ntwo"
+    let first = try #require(StructuredMessageParser.sections(from: source))
+    let second = try #require(StructuredMessageParser.sections(from: "## Other\nextra\n" + source))
+    #expect(Set(first.map(\.id)).count == 2)
+    #expect(first.map(\.id) == Array(second.dropFirst()).map(\.id))
+    #expect(StructuredMessageParser.sections(from: source) == first)
+}
+
+@Test("Empty sections retain their headings")
+func emptyStructuredSectionsRemain() throws {
+    let sections = try #require(StructuredMessageParser.sections(from: "## A\n## B\nbody"))
+    #expect(sections.map(\.title) == ["A", "B"])
+    #expect(sections[0].body.isEmpty)
+}

@@ -44,6 +44,7 @@ public struct SelectionListContentView<ID: Hashable>: View {
     @State private var expandedIDs: Set<ID> = []
     @State private var didPrepareExpansion = false
     @Environment(\.designTheme) private var theme
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     /// Creates a single-choice selection list.
     /// - Parameters:
@@ -117,7 +118,7 @@ public struct SelectionListContentView<ID: Hashable>: View {
                 onSelect: onSelect,
                 onToggleExpansion: toggleExpansion
             )
-            .selectionListStyle(grouped: showsContainerBackground)
+            .modifier(SelectionListStyle(grouped: showsContainerBackground))
             .overlay {
                 SelectionListEmptyState(shouldShow: visibleNodes.isEmpty && isSearching, query: query)
             }
@@ -147,7 +148,7 @@ public struct SelectionListContentView<ID: Hashable>: View {
     /// real tap on the row's disclosure button.
     func toggleExpansion(_ id: ID) {
         guard !isSearching else { return }
-        withAnimation(theme.motion.standardAnimation) {
+        withAnimation(theme.motion.animation(reducingMotion: reduceMotion)) {
             if expandedIDs.contains(id) {
                 expandedIDs.remove(id)
             } else {
@@ -276,26 +277,18 @@ private struct SelectionListEmptyState: View {
     }
 }
 
-private extension View {
-    /// Applies the grouped or plain list style based on `grouped`.
-    ///
-    /// Split into a `@ViewBuilder` branch rather than a ternary because `.insetGrouped`
-    /// and `.plain` are distinct `ListStyle` types — a `grouped ? .insetGrouped : .plain`
-    /// expression fails to type-check. When grouped, the inset-grouped surface is kept;
-    /// when not, the list goes plain with a hidden scroll background so it blends into a
-    /// caller-provided background (e.g. an onboarding step).
-    @ViewBuilder
-    func selectionListStyle(grouped: Bool) -> some View {
+private struct SelectionListStyle: ViewModifier {
+    let grouped: Bool
+
+    func body(content: Content) -> some View {
         #if os(iOS) || targetEnvironment(macCatalyst)
             if grouped {
-                listStyle(.insetGrouped)
-                    .scrollContentBackground(.automatic)
+                content.listStyle(.insetGrouped).scrollContentBackground(.automatic)
             } else {
-                listStyle(.plain)
-                    .scrollContentBackground(.hidden)
+                content.listStyle(.plain).scrollContentBackground(.hidden)
             }
         #else
-            listStyle(.plain)
+            content.listStyle(.plain)
         #endif
     }
 }

@@ -20,6 +20,7 @@ enum ShowcaseComponent: String, CaseIterable, Identifiable {
     case textStyles = "Text Styles"
     case listRow = "List Row"
     case avatar = "Avatar"
+    case cachedAsyncImage = "Cached Image"
     case sectionHeader = "Section Header"
 
     // MARK: - Surfaces
@@ -68,6 +69,7 @@ enum ShowcaseComponent: String, CaseIterable, Identifiable {
         case .badges: return "seal.fill"
         case .textStyles: return "textformat"
         case .listRow: return "list.bullet.rectangle"
+        case .cachedAsyncImage: return "photo"
         case .avatar: return "person.crop.circle"
         case .sectionHeader: return "text.justify.leading"
         case .orbitingSphere: return "circle.hexagongrid"
@@ -99,7 +101,7 @@ enum ShowcaseComponent: String, CaseIterable, Identifiable {
             return "Actions"
         case .searchBar, .toggle, .menuPicker, .selectionList, .pillChips, .textInputField:
             return "Controls"
-        case .badges, .textStyles, .listRow, .avatar, .sectionHeader:
+        case .badges, .textStyles, .listRow, .avatar, .sectionHeader, .cachedAsyncImage:
             return "Display"
         case .orbitingSphere, .surfaces, .adaptiveSurface, .selectableCard, .flipCard, .containers:
             return "Surfaces"

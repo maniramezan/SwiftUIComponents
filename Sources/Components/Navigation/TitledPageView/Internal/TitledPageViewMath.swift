@@ -13,21 +13,6 @@ enum TitledPageTitleLayout: Sendable, Hashable, CaseIterable {
 /// Pure, unit-tested geometry helpers shared by the header and metrics types.
 enum TitledPageViewMath {
 
-    /// Width of one title slot in the header HStack for the given peek mode.
-    nonisolated static func slotWidth(
-        viewportWidth: CGFloat,
-        peek: CGFloat,
-        gap: CGFloat,
-        direction: PaginationPeekDirection
-    ) -> CGFloat {
-        slotWidth(
-            viewportWidth: viewportWidth,
-            peek: peek,
-            gap: gap,
-            layout: titleLayout(for: direction)
-        )
-    }
-
     /// Width of one title slot in the header HStack for the given layout.
     nonisolated static func slotWidth(
         viewportWidth: CGFloat,
@@ -48,36 +33,10 @@ enum TitledPageViewMath {
         viewportWidth: CGFloat,
         peek: CGFloat,
         gap: CGFloat,
-        direction: PaginationPeekDirection
-    ) -> CGFloat {
-        slotStride(
-            viewportWidth: viewportWidth,
-            peek: peek,
-            gap: gap,
-            layout: titleLayout(for: direction)
-        )
-    }
-
-    /// Distance between adjacent slot leading edges (`slotWidth + gap`).
-    nonisolated static func slotStride(
-        viewportWidth: CGFloat,
-        peek: CGFloat,
-        gap: CGFloat,
         layout: TitledPageTitleLayout
     ) -> CGFloat {
         let width = slotWidth(viewportWidth: viewportWidth, peek: peek, gap: gap, layout: layout)
         return width + gap
-    }
-
-    /// Leading padding the header HStack should apply so that, at
-    /// `progress == 0`, the first slot sits where it visually belongs for
-    /// the selected peek direction.
-    nonisolated static func headerLeadingPadding(
-        peek: CGFloat,
-        gap: CGFloat,
-        direction: PaginationPeekDirection
-    ) -> CGFloat {
-        headerLeadingPadding(peek: peek, gap: gap, layout: titleLayout(for: direction))
     }
 
     /// Leading padding the header HStack should apply for the selected layout.
@@ -122,21 +81,6 @@ enum TitledPageViewMath {
     ) -> CGFloat {
         // The .none direction means no peek regardless of what is configured.
         if direction == .none { return 0 }
-        return effectivePeek(
-            configured: configured,
-            layout: titleLayout(for: direction),
-            reduceMotion: reduceMotion,
-            usesCrossfade: usesCrossfade
-        )
-    }
-
-    /// Effective peek width after applying the Reduce Motion fallback.
-    nonisolated static func effectivePeek(
-        configured: CGFloat,
-        layout: TitledPageTitleLayout,
-        reduceMotion: Bool,
-        usesCrossfade: Bool
-    ) -> CGFloat {
         if reduceMotion && usesCrossfade { return 0 }
         return max(0, configured)
     }

@@ -167,30 +167,21 @@ func carouselRowFitContentRenders() {
 }
 
 @MainActor
-@Test("stepScroll advances to the target item via a real ScrollViewProxy")
+@Test("The production accessibility handler updates the native target by full grid columns")
 func stepScrollAdvancesToTarget() {
-    render(
-        ScrollViewReader { proxy in
-            let scrollContent = CarouselRowScrollContent(
-                items: Array(1...6),
-                idKeyPath: \Int.self,
-                sizing: .peek(visibleCount: 1),
-                spacing: 16,
-                snapping: .viewAligned,
-                rows: 1,
-                rowHeight: nil,
-                content: { value in Text("\(value)") },
-                viewportWidth: .constant(300),
-                geometry: .constant(CarouselGeometry(offsetX: 0, contentWidth: 900, viewportWidth: 300))
-            )
-            // `ScrollViewProxy` may only be used once the view hierarchy has
-            // finished updating, so drive `stepScroll` from `.onAppear`
-            // rather than inline during body evaluation.
-            return scrollContent.onAppear {
-                scrollContent.stepScroll(edge: .trailing, proxy: proxy)
-            }
-        }
+    var target: Int?
+    let scrollContent = CarouselRowScrollContent(
+        items: Array(1...6), idKeyPath: \Int.self, sizing: .fitContent, spacing: 16,
+        snapping: .free, rows: 2, rowHeight: 80, content: { Text($0.formatted()) },
+        viewportWidth: .constant(300), geometry: .constant(CarouselGeometry()),
+        scrollTarget: Binding(get: { target }, set: { target = $0 })
     )
+    scrollContent.stepScroll(edge: .trailing)
+    #expect(target == 3)
+    scrollContent.stepScroll(edge: .trailing)
+    #expect(target == 5)
+    scrollContent.stepScroll(edge: .leading)
+    #expect(target == 3)
 }
 
 // MARK: - Fixtures
@@ -254,4 +245,14 @@ func multipleRowsWithoutHeightFallsBack() {
             Text("\(value)")
         }
     )
+}
+
+@Test("Accessibility targets move by columns across multi-row and partial grids")
+func carouselAccessibilityTargetsColumns() {
+    #expect(CarouselRowMath.accessibilityTarget(current: 0, count: 7, rows: 2, columns: 1, direction: 1) == 2)
+    #expect(CarouselRowMath.accessibilityTarget(current: 2, count: 7, rows: 2, columns: 1, direction: 1) == 4)
+    #expect(CarouselRowMath.accessibilityTarget(current: 4, count: 7, rows: 2, columns: 1, direction: 1) == 6)
+    #expect(CarouselRowMath.accessibilityTarget(current: 6, count: 7, rows: 2, columns: 1, direction: 1) == 6)
+    #expect(CarouselRowMath.accessibilityTarget(current: 3, count: 7, rows: 2, columns: 2, direction: -1) == 0)
+    #expect(CarouselRowMath.accessibilityTarget(current: 2, count: 7, rows: 1, columns: 1, direction: 1) == 3)
 }

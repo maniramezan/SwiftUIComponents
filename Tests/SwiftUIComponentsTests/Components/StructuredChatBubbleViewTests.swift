@@ -29,7 +29,7 @@ struct StructuredChatBubbleViewTests {
     func autoPromotingHeadings() {
         _ = StructuredChatBubbleView(
             role: .assistant,
-            content: "Summary A short overview of the item. Details The first supporting point.",
+            content: "Summary A short overview of the item.\nDetails The first supporting point.",
             autoPromotingHeadings: ["Summary", "Details"]
         )
     }

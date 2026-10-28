@@ -29,34 +29,19 @@ private func makeItems(_ count: Int, startingAt start: Int = 1) -> [MenuPickerTe
     (start..<start + count).map { MenuPickerTestItem(id: $0, title: "Option \($0)") }
 }
 
-// MARK: - longestLabel
-
-@Test("longestLabel returns the title with the most characters")
-func longestLabelPicksWidestTitle() throws {
-    let items = [
-        MenuPickerTestItem(id: 1, title: "Short"),
-        MenuPickerTestItem(id: 2, title: "Longest option here"),
-        MenuPickerTestItem(id: 3, title: "Mid"),
-    ]
-    let label = MenuPicker<MenuPickerTestItem>.longestLabel(in: items)
-    #expect(label == "Longest option here")
-}
-
-@Test("longestLabel matches the maximum title length")
-func longestLabelMatchesMaxTitleLength() throws {
-    let items = [
-        MenuPickerTestItem(id: 1, title: "A"),
-        MenuPickerTestItem(id: 2, title: "BBBB"),
-        MenuPickerTestItem(id: 3, title: "CCC"),
-    ]
-    let label = MenuPicker<MenuPickerTestItem>.longestLabel(in: items)
-    #expect(label.count == 4)
-}
-
-@Test("longestLabel returns empty string when no items exist")
-func longestLabelHandlesEmptyItems() throws {
-    let label = MenuPicker<MenuPickerTestItem>.longestLabel(in: [])
-    #expect(label.isEmpty)
+@Test("Trigger measurement uses glyph width instead of character count")
+@MainActor
+func widestLabelUsesFontMetrics() {
+    #if canImport(AppKit)
+        let font = NSFont.systemFont(ofSize: 20)
+    #elseif canImport(UIKit)
+        let font = UIFont.systemFont(ofSize: 20)
+    #endif
+    let wide = MenuPicker<MenuPickerTestItem>.maximumLabelWidth(["WWW"], font: font)
+    let narrow = MenuPicker<MenuPickerTestItem>.maximumLabelWidth(["iiii"], font: font)
+    #expect(wide > narrow)
+    #expect(MenuPicker<MenuPickerTestItem>.maximumLabelWidth(["iiii", "WWW"], font: font) == wide)
+    #expect(MenuPicker<MenuPickerTestItem>.maximumLabelWidth([], font: font) == 0)
 }
 
 // MARK: - init — success paths
@@ -258,3 +243,21 @@ struct MenuPickerWheelTests {
         _ = MenuPicker(items: makeItems(3), currentValue: .constant(selected), preferredStyle: .wheel)
     }
 }
+
+#if canImport(AppKit)
+    @Test("AppKit coordinator refreshes the callback when its binding changes")
+    @MainActor
+    func appKitSelectionUsesLatestCallback() {
+        var oldSelections: [Int] = []
+        var newSelections: [Int] = []
+        let coordinator = AppKitMenuPicker<MenuPickerTestItem>.Coordinator { oldSelections.append($0.id) }
+        let items = makeItems(2)
+        coordinator.update(items: items, onSelection: { newSelections.append($0.id) })
+        let button = NSPopUpButton()
+        button.addItems(withTitles: items.map(\.title))
+        button.selectItem(at: 1)
+        coordinator.selectionChanged(button)
+        #expect(oldSelections.isEmpty)
+        #expect(newSelections == [items[1].id])
+    }
+#endif

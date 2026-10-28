@@ -3,10 +3,18 @@ import DesignSystem
 import SwiftUI
 
 struct ErrorSectionDetailView: View {
+    @State private var title = "Error"
+    @State private var message = "Unable to load items."
     @Environment(\.designTheme) private var theme
 
     var body: some View {
         VStack(alignment: .leading, spacing: theme.spacing.twoUnits) {
+            ShowcaseSection("Playground") {
+                TextField("Title", text: $title)
+                TextField("Message", text: $message)
+                ErrorSection(title: title, message: message)
+            }
+
             ShowcaseSection("Message only") {
                 ErrorSection(message: "No results found for your search.")
             }

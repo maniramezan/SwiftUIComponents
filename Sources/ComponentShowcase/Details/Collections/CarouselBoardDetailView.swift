@@ -21,10 +21,43 @@ struct CarouselBoardDetailView: View {
     private let topFree: [App] = (7...16).map { App(id: $0, name: "App \($0)") }
     private let stories: [Story] = (1...5).map { Story(id: $0, headline: "Story \($0)") }
 
+    @State private var title = "Featured"
+    @State private var shelfCount = 3
+    @State private var itemCount = 6
+    @State private var rows = 1
+    @State private var rowHeight = 100.0
+    @State private var showsAction = true
+    @State private var largeTitle = false
+    @State private var actionCount = 0
     @Environment(\.designTheme) private var theme
 
     var body: some View {
         VStack(alignment: .leading, spacing: theme.spacing.twoUnits) {
+            ShowcaseSection("Controls") {
+                TextField("Shelf title", text: $title)
+                Stepper("Shelves: \(shelfCount)", value: $shelfCount, in: 0...4)
+                Stepper("Items: \(itemCount)", value: $itemCount, in: 0...6)
+                Stepper("Rows: \(rows)", value: $rows, in: 1...3)
+                LabeledContent("Row height") { Slider(value: $rowHeight, in: 44...160) }
+                Toggle("Header action", isOn: $showsAction)
+                Toggle("Large title", isOn: $largeTitle)
+                Text("Actions: \(actionCount)")
+            }
+            ShowcaseSection("Configurable shelves") {
+                CarouselBoardContent {
+                    for index in 0..<shelfCount {
+                        CarouselShelf(
+                            title, shelfID: index, items: Array(featured.prefix(itemCount)),
+                            actionLabel: showsAction ? "Action" : nil,
+                            onSeeAll: { actionCount += 1 }, rows: rows, rowHeight: rowHeight,
+                            titleFont: largeTitle ? theme.typography.title : nil
+                        ) { item in
+                            Text(item.name).padding().frame(height: rowHeight).designCardSurface()
+                        }
+                    }
+                }
+            }
+
             ShowcaseSection("Shelves — heterogeneous, each scrolls horizontally") {
                 CarouselBoardContent {
                     CarouselShelf("Featured", items: featured) { app in

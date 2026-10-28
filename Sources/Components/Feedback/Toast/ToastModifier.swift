@@ -47,7 +47,7 @@ struct ToastModifier<ToastContent: View>: ViewModifier {
                         .accessibilityAction(.escape) { dismiss() }
                         .transition(transition)
                         .onAppear(perform: announce)
-                        .task {
+                        .task(id: duration) {
                             guard let duration else { return }
                             try? await Task.sleep(for: duration)
                             guard !Task.isCancelled else { return }
@@ -119,7 +119,9 @@ public extension View {
     /// `nil` to keep the toast until the user taps the action or swipes it away.
     /// Toasts with actions ignore `duration` and remain visible until explicit
     /// dismissal, giving assistive technology and motor-control users enough time
-    /// to reach the action. On dismissal — by timer, swipe, or action tap —
+    /// to reach the action. Changing duration restarts its deadline; adding an
+    /// action cancels a pending timer. Changing the message alone retains the deadline.
+    /// On dismissal — by timer, swipe, or action tap —
     /// `isPresented` is set back to `false`.
     ///
     /// ```swift

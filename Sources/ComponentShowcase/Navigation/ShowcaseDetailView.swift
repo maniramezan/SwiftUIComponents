@@ -52,6 +52,7 @@ private struct ShowcaseDetailContent: View {
         case .textStyles: TextStylesDetailView()
         case .listRow: ListRowDetailView()
         case .avatar: AvatarDetailView()
+        case .cachedAsyncImage: CachedAsyncImageDetailView()
         case .sectionHeader: SectionHeaderDetailView()
         case .orbitingSphere: OrbitingSphereDetailView()
         case .surfaces: SurfacesDetailView()

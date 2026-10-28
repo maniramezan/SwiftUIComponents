@@ -1,6 +1,6 @@
 import SwiftUI
 
-#if canImport(AppKit)
+#if os(macOS)
     import AppKit
 
     // MARK: - AppKit Bridge
@@ -9,9 +9,6 @@ import SwiftUI
     struct AppKitMenuPicker<Item: MenuPickerItem>: NSViewRepresentable {
         let items: [Item]
         @Binding var currentValue: Item
-        let longestLabel: String
-        let horizontalPadding: CGFloat
-        let verticalPadding: CGFloat
         let triggerFont: NSFont
         let width: CGFloat
         let onSelection: (Item) -> Void
@@ -31,7 +28,7 @@ import SwiftUI
         }
 
         func updateNSView(_ view: NSPopUpButton, context: Context) {
-            context.coordinator.items = items
+            context.coordinator.update(items: items, onSelection: onSelection)
             view.removeAllItems()
             var selectedIndex: Int?
             for (index, item) in items.enumerated() {
@@ -64,6 +61,11 @@ import SwiftUI
             var widthConstraint: NSLayoutConstraint?
 
             init(onSelection: @escaping (Item) -> Void) {
+                self.onSelection = onSelection
+            }
+
+            func update(items: [Item], onSelection: @escaping (Item) -> Void) {
+                self.items = items
                 self.onSelection = onSelection
             }
 

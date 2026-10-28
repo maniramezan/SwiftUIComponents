@@ -1,133 +1,124 @@
 import Foundation
 
-/// Splits markdown text into typed sections at `## ` headings, with optional
-/// auto-promotion of caller-supplied phrases into headings when the source
-/// model emits them as bare leading labels.
+/// Parses complete Markdown messages into H2 sections without discarding content.
 ///
-/// Useful when wrapping LLM output where the model usually emits valid H2s
-/// but sometimes drops the `## ` prefix — pass the known label set via
-/// `autoPromotingHeadings:` and the parser will inject the missing prefix
-/// before splitting.
-///
-/// ```swift
-/// let sections = StructuredMessageParser.sections(
-///     from: assistantResponse,
-///     autoPromotingHeadings: ["Summary", "Details", "Caveats"]
-/// )
-/// ```
-///
-/// Returns `nil` when fewer than `minimumSectionCount` sections are found, so
-/// callers can fall back to plain markdown rendering for unstructured text.
+/// Returns `nil` when a nonempty preamble, an unclosed fence, or too few sections
+/// requires rendering the original message. Headings inside fenced or indented code
+/// remain body text. Bare labels are promoted only at the beginning of a logical line.
 public enum StructuredMessageParser {
-
-    /// A single titled block of body text parsed from the input.
+    /// A titled section whose identity follows its heading and duplicate occurrence.
     public struct Section: Identifiable, Sendable, Hashable {
-
-        /// Stable identifier suitable for `ForEach` and SwiftData/Identifiable
-        /// use. Generated fresh on each parse.
-        public let id: UUID
-
-        /// The section title (the text immediately after `## `, with markdown
-        /// emphasis markers stripped).
+        /// Deterministic identity, distinct even when headings repeat.
+        public let id: String
+        /// Heading text with emphasis and code markers removed.
         public let title: String
-
-        /// The section body — every line between this heading and the next
-        /// `## ` (or the end of input), trimmed of leading/trailing whitespace.
+        /// Markdown between this heading and the next, with outer whitespace trimmed.
         public let body: String
 
-        /// Creates a section. Most callers use `sections(from:)` instead.
-        public init(id: UUID = UUID(), title: String, body: String) {
+        /// Creates a section with caller-owned identity and content.
+        public init(id: String, title: String, body: String) {
             self.id = id
             self.title = title
             self.body = body
         }
     }
 
-    /// Parses `text` into H2 sections.
+    /// Parses H2 sections, returning `nil` when the original message must be preserved.
     ///
     /// - Parameters:
-    ///   - text: Markdown text to split.
-    ///   - autoPromotingHeadings: A list of literal phrases to promote into
-    ///     H2 headings when found as bare leading labels. Matched
-    ///     case-insensitively at the start of a logical line, where the
-    ///     phrase is immediately followed by a capital letter or a
-    ///     non-ASCII letter (signalling that the next sentence has begun
-    ///     without a line break). Defaults to empty (no promotion).
-    ///   - minimumSectionCount: The smallest number of sections that
-    ///     justifies structured rendering; below this, returns `nil` so the
-    ///     caller can fall back to plain markdown. Defaults to `2`.
-    /// - Returns: An array of parsed sections, or `nil` when fewer than
-    ///   `minimumSectionCount` sections were detected.
-    public static func sections(
+    ///   - text: Complete Markdown source, including any fenced code.
+    ///   - autoPromotingHeadings: Case-insensitive labels recognized at line starts.
+    ///     A label must be followed by whitespace and body text beginning with an
+    ///     uppercase or non-ASCII letter. Mid-sentence matches are never promoted.
+    ///   - minimumSectionCount: Minimum number of sections, clamped to at least one.
+    /// - Returns: Every section, including empty bodies, or `nil` for a plain fallback.
+    public nonisolated static func sections(
         from text: String,
         autoPromotingHeadings: [String] = [],
         minimumSectionCount: Int = 2
     ) -> [Section]? {
-        let normalizedText = normalize(text, autoPromoting: autoPromotingHeadings)
-        let lines = normalizedText.split(separator: "\n", omittingEmptySubsequences: false)
-        var sections = [Section]()
-        var currentTitle: String?
-        var currentBody = [String]()
+        let lines = text.replacingOccurrences(of: "\r\n", with: "\n")
+            .split(separator: "\n", omittingEmptySubsequences: false)
+        var result: [Section] = []
+        var occurrences: [String: Int] = [:]
+        var title: String?
+        var body: [String] = []
+        var fence: (character: Character, count: Int)?
 
-        func flushSection() {
-            guard let title = currentTitle else { return }
-            let body = currentBody.joined(separator: "\n").trimmingCharacters(
-                in: .whitespacesAndNewlines
+        func appendSection() {
+            guard let title else { return }
+            let occurrence = occurrences[title, default: 0]
+            occurrences[title] = occurrence + 1
+            result.append(
+                Section(
+                    id: "\(title)#\(occurrence)", title: title,
+                    body: body.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
+                )
             )
-            if !body.isEmpty {
-                sections.append(Section(title: title, body: body))
-            }
-            currentTitle = nil
-            currentBody = []
         }
 
         for line in lines {
-            let trimmed = line.trimmingCharacters(in: .whitespaces)
-            if trimmed.hasPrefix("## ") {
-                flushSection()
-                currentTitle = cleanedSectionTitle(
-                    String(trimmed.dropFirst(3)).trimmingCharacters(in: .whitespaces)
-                )
-                continue
+            let source = String(line)
+            let trimmed = source.trimmingCharacters(in: .whitespaces)
+            let indentation = source.prefix(while: { $0 == " " }).count
+            if indentation < 4, let first = trimmed.first, first == "`" || first == "~" {
+                let count = trimmed.prefix(while: { $0 == first }).count
+                if count >= 3 {
+                    if let current = fence {
+                        if first == current.character, count >= current.count,
+                            trimmed.dropFirst(count).trimmingCharacters(in: .whitespaces).isEmpty
+                        {
+                            fence = nil
+                        }
+                    } else {
+                        fence = (first, count)
+                    }
+                    guard title != nil else { return nil }
+                    body.append(source)
+                    continue
+                }
             }
-            if currentTitle != nil {
-                if currentBody.isEmpty, trimmed.isEmpty { continue }
-                currentBody.append(String(line))
+            if fence == nil, indentation < 4, !source.hasPrefix("\t") {
+                let heading: (title: String, body: String?)?
+                if trimmed.hasPrefix("## ") {
+                    heading = (String(trimmed.dropFirst(3)), nil)
+                } else {
+                    heading = promotedHeading(trimmed, labels: autoPromotingHeadings)
+                }
+                if let heading {
+                    appendSection()
+                    let cleaned = heading.title.replacingOccurrences(of: "**", with: "")
+                        .replacingOccurrences(of: "__", with: "")
+                        .replacingOccurrences(of: "`", with: "")
+                        .trimmingCharacters(in: .whitespaces)
+                    guard !cleaned.isEmpty else { return nil }
+                    title = cleaned
+                    body = heading.body.map { [$0] } ?? []
+                    continue
+                }
+            }
+            if title == nil {
+                if !trimmed.isEmpty { return nil }
+            } else {
+                body.append(source)
             }
         }
-        flushSection()
-
-        guard sections.count >= minimumSectionCount else { return nil }
-        return sections
+        guard fence == nil else { return nil }
+        appendSection()
+        return result.count >= max(1, minimumSectionCount) ? result : nil
     }
 
-    private static func cleanedSectionTitle(_ title: String) -> String {
-        title
-            .replacingOccurrences(of: "**", with: "")
-            .replacingOccurrences(of: "__", with: "")
-            .replacingOccurrences(of: "`", with: "")
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-    }
-
-    private static func normalize(_ text: String, autoPromoting labels: [String]) -> String {
-        var normalized = text.replacingOccurrences(of: "\r\n", with: "\n")
-
-        for label in labels {
-            let escaped = NSRegularExpression.escapedPattern(for: label)
-                .replacingOccurrences(of: " ", with: #"\s+"#)
-            let pattern = #"(?i)(?<!#\#\s)(\#(escaped))\s*(?=[A-Z\p{L}])"#
-            normalized = normalized.replacingOccurrences(
-                of: pattern,
-                with: "\n## $1\n\n",
-                options: .regularExpression
-            )
+    private nonisolated static func promotedHeading(_ line: String, labels: [String]) -> (String, String?)? {
+        for label in labels where !label.isEmpty {
+            guard let range = line.range(of: label, options: [.anchored, .caseInsensitive]) else { continue }
+            let suffix = line[range.upperBound...]
+            guard suffix.first?.isWhitespace == true else { continue }
+            let body = suffix.trimmingCharacters(in: .whitespaces)
+            guard let first = body.first,
+                first.isUppercase || (first.isLetter && !first.isASCII)
+            else { continue }
+            return (String(line[range]), body)
         }
-
-        return normalized.replacingOccurrences(
-            of: #"\n{3,}"#,
-            with: "\n\n",
-            options: .regularExpression
-        )
-        .trimmingCharacters(in: .whitespacesAndNewlines)
+        return nil
     }
 }

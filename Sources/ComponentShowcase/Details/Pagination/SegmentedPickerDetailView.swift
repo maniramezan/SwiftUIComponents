@@ -40,6 +40,9 @@ struct SegmentedPickerDetailView: View {
         Tab(id: "profile", title: "Profile", systemImage: "person.crop.circle"),
     ]
 
+    @State private var sizing: SegmentSizing = .fit
+    @State private var density: SegmentDensity = .regular
+    @State private var showsBadges = false
     @State private var filter: Filter = .all
     @State private var genre: Genre = .all
     @State private var tab: Tab
@@ -53,8 +56,19 @@ struct SegmentedPickerDetailView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: theme.spacing.twoUnits) {
+            ShowcaseSection("Configuration") {
+                Picker("Sizing", selection: $sizing) {
+                    ForEach(SegmentSizing.allCases, id: \.self) { Text(String(describing: $0)).tag($0) }
+                }
+                Picker("Density", selection: $density) {
+                    ForEach(SegmentDensity.allCases, id: \.self) { Text(String(describing: $0)).tag($0) }
+                }
+                Toggle("Badges", isOn: $showsBadges)
+            }
             ShowcaseSection("Fits the row") {
-                SegmentedPicker(items: Filter.allCases, selection: $filter)
+                SegmentedPicker(
+                    items: Filter.allCases, selection: $filter, sizing: sizing, density: density,
+                    badge: { showsBadges ? ($0 == .all ? "3" : "") : nil })
                 Text("Selected: \(filter.title)")
                     .designTextStyle(.caption)
             }

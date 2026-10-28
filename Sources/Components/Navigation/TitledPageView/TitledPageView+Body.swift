@@ -12,9 +12,7 @@ extension TitledPageView {
     /// and diff this subtree independently of the rest of `TitledPageView`.
     var pagedBody: some View {
         TitledPageViewPagedContent(
-            pages: pages,
-            idKeyPath: idKeyPath,
-            titleKeyPath: titleKeyPath,
+            collection: collection,
             titleAlignment: titleAlignment,
             indicatorStyle: indicatorStyle,
             customTitle: customTitle,
@@ -23,7 +21,6 @@ extension TitledPageView {
             selection: $selection,
             scrollOffsetX: $scrollOffsetX,
             viewportWidth: $viewportWidth,
-            unidirectionalBaseIndex: $unidirectionalBaseIndex,
             swipeHintOffset: $swipeHintOffset,
             isSwipeHintPlaying: $isSwipeHintPlaying
         )
@@ -42,9 +39,7 @@ extension TitledPageView {
 /// tree.
 struct TitledPageViewPagedContent<Element, ID: Hashable, PageContent: View>: View {
 
-    let pages: [Element]
-    let idKeyPath: KeyPath<Element, ID>
-    let titleKeyPath: KeyPath<Element, String>
+    let collection: TitledPageCollection<Element, ID>
     let titleAlignment: TitledPageTitleAlignment
     let indicatorStyle: PaginationIndicatorStyle
     let customTitle: ((TitledPageViewContext<ID>) -> AnyView)?
@@ -54,7 +49,6 @@ struct TitledPageViewPagedContent<Element, ID: Hashable, PageContent: View>: Vie
     @Binding var selection: ID
     @Binding var scrollOffsetX: CGFloat
     @Binding var viewportWidth: CGFloat
-    @Binding var unidirectionalBaseIndex: Int
     @Binding var swipeHintOffset: CGFloat
     @Binding var isSwipeHintPlaying: Bool
 
@@ -63,6 +57,7 @@ struct TitledPageViewPagedContent<Element, ID: Hashable, PageContent: View>: Vie
     @Environment(\.layoutDirection) private var layoutDirection
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.designSwipeHintConfig) private var swipeHintConfig
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         let resolved = TitledPageViewMath.resolveStyle(
@@ -71,10 +66,10 @@ struct TitledPageViewPagedContent<Element, ID: Hashable, PageContent: View>: Vie
             titleAlignment: titleAlignment
         )
         let showIndicator = TitledPageViewMath.shouldShowIndicator(
-            count: pages.count,
+            count: collection.entries.count,
             style: indicatorStyle
         )
-        let titles = pages.map { $0[keyPath: titleKeyPath] }
+        let titles = collection.titles
         let activeIdx = activeIndex
         // SwiftUI reports `contentOffset.x` in logical coordinates, so page 0
         // is always 0 and progress increases toward the last page — in both
@@ -86,21 +81,17 @@ struct TitledPageViewPagedContent<Element, ID: Hashable, PageContent: View>: Vie
         )
         // Blend the hint offset so the header and indicator animate in sync with the content.
         let hintProgress: CGFloat = viewportWidth > 0 ? (-swipeHintOffset / viewportWidth) : 0
-        let progress: CGFloat =
-            if styleOverride.peekDirection == .unidirectional {
-                rawProgress + CGFloat(unidirectionalBaseIndex) + hintProgress
-            } else {
-                rawProgress + hintProgress
-            }
+        let crossfades = reduceMotion && resolved.reduceMotionUsesCrossfade
+        let progress = crossfades ? CGFloat(activeIdx) : rawProgress + hintProgress
         let context = pageContext(titles: titles, activeIndex: activeIdx, progress: progress)
 
         VStack(spacing: resolved.headerSpacing) {
             if let customTitle {
                 customTitle(context)
-            } else if resolved.titleAlignment != .hidden, pages.count > 1 {
+            } else if resolved.titleAlignment != .hidden, collection.entries.count > 1 {
                 TitledPageViewHeader(
                     resolved: resolved,
-                    titles: titles,
+                    entries: collection.header,
                     progress: progress,
                     activeIndex: activeIdx,
                     viewportWidth: viewportWidth,
@@ -117,22 +108,24 @@ struct TitledPageViewPagedContent<Element, ID: Hashable, PageContent: View>: Vie
                     .accessibilityHidden(true)
             }
 
-            TitledPageViewPagesScrollView(
-                pages: visiblePages,
-                idKeyPath: idKeyPath,
-                titleKeyPath: titleKeyPath,
-                content: content,
-                peekDirection: styleOverride.peekDirection,
-                selection: selection,
-                swipeHintOffset: swipeHintOffset,
-                isSwipeHintPlaying: isSwipeHintPlaying,
-                activeIndex: activeIdx,
-                scrollOffsetX: $scrollOffsetX,
-                unidirectionalBaseIndex: $unidirectionalBaseIndex,
-                selectionBinding: $selection,
-                layoutDirection: layoutDirection,
-                onJump: { idx in jump(to: idx, reduceMotion: reduceMotion) }
-            )
+            if crossfades, collection.entries.indices.contains(activeIdx) {
+                TitledPageCrossfadeContent(
+                    collection: collection, activeID: collection.entries[activeIdx].id, content: content,
+                    onStep: step
+                )
+            } else {
+                TitledPageViewPagesScrollView(
+                    collection: collection,
+                    content: content,
+                    swipeHintOffset: swipeHintOffset,
+                    isSwipeHintPlaying: isSwipeHintPlaying,
+                    activeIndex: activeIdx,
+                    scrollOffsetX: $scrollOffsetX,
+                    selectionBinding: $selection,
+                    layoutDirection: layoutDirection,
+                    onJump: { jump(to: $0, reduceMotion: reduceMotion) }
+                )
+            }
 
             if let customFooter {
                 customFooter(context)
@@ -140,7 +133,7 @@ struct TitledPageViewPagedContent<Element, ID: Hashable, PageContent: View>: Vie
                 TitledPageViewIndicator(
                     resolved: resolved,
                     style: indicatorStyle,
-                    count: pages.count,
+                    count: collection.entries.count,
                     activeIndex: activeIdx,
                     progress: progress,
                     currentTitle: titles.indices.contains(activeIdx) ? titles[activeIdx] : "",
@@ -149,7 +142,7 @@ struct TitledPageViewPagedContent<Element, ID: Hashable, PageContent: View>: Vie
                         let newIdx = TitledPageViewMath.stepIndex(
                             by: step,
                             from: activeIdx,
-                            count: pages.count
+                            count: collection.entries.count
                         )
                         jump(to: newIdx, reduceMotion: reduceMotion)
                     },
@@ -172,7 +165,13 @@ struct TitledPageViewPagedContent<Element, ID: Hashable, PageContent: View>: Vie
             viewportWidth = width
         }
         .accessibilityElement(children: .contain)
-        .task {
+        .task(
+            id: SwipeHintTaskID(
+                configuration: swipeHintConfig, reduceMotion: reduceMotion,
+                sceneActive: scenePhase == .active, pageCount: collection.entries.count
+            )
+        ) {
+            guard scenePhase == .active else { return }
             await playSwipeHintIfNeeded(reduceMotion: reduceMotion)
         }
     }
@@ -184,7 +183,7 @@ struct TitledPageViewPagedContent<Element, ID: Hashable, PageContent: View>: Vie
     /// is mid-update, which keeps the indicator and header in sync during
     /// in-flight drags.
     private var activeIndex: Int {
-        if let idx = pages.firstIndex(where: { $0[keyPath: idKeyPath] == selection }) {
+        if let idx = collection.indices[selection] {
             return idx
         }
         let progress = TitledPageViewMath.progress(
@@ -194,35 +193,26 @@ struct TitledPageViewPagedContent<Element, ID: Hashable, PageContent: View>: Vie
         return TitledPageViewMath.stepIndex(
             by: 0,
             from: Int(progress.rounded()),
-            count: pages.count
+            count: collection.entries.count
         )
-    }
-
-    /// The subset of pages visible in the scroll view. In unidirectional
-    /// mode only the current page and those after it are rendered, preventing
-    /// any backward swiping. Uses `unidirectionalBaseIndex` which updates
-    /// after the scroll settles to avoid removing pages mid-animation.
-    private var visiblePages: [Element] {
-        if styleOverride.peekDirection == .unidirectional {
-            let base = min(unidirectionalBaseIndex, pages.count - 1)
-            return Array(pages[max(0, base)...])
-        }
-        return pages
     }
 
     /// Not `private` so tests can drive it directly rather than simulating a
     /// real tap on the header title, an indicator dot, or an accessibility
     /// adjustable action.
     func jump(to index: Int, reduceMotion: Bool) {
-        guard pages.indices.contains(index) else { return }
-        if styleOverride.peekDirection == .unidirectional {
-            guard index >= activeIndex else { return }
-        }
-        let newID = pages[index][keyPath: idKeyPath]
+        guard collection.entries.indices.contains(index) else { return }
+        let newID = collection.entries[index].id
         let animation: Animation = theme.motion.animation(reducingMotion: reduceMotion)
         withAnimation(animation) {
             selection = newID
         }
+    }
+
+    private func step(_ delta: Int) {
+        jump(
+            to: TitledPageViewMath.stepIndex(by: delta, from: activeIndex, count: collection.entries.count),
+            reduceMotion: reduceMotion)
     }
 
     private func pageContext(
@@ -234,7 +224,7 @@ struct TitledPageViewPagedContent<Element, ID: Hashable, PageContent: View>: Vie
             selection: selection,
             activeIndex: activeIndex,
             progress: Double(progress),
-            pageCount: pages.count,
+            pageCount: collection.entries.count,
             titles: titles,
             currentTitle: titles.indices.contains(activeIndex) ? titles[activeIndex] : "",
             previousTitle: titles.indices.contains(activeIndex - 1) ? titles[activeIndex - 1] : nil,
@@ -260,7 +250,7 @@ struct TitledPageViewPagedContent<Element, ID: Hashable, PageContent: View>: Vie
     /// then springs back. Fires once on first appearance when: hints are enabled,
     /// there are 2+ pages, the user is still on page 0, and Reduce Motion is off.
     func playSwipeHintIfNeeded(reduceMotion: Bool) async {
-        guard swipeHintConfig.isEnabled, pages.count > 1, !reduceMotion else { return }
+        guard swipeHintConfig.isEnabled, collection.entries.count > 1, !reduceMotion else { return }
         let hintDistance = swipeHintConfig.distance ?? theme.spacing.fiveUnits
         do {
             try await Task.sleep(for: .seconds(swipeHintConfig.delay))
@@ -292,46 +282,38 @@ struct TitledPageViewPagedContent<Element, ID: Hashable, PageContent: View>: Vie
 /// indicator around it.
 struct TitledPageViewPagesScrollView<Element, ID: Hashable, PageContent: View>: View {
 
-    let pages: [Element]
-    let idKeyPath: KeyPath<Element, ID>
-    let titleKeyPath: KeyPath<Element, String>
+    let collection: TitledPageCollection<Element, ID>
     let content: (Element) -> PageContent
-    let peekDirection: PaginationPeekDirection
-    let selection: ID
     let swipeHintOffset: CGFloat
     let isSwipeHintPlaying: Bool
     let activeIndex: Int
 
     @Binding var scrollOffsetX: CGFloat
-    @Binding var unidirectionalBaseIndex: Int
     @Binding var selectionBinding: ID
 
     let layoutDirection: LayoutDirection
     let onJump: (Int) -> Void
 
     /// Bridges the `ID?` shape required by `scrollPosition(id:)` to the
-    /// non-optional `Binding<ID>` API. In unidirectional mode, backward
-    /// scroll-position updates are rejected since previous pages have been
-    /// removed from the scroll content.
+    /// non-optional `Binding<ID>` API. Updates must name an existing page.
     private var scrollPositionBinding: Binding<ID?> {
         Binding(
             get: { selectionBinding },
-            set: { newValue in
-                guard let newValue else { return }
-                selectionBinding = newValue
-            }
-        )
+            set: { value in
+                guard let value, collection.indices[value] != nil else { return }
+                selectionBinding = value
+            })
     }
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             LazyHStack(spacing: 0) {
-                ForEach(pages, id: idKeyPath) { page in
-                    content(page)
+                ForEach(collection.entries) { page in
+                    content(page.element)
                         .containerRelativeFrame(.horizontal)
-                        .id(page[keyPath: idKeyPath])
+                        .id(page.id)
                         .accessibilityElement(children: .contain)
-                        .accessibilityLabel(Text(page[keyPath: titleKeyPath]))
+                        .accessibilityLabel(Text(page.title))
                 }
             }
             .offset(x: swipeHintOffset)
@@ -345,17 +327,6 @@ struct TitledPageViewPagesScrollView<Element, ID: Hashable, PageContent: View>: 
         } action: { _, newValue in
             scrollOffsetX = newValue
         }
-        .onScrollPhaseChange { _, newPhase in
-            if peekDirection == .unidirectional,
-                newPhase == .idle,
-                let idx = pages.firstIndex(where: { $0[keyPath: idKeyPath] == selection }),
-                idx > unidirectionalBaseIndex
-            {
-                unidirectionalBaseIndex = idx
-                // Reset offset since the content shifted.
-                scrollOffsetX = 0
-            }
-        }
         .accessibilityScrollAction { edge in
             stepScroll(edge: edge)
         }
@@ -367,19 +338,75 @@ struct TitledPageViewPagesScrollView<Element, ID: Hashable, PageContent: View>: 
     /// Not `private` so tests can drive it directly rather than simulating a
     /// real VoiceOver accessibility scroll gesture.
     func stepScroll(edge: Edge) {
-        var delta = TitledPageViewMath.accessibilityStep(
+        let delta = TitledPageViewMath.accessibilityStep(
             for: edge,
             layoutDirection: layoutDirection
         )
-        if peekDirection == .unidirectional {
-            delta = max(0, delta)
-        }
         let newIdx = TitledPageViewMath.stepIndex(
             by: delta,
             from: activeIndex,
-            count: pages.count
+            count: collection.entries.count
         )
         onJump(newIdx)
+    }
+}
+
+private struct SwipeHintTaskID: Equatable {
+    let configuration: TitledPageSwipeHintConfig
+    let reduceMotion: Bool
+    let sceneActive: Bool
+    let pageCount: Int
+}
+
+struct TitledPageCrossfadeContent<Element, ID: Hashable, PageContent: View>: View {
+    let collection: TitledPageCollection<Element, ID>
+    let activeID: ID
+    let content: (Element) -> PageContent
+    let onStep: (Int) -> Void
+    @Environment(\.designTheme) private var theme
+    @Environment(\.layoutDirection) private var layoutDirection
+
+    var body: some View {
+        ZStack {
+            ForEach(collection.entries) { entry in
+                TitledPageCrossfadePage(entry: entry, isActive: entry.id == activeID, content: content)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .animation(theme.motion.animation(reducingMotion: true), value: activeID)
+        .gesture(
+            DragGesture().onEnded { value in
+                guard abs(value.translation.width) > theme.motion.minimumHitTarget else { return }
+                let physicalStep = value.translation.width < 0 ? 1 : -1
+                onStep(layoutDirection == .rightToLeft ? -physicalStep : physicalStep)
+            }
+        )
+        .accessibilityScrollAction { edge in
+            onStep(TitledPageViewMath.accessibilityStep(for: edge, layoutDirection: layoutDirection))
+        }
+    }
+}
+
+private struct TitledPageCrossfadePage<Element, ID: Hashable, PageContent: View>: View {
+    let entry: TitledPageCollection<Element, ID>.Entry
+    let isActive: Bool
+    let content: (Element) -> PageContent
+    @State private var hasBeenActive = false
+
+    var body: some View {
+        Group {
+            if isActive || hasBeenActive {
+                content(entry.element)
+                    .accessibilityElement(children: .contain)
+                    .accessibilityLabel(Text(entry.title))
+            }
+        }
+        .opacity(isActive ? 1 : 0)
+        .allowsHitTesting(isActive)
+        .accessibilityHidden(!isActive)
+        .onChange(of: isActive, initial: true) { _, active in
+            if active && !hasBeenActive { hasBeenActive = true }
+        }
     }
 }
 

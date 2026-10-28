@@ -9,7 +9,6 @@ import SwiftUI
     struct UIKitMenuPicker<Item: MenuPickerItem>: UIViewRepresentable {
         let items: [Item]
         @Binding var currentValue: Item
-        let longestLabel: String
         let horizontalPadding: CGFloat
         let verticalPadding: CGFloat
         let minimumHitTarget: CGFloat

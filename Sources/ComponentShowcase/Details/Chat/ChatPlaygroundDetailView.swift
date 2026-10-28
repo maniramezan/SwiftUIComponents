@@ -179,7 +179,7 @@ private struct ChatPlayground: View {
         """
 
     private static let bareLabelResponse =
-        "Summary A short overview of the item you asked about. Details The first supporting point."
+        "Summary A short overview of the item you asked about.\nDetails The first supporting point."
 
     private static let initialMessages = [
         ChatPlaygroundMessage(

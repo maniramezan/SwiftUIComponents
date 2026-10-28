@@ -1,6 +1,7 @@
 import Components
 import SwiftUI
 import Testing
+import TestCommonsUI
 
 #if canImport(UIKit)
     import UIKit
@@ -100,5 +101,44 @@ extension ToastTests {
         #else
             _ = view
         #endif
+    }
+}
+
+@MainActor
+@Suite("Toast lifetime", .serialized)
+struct ToastLifetimeTests {
+    @Test("Adding an action cancels a mounted toast's pending dismissal")
+    func addingActionCancelsDismissal() async throws {
+        let model = ToastTestModel()
+        let host = HostedView(ToastTestHost(model: model), size: CGSize(width: 320, height: 200))
+        defer { host.close() }
+        for _ in 0..<100 {
+            if model.appeared { break }
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        #expect(model.appeared)
+        model.hasAction = true
+        try await Task.sleep(for: .milliseconds(800))
+        #expect(model.isPresented)
+    }
+}
+
+@MainActor
+@Observable
+private final class ToastTestModel {
+    var isPresented = true
+    var hasAction = false
+    var appeared = false
+}
+
+private struct ToastTestHost: View {
+    @Bindable var model: ToastTestModel
+    var body: some View {
+        Color.clear
+            .toast(
+                "Message", isPresented: $model.isPresented, duration: .milliseconds(300),
+                action: model.hasAction ? ToastAction("Action", handler: {}) : nil
+            )
+            .onAppear { model.appeared = true }
     }
 }

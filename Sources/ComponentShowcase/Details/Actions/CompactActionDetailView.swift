@@ -3,10 +3,22 @@ import DesignSystem
 import SwiftUI
 
 struct CompactActionDetailView: View {
+    @State private var title = "Action"
+    @State private var icon = "star"
+    @State private var disabled = false
+    @State private var taps = 0
     @Environment(\.designTheme) private var theme
 
     var body: some View {
         VStack(alignment: .leading, spacing: theme.spacing.twoUnits) {
+            ShowcaseSection("Playground") {
+                TextField("Title", text: $title)
+                TextField("System image", text: $icon)
+                Toggle("Disabled", isOn: $disabled)
+                CompactActionButton(title: title, icon: icon, isDisabled: disabled) { taps += 1 }
+                Text("Actions: \(taps)")
+            }
+
             ShowcaseSection("Single action") {
                 CompactActionButton(title: "Add to Favorites", icon: "heart") {}
             }

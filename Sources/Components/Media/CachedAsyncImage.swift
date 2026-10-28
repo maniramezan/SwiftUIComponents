@@ -13,11 +13,9 @@ import SwiftUI
 /// Loads an image from a URL through any `ImageCacheStore`, decodes it once,
 /// and re-uses the decoded result across re-renders.
 ///
-/// The view layers two caches:
-/// 1. The caller-supplied `ImageCacheStore` returns the raw bytes — usually
-///    backed by memory plus disk for cross-launch persistence.
-/// 2. A view-local `NSCache` retains the decoded platform image so scrolling
-///    a long list of the same URLs does not re-decode on every cell appearance.
+/// The supplied store owns caching policy. The view retains only its current decoded
+/// image; it never shares decoded results between stores. A request consists of the
+/// URL and the store's reference identity. Replacing either restarts loading.
 ///
 /// While the URL is still being fetched the `placeholder` view is shown.
 /// Passing a `nil` URL keeps the placeholder visible without scheduling any
@@ -50,16 +48,11 @@ public struct CachedAsyncImage<Content: View, Placeholder: View>: View {
     @ViewBuilder private let content: (Image) -> Content
     @ViewBuilder private let placeholder: () -> Placeholder
 
-    @State private var image: Image?
-    @State private var loadedURL: URL?
+    @State private var loader = CachedImageLoader()
     @Environment(\.imageCache) private var environmentCache
 
     private var resolvedCache: (any ImageCacheStore)? {
         explicitCache ?? environmentCache
-    }
-
-    private static var logger: Logger {
-        Logger(subsystem: "com.swiftuicomponents", category: "CachedAsyncImage")
     }
 
     /// Creates a cached async image view with an explicit cache.
@@ -106,88 +99,64 @@ public struct CachedAsyncImage<Content: View, Placeholder: View>: View {
         self.placeholder = placeholder
     }
 
+    /// Displays the current request's decoded image or its placeholder.
     public var body: some View {
+        let cache = resolvedCache
+        let request = CachedImageRequest(url: url, cache: cache)
         Group {
-            if let displayedImage {
-                content(displayedImage)
+            if loader.request == request, let image = loader.image {
+                content(image)
             } else {
                 placeholder()
             }
         }
-        .task(id: url) {
-            await loadImage()
+        .task(id: request) {
+            await loader.load(url: url, cache: cache)
         }
     }
+}
 
-    private var displayedImage: Image? {
-        if loadedURL == url, let image {
-            return image
-        }
-        guard let url, let cached = Self.decodedImage(for: url) else { return nil }
-        return Image(platformImage: cached)
+struct CachedImageRequest: Equatable {
+    let url: URL?
+    let storeID: ObjectIdentifier?
+
+    init(url: URL?, cache: (any ImageCacheStore)?) {
+        self.url = url
+        self.storeID = cache.map(ObjectIdentifier.init)
     }
+}
 
-    private func loadImage() async {
-        guard let url else {
-            image = nil
-            loadedURL = nil
-            return
-        }
-        if loadedURL == url, image != nil { return }
+@MainActor
+@Observable
+final class CachedImageLoader {
+    private(set) var image: Image?
+    private(set) var request: CachedImageRequest?
+    private var store: (any ImageCacheStore)?
+    private static let logger = Logger(subsystem: "com.swiftuicomponents", category: "CachedAsyncImage")
 
-        if let cached = Self.decodedImage(for: url) {
-            image = Image(platformImage: cached)
-            loadedURL = url
-            return
-        }
-
+    func load(url: URL?, cache: (any ImageCacheStore)?) async {
+        let incoming = CachedImageRequest(url: url, cache: cache)
+        if request == incoming, image != nil { return }
+        request = incoming
+        store = cache
         image = nil
-        loadedURL = nil
-
-        guard let cache = resolvedCache else { return }
-
+        guard let url, let cache else { return }
         do {
             let data = try await cache.imageData(for: url)
-            guard !Task.isCancelled else { return }
+            guard !Task.isCancelled, request == incoming else { return }
             guard let decoded = PlatformImage(data: data) else {
                 try? await cache.removeValue(for: url)
-                Self.logger.error(
-                    "Cached image data could not decode for \(url.absoluteString, privacy: .public)"
-                )
+                Self.logger.error("Cached image data could not decode")
                 return
             }
-            Self.storeDecodedImage(decoded, for: url)
             image = Image(platformImage: decoded)
-            loadedURL = url
+        } catch is CancellationError {
+            return
         } catch {
-            Self.logger.error(
-                "Failed to load cached image for \(url.absoluteString, privacy: .public): \(error.localizedDescription, privacy: .public)"
-            )
+            guard !Task.isCancelled, request == incoming else { return }
+            Self.logger.error("Failed to load cached image: \(error.localizedDescription, privacy: .public)")
         }
     }
-}
-
-// MARK: - Decoded-image cache
-
-extension CachedAsyncImage {
-
-    fileprivate static func decodedImage(for url: URL) -> PlatformImage? {
-        DecodedImageCache.shared.object(forKey: url as NSURL)
-    }
-
-    fileprivate static func storeDecodedImage(_ image: PlatformImage, for url: URL) {
-        DecodedImageCache.shared.setObject(image, forKey: url as NSURL)
-    }
-}
-
-private enum DecodedImageCache {
-    /// NSCache is documented as thread-safe; the type itself isn't
-    /// `Sendable`-annotated, hence the `nonisolated(unsafe)` opt-out.
-    nonisolated(unsafe) static let shared: NSCache<NSURL, PlatformImage> = {
-        let cache = NSCache<NSURL, PlatformImage>()
-        cache.countLimit = 200
-        return cache
-    }()
 }
 
 // MARK: - Platform image bridging
