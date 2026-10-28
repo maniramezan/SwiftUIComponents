@@ -78,6 +78,7 @@ zero deviation holds a fixed orientation. Tilt configuration applies only to the
 items follow the orbit to their new spacing. Stable item identities preserve content and rotation.
 These transitions work while continuous motion is paused; set the motion's `animatesChanges` to `false` to disable
 them. Reduce Motion uses fades and immediate spacing updates.
+Disappearing pauses elapsed time; reappearing resumes accumulated motion while the view's state is retained.
 
 - ``SphereView``
 - ``OrbitingSphere``

@@ -2,11 +2,8 @@ import SwiftUI
 
 nonisolated struct SphereOrbitPlacement: ViewModifier, Animatable {
     var position: Double
-    let turns: Double
-    let phase: Double
-    let radius: CGFloat
-    let style: SphereOrbitStyle
-    let orientation: SphereOrbitGeometry.Orientation
+    let geometry: SphereOrbitFrameGeometry
+    let pose: SphereOrbitGeometry.Pose
 
     var animatableData: Double {
         get { position }
@@ -15,8 +12,8 @@ nonisolated struct SphereOrbitPlacement: ViewModifier, Animatable {
 
     var placement: SphereOrbitGeometry.Placement {
         SphereOrbitGeometry.placement(
-            angle: (turns + position) * 2 * .pi + phase,
-            radius: radius, style: style, orientation: orientation
+            angle: (pose.turns + position) * 2 * .pi + geometry.phase,
+            radius: geometry.radius, style: geometry.style, orientation: pose.orientation
         )
     }
 
@@ -25,6 +22,6 @@ nonisolated struct SphereOrbitPlacement: ViewModifier, Animatable {
         content
             .scaleEffect(placement.scale)
             .offset(x: placement.offset.x, y: placement.offset.y)
-            .zIndex(style == .ring ? 1 : placement.depth)
+            .zIndex(geometry.style == .ring ? 1 : placement.depth)
     }
 }

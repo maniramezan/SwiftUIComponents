@@ -7,6 +7,7 @@ import SwiftUI
 /// Satellite content remains upright and retains its buttons, gestures, and accessibility. Choose
 /// a stationary ring for controls; reserve continuous spatial motion for decorative experiences.
 /// Reduce Motion, VoiceOver, and an inactive scene automatically pause continuous motion.
+/// Disappearing pauses elapsed time; reappearing resumes it while the view's state is retained.
 /// Adding or removing items scales and fades satellites while survivors follow the orbit to
 /// their new spacing. Reduce Motion uses fades without animated redistribution.
 /// Configure placement and motion with `sphereOrbitConfiguration(_:)` and `sphereOrbitMotion(_:)`.
@@ -23,8 +24,7 @@ import SwiftUI
 /// .sphereOrbitPaused()
 /// ```
 public struct OrbitingSphere<Item: Identifiable, Center: View, Satellite: View>: View {
-    private let items: [SphereOrbitSatelliteItem<Item>]
-    private let itemIDs: [Item.ID]
+    private let collection: SphereOrbitCollection<Item>
     private let center: Center
     private let satellite: (Item) -> Satellite
     @Environment(\.designTheme) private var theme
@@ -33,8 +33,7 @@ public struct OrbitingSphere<Item: Identifiable, Center: View, Satellite: View>:
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.accessibilityVoiceOverEnabled) private var voiceOverEnabled
     @Environment(\.scenePhase) private var scenePhase
-    @State private var elapsed: TimeInterval = 0
-    @State private var animationStartedAt: Date?
+    @State private var clock = SphereOrbitClock()
 
     /// Creates an orbit from caller-owned models and content.
     ///
@@ -50,11 +49,7 @@ public struct OrbitingSphere<Item: Identifiable, Center: View, Satellite: View>:
         @ViewBuilder center: () -> Center,
         @ViewBuilder satellite: @escaping (Item) -> Satellite
     ) {
-        let uniqueItems = SphereOrbitGeometry.uniqueItems(items)
-        self.items = uniqueItems.enumerated().map { index, item in
-            SphereOrbitSatelliteItem(item: item, position: Double(index) / Double(uniqueItems.count))
-        }
-        self.itemIDs = uniqueItems.map(\.id)
+        self.collection = SphereOrbitCollection(items)
         self.center = center()
         self.satellite = satellite
     }
@@ -65,43 +60,35 @@ public struct OrbitingSphere<Item: Identifiable, Center: View, Satellite: View>:
             motion.revolutionDuration, fallback: theme.motion.orbitalRevolutionDuration)
         let moving = SphereOrbitGeometry.shouldAnimate(
             requested: !motion.isPaused, reduceMotion: reduceMotion, voiceOver: voiceOverEnabled,
-            sceneActive: scenePhase == .active, hasItems: !items.isEmpty
+            sceneActive: scenePhase == .active, hasItems: !collection.entries.isEmpty
         )
         SphereOrbitCanvasLayout(idealSide: theme.spacing.sixUnits * 6) {
             GeometryReader { geometry in
                 let frameGeometry = SphereOrbitFrameGeometry(size: geometry.size, configuration: configuration)
                 TimelineView(.animation(paused: !moving)) { context in
-                    let currentElapsed = elapsed + (animationStartedAt.map { context.date.timeIntervalSince($0) } ?? 0)
-                    let turns = SphereOrbitGeometry.turns(elapsed: currentElapsed, duration: duration)
-                    let orientation = SphereOrbitGeometry.orientation(
-                        elapsed: currentElapsed, revolutionDuration: duration, pitch: motion.pitch, roll: motion.roll
+                    let pose = SphereOrbitGeometry.pose(
+                        elapsed: clock.elapsed(at: context.date), revolutionDuration: duration, motion: motion
                     )
                     SphereOrbitFrame(
-                        items: items, itemIDs: itemIDs, geometry: frameGeometry,
-                        turns: turns, orientation: orientation,
+                        collection: collection, geometry: frameGeometry, pose: pose,
                         center: center, satellite: satellite
                     )
                     .frame(width: geometry.size.width, height: geometry.size.height)
                 }
             }
         }
+        .onAppear { clock.setVisible(true, at: .now) }
+        .onDisappear { clock.setVisible(false, at: .now) }
         .onChange(of: moving, initial: true) { _, active in
-            if active {
-                animationStartedAt = .now
-            } else if let startedAt = animationStartedAt {
-                elapsed += Date.now.timeIntervalSince(startedAt)
-                animationStartedAt = nil
-            }
+            clock.setAnimating(active, at: .now)
         }
     }
 }
 
 private struct SphereOrbitFrame<Item: Identifiable, Center: View, Satellite: View>: View {
-    let items: [SphereOrbitSatelliteItem<Item>]
-    let itemIDs: [Item.ID]
+    let collection: SphereOrbitCollection<Item>
     let geometry: SphereOrbitFrameGeometry
-    let turns: Double
-    let orientation: SphereOrbitGeometry.Orientation
+    let pose: SphereOrbitGeometry.Pose
     let center: Center
     let satellite: (Item) -> Satellite
     @Environment(\.sphereOrbitConfiguration) private var configuration
@@ -112,19 +99,18 @@ private struct SphereOrbitFrame<Item: Identifiable, Center: View, Satellite: Vie
     var body: some View {
         ZStack {
             if configuration.showsOrbit {
-                SphereOrbitPath(style: configuration.style, radius: geometry.radius, orientation: orientation)
+                SphereOrbitPath(geometry: geometry, orientation: pose.orientation)
                     .stroke(theme.colors.border, lineWidth: theme.stroke.hairline)
                     .accessibilityHidden(true)
                     .allowsHitTesting(false)
             }
             center.zIndex(0)
-            ForEach(items) { entry in
+            ForEach(collection.entries) { entry in
                 satellite(entry.item)
                     .transition(reduceMotion ? .opacity : .scale(scale: 0).combined(with: .opacity))
                     .modifier(
                         SphereOrbitPlacement(
-                            position: entry.position, turns: turns, phase: geometry.phase,
-                            radius: geometry.radius, style: configuration.style, orientation: orientation
+                            position: entry.position, geometry: geometry, pose: pose
                         )
                     )
                     .animation(
@@ -135,22 +121,15 @@ private struct SphereOrbitFrame<Item: Identifiable, Center: View, Satellite: Vie
             }
             .animation(
                 motion.animatesChanges ? theme.motion.animation(reducingMotion: reduceMotion) : nil,
-                value: itemIDs
+                value: collection.ids
             )
         }
         .frame(width: geometry.side, height: geometry.side)
     }
 }
 
-private struct SphereOrbitSatelliteItem<Item: Identifiable>: Identifiable {
-    let item: Item
-    let position: Double
-    var id: Item.ID { item.id }
-}
-
 private struct SphereOrbitPath: Shape {
-    let style: SphereOrbitStyle
-    let radius: CGFloat
+    let geometry: SphereOrbitFrameGeometry
     let orientation: SphereOrbitGeometry.Orientation
 
     func path(in rect: CGRect) -> Path {
@@ -158,7 +137,7 @@ private struct SphereOrbitPath: Shape {
         for sample in 0...SphereOrbitGeometry.pathSamples {
             let angle = Double(sample) / Double(SphereOrbitGeometry.pathSamples) * 2 * .pi
             let placement = SphereOrbitGeometry.placement(
-                angle: angle, radius: radius, style: style, orientation: orientation
+                angle: angle, radius: geometry.radius, style: geometry.style, orientation: orientation
             )
             let point = CGPoint(x: rect.midX + placement.offset.x, y: rect.midY + placement.offset.y)
             if sample == 0 { path.move(to: point) } else { path.addLine(to: point) }

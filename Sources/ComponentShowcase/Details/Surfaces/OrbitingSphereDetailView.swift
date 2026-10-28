@@ -4,89 +4,147 @@ import SwiftUI
 
 struct OrbitingSphereDetailView: View {
     @Environment(\.designTheme) private var theme
-    @State private var style = SphereOrbitStyle.spatial
+    @State private var configuration = SphereOrbitConfiguration()
+    @State private var motion = SphereOrbitMotion.paused
+    @State private var appearance = ShowcaseSphereAppearance()
     @State private var count = 5
-    @State private var isAnimating = true
-    @State private var animatesChanges = true
-    @State private var showsOrbit = true
-    @State private var size = 288.0
-    @State private var radius = 86.0
-    @State private var usesAutomaticRadius = true
-    @State private var centerSize = 96.0
-    @State private var itemSize = 40.0
-    @State private var duration = 12.0
-    @State private var usesThemeTiming = true
-    @State private var phase = -90.0
-    @State private var tint = Color.blue
-    @State private var centerLabel = "+"
     @State private var selected = ""
-    @State private var pitch = ShowcaseOrbitTiltSettings(tilt: .defaultPitch, cycleDuration: 12 / 0.37)
-    @State private var roll = ShowcaseOrbitTiltSettings(tilt: .defaultRoll, cycleDuration: 12 / 0.23)
 
     var body: some View {
         VStack(alignment: .leading, spacing: theme.spacing.twoUnits) {
-            ShowcaseSection("Interactive orbit") {
-                OrbitingSphere((0..<count).map { SphereShowcaseItem(id: $0) }) {
-                    SphereView(diameter: centerSize, tint: tint) {
-                        Text(centerLabel).font(theme.typography.title).foregroundStyle(theme.colors.onPrimary)
-                    }
-                } satellite: { item in
-                    Button {
-                        selected = item.label
-                        isAnimating = false
-                    } label: {
-                        SphereView(diameter: itemSize, tint: tint) {
-                            Text(item.label).foregroundStyle(theme.colors.onPrimary)
-                        }
-                    }
-                    .buttonStyle(.plain)
+            ShowcaseOrbitPreview(count: count, appearance: appearance, isPaused: motion.isPaused, selected: $selected)
+            ShowcaseOrbitPlacementControls(configuration: $configuration, count: $count)
+            ShowcaseOrbitMotionControls(motion: $motion)
+            ShowcaseOrbitTiltControls(title: "Pitch", tilt: $motion.pitch)
+                .disabled(configuration.style != .spatial)
+            ShowcaseOrbitTiltControls(title: "Roll", tilt: $motion.roll)
+                .disabled(configuration.style != .spatial)
+            ShowcaseSphereAppearanceControls(appearance: $appearance)
+        }
+        .sphereOrbitConfiguration(configuration)
+        .sphereOrbitMotion(motion)
+    }
+}
+
+private struct ShowcaseSphereAppearance {
+    var canvasSize = 288.0
+    var centerSize = 96.0
+    var itemSize = 40.0
+    var tint = Color.blue
+    var centerLabel = "+"
+}
+
+private struct ShowcaseOrbitPreview: View {
+    let count: Int
+    let appearance: ShowcaseSphereAppearance
+    let isPaused: Bool
+    @Binding var selected: String
+    @Environment(\.designTheme) private var theme
+
+    var body: some View {
+        ShowcaseSection("Interactive orbit") {
+            OrbitingSphere((0..<count).map { SphereShowcaseItem(id: $0) }) {
+                SphereView(diameter: appearance.centerSize, tint: appearance.tint) {
+                    Text(appearance.centerLabel).font(theme.typography.title).foregroundStyle(theme.colors.onPrimary)
                 }
-                .sphereOrbitStyle(style)
-                .sphereOrbitPaused(!isAnimating)
-                .sphereOrbitConfiguration(
-                    SphereOrbitConfiguration(
-                        radius: usesAutomaticRadius ? nil : radius, phase: .degrees(phase), showsOrbit: showsOrbit
-                    )
-                )
-                .sphereOrbitMotion(
-                    SphereOrbitMotion(
-                        revolutionDuration: usesThemeTiming ? nil : duration,
-                        pitch: pitch.configuration, roll: roll.configuration,
-                        animatesChanges: animatesChanges
-                    )
-                )
-                .frame(width: size, height: size)
-                .frame(maxWidth: .infinity)
-                Text(selected.isEmpty ? "Select an item to pause" : "Selected: \(selected)")
-            }
-            ShowcaseSection("Motion and projection") {
-                Picker("Projection", selection: $style) {
-                    Text("Spatial").tag(SphereOrbitStyle.spatial)
-                    Text("Ring").tag(SphereOrbitStyle.ring)
+            } satellite: { item in
+                Button {
+                    selected = item.label
+                } label: {
+                    SphereView(diameter: appearance.itemSize, tint: appearance.tint) {
+                        Text(item.label).foregroundStyle(theme.colors.onPrimary)
+                    }
+                    .frame(minWidth: theme.motion.minimumHitTarget, minHeight: theme.motion.minimumHitTarget)
                 }
-                Toggle("Animate", isOn: $isAnimating).toggleStyle(ThemeToggleStyle())
-                Toggle("Animate item changes", isOn: $animatesChanges).toggleStyle(ThemeToggleStyle())
-                Toggle("Show orbit", isOn: $showsOrbit).toggleStyle(ThemeToggleStyle())
-                Stepper("Items: \(count)", value: $count, in: 0...10)
-                Toggle("Use theme timing", isOn: $usesThemeTiming).toggleStyle(ThemeToggleStyle())
-                LabeledContent("Seconds per turn") { Slider(value: $duration, in: 2...30) }
-                    .disabled(usesThemeTiming)
-                LabeledContent("Starting angle") { Slider(value: $phase, in: -180...180) }
+                .buttonStyle(.plain)
+                .disabled(!isPaused)
             }
-            ShowcaseOrbitTiltControls(title: "Pitch", settings: $pitch)
-                .disabled(style != .spatial)
-            ShowcaseOrbitTiltControls(title: "Roll", settings: $roll)
-                .disabled(style != .spatial)
-            ShowcaseSection("Size and appearance") {
-                LabeledContent("Canvas") { Slider(value: $size, in: 200...400) }
-                Toggle("Automatic radius", isOn: $usesAutomaticRadius).toggleStyle(ThemeToggleStyle())
-                LabeledContent("Orbit radius") { Slider(value: $radius, in: 50...150) }
-                    .disabled(usesAutomaticRadius)
-                LabeledContent("Center diameter") { Slider(value: $centerSize, in: 44...180) }
-                LabeledContent("Item diameter") { Slider(value: $itemSize, in: 24...64) }
-                ColorPicker("Sphere color", selection: $tint)
-                TextField("Center label", text: $centerLabel)
+            .frame(width: appearance.canvasSize, height: appearance.canvasSize)
+            .frame(maxWidth: .infinity)
+            Text(isPaused ? "Select an item" : "Pause motion to select an item")
+            if !selected.isEmpty { Text("Selected: \(selected)") }
+        }
+    }
+}
+
+private struct ShowcaseOrbitPlacementControls: View {
+    private static let customRadius = 86.0
+    @Binding var configuration: SphereOrbitConfiguration
+    @Binding var count: Int
+
+    private var phase: Binding<Double> {
+        Binding(get: { configuration.phase.degrees }, set: { configuration.phase = .degrees($0) })
+    }
+
+    private var automaticRadius: Binding<Bool> {
+        Binding(
+            get: { configuration.radius == nil },
+            set: { configuration.radius = $0 ? nil : Self.customRadius }
+        )
+    }
+
+    private var radius: Binding<Double> {
+        Binding(
+            get: { configuration.radius.map(Double.init) ?? Self.customRadius },
+            set: { configuration.radius = CGFloat($0) }
+        )
+    }
+
+    var body: some View {
+        ShowcaseSection("Placement") {
+            Picker("Projection", selection: $configuration.style) {
+                Text("Spatial").tag(SphereOrbitStyle.spatial)
+                Text("Ring").tag(SphereOrbitStyle.ring)
             }
+            Toggle("Show orbit", isOn: $configuration.showsOrbit).toggleStyle(ThemeToggleStyle())
+            Stepper("Items: \(count)", value: $count, in: 0...10)
+            LabeledContent("Starting angle") { Slider(value: phase, in: -180...180) }
+            Toggle("Automatic radius", isOn: automaticRadius).toggleStyle(ThemeToggleStyle())
+            LabeledContent("Orbit radius") { Slider(value: radius, in: 50...150) }
+                .disabled(configuration.radius == nil)
+        }
+    }
+}
+
+private struct ShowcaseOrbitMotionControls: View {
+    @Binding var motion: SphereOrbitMotion
+    @Environment(\.designTheme) private var theme
+
+    private var themeTiming: Binding<Bool> {
+        Binding(
+            get: { motion.revolutionDuration == nil },
+            set: { motion.revolutionDuration = $0 ? nil : theme.motion.orbitalRevolutionDuration }
+        )
+    }
+
+    private var duration: Binding<Double> {
+        Binding(
+            get: { motion.revolutionDuration ?? theme.motion.orbitalRevolutionDuration },
+            set: { motion.revolutionDuration = $0 }
+        )
+    }
+
+    var body: some View {
+        ShowcaseSection("Motion") {
+            Toggle("Pause motion", isOn: $motion.isPaused).toggleStyle(ThemeToggleStyle())
+            Toggle("Animate item changes", isOn: $motion.animatesChanges).toggleStyle(ThemeToggleStyle())
+            Toggle("Use theme timing", isOn: themeTiming).toggleStyle(ThemeToggleStyle())
+            LabeledContent("Seconds per turn") { Slider(value: duration, in: 2...30) }
+                .disabled(motion.revolutionDuration == nil)
+        }
+    }
+}
+
+private struct ShowcaseSphereAppearanceControls: View {
+    @Binding var appearance: ShowcaseSphereAppearance
+
+    var body: some View {
+        ShowcaseSection("Size and appearance") {
+            LabeledContent("Canvas") { Slider(value: $appearance.canvasSize, in: 200...400) }
+            LabeledContent("Center diameter") { Slider(value: $appearance.centerSize, in: 44...180) }
+            LabeledContent("Item diameter") { Slider(value: $appearance.itemSize, in: 24...64) }
+            ColorPicker("Sphere color", selection: $appearance.tint)
+            TextField("Center label", text: $appearance.centerLabel)
         }
     }
 }
@@ -95,12 +153,13 @@ private struct ShowcaseOrbitTiltSettings {
     var center: Double
     var amplitude: Double
     var cycleDuration: Double
-    var followsRevolution = true
+    var followsRevolution: Bool
 
-    init(tilt: SphereOrbitTilt, cycleDuration: Double) {
+    init(tilt: SphereOrbitTilt, fallbackCycleDuration: Double) {
         center = tilt.center.degrees
         amplitude = tilt.amplitude.degrees
-        self.cycleDuration = cycleDuration
+        cycleDuration = tilt.cycleDuration ?? fallbackCycleDuration
+        followsRevolution = tilt.cycleDuration == nil
     }
 
     var configuration: SphereOrbitTilt {
@@ -112,25 +171,36 @@ private struct ShowcaseOrbitTiltSettings {
 }
 
 private struct ShowcaseOrbitTiltControls: View {
+    private static let customCycleDuration = 30.0
     let title: String
-    @Binding var settings: ShowcaseOrbitTiltSettings
+    @Binding var tilt: SphereOrbitTilt
+
+    private var settings: Binding<ShowcaseOrbitTiltSettings> {
+        Binding(
+            get: { ShowcaseOrbitTiltSettings(tilt: tilt, fallbackCycleDuration: Self.customCycleDuration) },
+            set: { tilt = $0.configuration }
+        )
+    }
 
     var body: some View {
+        let settings = self.settings
         ShowcaseSection(title) {
-            LabeledContent("Center: \(settings.center.formatted(.number.precision(.fractionLength(1))))°") {
-                Slider(value: $settings.center, in: -180...180)
-            }
-            LabeledContent("Maximum deviation: \(settings.amplitude.formatted(.number.precision(.fractionLength(1))))°")
+            LabeledContent("Center: \(settings.wrappedValue.center.formatted(.number.precision(.fractionLength(1))))°")
             {
-                Slider(value: $settings.amplitude, in: 0...180)
+                Slider(value: settings.center, in: -180...180)
             }
-            Toggle("Follow revolution timing", isOn: $settings.followsRevolution)
+            LabeledContent(
+                "Maximum deviation: \(settings.wrappedValue.amplitude.formatted(.number.precision(.fractionLength(1))))°"
+            ) {
+                Slider(value: settings.amplitude, in: 0...180)
+            }
+            Toggle("Follow revolution timing", isOn: settings.followsRevolution)
                 .toggleStyle(ThemeToggleStyle())
-            if !settings.followsRevolution {
+            if !settings.wrappedValue.followsRevolution {
                 LabeledContent(
-                    "Cycle: \(settings.cycleDuration.formatted(.number.precision(.fractionLength(1)))) seconds"
+                    "Cycle: \(settings.wrappedValue.cycleDuration.formatted(.number.precision(.fractionLength(1)))) seconds"
                 ) {
-                    Slider(value: $settings.cycleDuration, in: 2...120)
+                    Slider(value: settings.cycleDuration, in: 2...120)
                 }
             }
         }

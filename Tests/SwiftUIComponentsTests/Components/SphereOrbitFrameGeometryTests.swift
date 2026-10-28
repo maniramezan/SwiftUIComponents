@@ -12,6 +12,7 @@ struct SphereOrbitFrameGeometryTests {
             size: CGSize(width: 320, height: 160), configuration: .init(style: style)
         )
         #expect(geometry.side == 160)
+        #expect(geometry.style == style)
         #expect(abs(geometry.radius - (style == .ring ? 60.8 : 48)) < 0.0001)
         #expect(geometry.phase == -.pi / 2)
     }

@@ -14,6 +14,11 @@ nonisolated enum SphereOrbitGeometry {
         let roll: Double
     }
 
+    struct Pose {
+        let turns: Double
+        let orientation: Orientation
+    }
+
     static let logger = Logger(subsystem: "com.swiftuicomponents", category: "OrbitingSphere")
     static let ringRadiusRatio = 0.38
     static let spatialRadiusRatio = 0.30
@@ -72,6 +77,15 @@ nonisolated enum SphereOrbitGeometry {
         )
     }
 
+    static func pose(elapsed: TimeInterval, revolutionDuration: TimeInterval, motion: SphereOrbitMotion) -> Pose {
+        Pose(
+            turns: turns(elapsed: elapsed, duration: revolutionDuration),
+            orientation: orientation(
+                elapsed: elapsed, revolutionDuration: revolutionDuration, pitch: motion.pitch, roll: motion.roll
+            )
+        )
+    }
+
     static func tiltAngle(_ tilt: SphereOrbitTilt, elapsed: TimeInterval, fallbackDuration: TimeInterval) -> Double {
         let duration = tilt.cycleDuration ?? fallbackDuration
         guard elapsed.isFinite, duration.isFinite, duration > 0 else { return tilt.center.radians }
@@ -101,11 +115,6 @@ nonisolated enum SphereOrbitGeometry {
             scale: perspective,
             depth: depth
         )
-    }
-
-    static func angle(index: Int, count: Int, turns: Double, phase: Double) -> Double {
-        guard count > 0 else { return phase }
-        return (turns + Double(index) / Double(count)) * 2 * .pi + phase
     }
 
     static func turns(elapsed: TimeInterval, duration: TimeInterval) -> Double {

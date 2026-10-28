@@ -14,10 +14,13 @@ struct OrbitingSphereTests {
     @Test("Ring items stay on the radius without depth or scaling")
     func ringGeometry() {
         let orientation = SphereOrbitGeometry.orientation(elapsed: 0, revolutionDuration: 12)
+        let geometry = SphereOrbitFrameGeometry(
+            size: CGSize(width: 300, height: 300), configuration: .init(style: .ring, radius: 100, phase: .zero)
+        )
         for index in 0..<8 {
-            let angle = SphereOrbitGeometry.angle(index: index, count: 8, turns: 0, phase: 0)
-            let placement = SphereOrbitGeometry.placement(
-                angle: angle, radius: 100, style: .ring, orientation: orientation)
+            let placement = SphereOrbitPlacement(
+                position: Double(index) / 8, geometry: geometry, pose: .init(turns: 0, orientation: orientation)
+            ).placement
             #expect(abs(hypot(placement.offset.x, placement.offset.y) - 100) < 0.0001)
             #expect(placement.scale == 1)
             #expect(placement.depth == 0)
@@ -39,18 +42,25 @@ struct OrbitingSphereTests {
 
     @Test("Ring repeats after a revolution while the spatial plane keeps tilting")
     func revolution() {
-        let angle = SphereOrbitGeometry.angle(index: 0, count: 4, turns: 0, phase: 0)
-        let next = SphereOrbitGeometry.angle(index: 0, count: 4, turns: 1, phase: 0)
         let initialOrientation = SphereOrbitGeometry.orientation(elapsed: 0, revolutionDuration: 12)
         let nextOrientation = SphereOrbitGeometry.orientation(elapsed: 12, revolutionDuration: 12)
-        let first = SphereOrbitGeometry.placement(
-            angle: angle, radius: 100, style: .ring, orientation: initialOrientation)
-        let last = SphereOrbitGeometry.placement(
-            angle: next, radius: 100, style: .ring, orientation: nextOrientation)
+        let ring = SphereOrbitFrameGeometry(
+            size: CGSize(width: 300, height: 300), configuration: .init(style: .ring, radius: 100, phase: .zero)
+        )
+        let first = SphereOrbitPlacement(
+            position: 0, geometry: ring, pose: .init(turns: 0, orientation: initialOrientation)
+        ).placement
+        let last = SphereOrbitPlacement(
+            position: 0, geometry: ring, pose: .init(turns: 1, orientation: nextOrientation)
+        ).placement
         #expect(abs(first.offset.x - last.offset.x) < 0.0001)
         #expect(abs(first.offset.y - last.offset.y) < 0.0001)
-        let tilted = SphereOrbitGeometry.placement(
-            angle: next, radius: 100, style: .spatial, orientation: nextOrientation)
+        let spatial = SphereOrbitFrameGeometry(
+            size: CGSize(width: 300, height: 300), configuration: .init(radius: 100, phase: .zero)
+        )
+        let tilted = SphereOrbitPlacement(
+            position: 0, geometry: spatial, pose: .init(turns: 1, orientation: nextOrientation)
+        ).placement
         #expect(abs(tilted.offset.y) > 0.01)
     }
 
@@ -64,7 +74,6 @@ struct OrbitingSphereTests {
         #expect(SphereOrbitGeometry.turns(elapsed: -1, duration: 12) == 0)
         #expect(SphereOrbitGeometry.turns(elapsed: .infinity, duration: 12) == 0)
         #expect(SphereOrbitGeometry.turns(elapsed: 1, duration: 0) == 0)
-        #expect(SphereOrbitGeometry.angle(index: 0, count: 0, turns: 0, phase: 1) == 1)
         #expect(DefaultMotion().orbitalRevolutionDuration == 12)
     }
 
@@ -79,8 +88,9 @@ struct OrbitingSphereTests {
         let initialPosition = 3.0 / 5
         let targetPosition = 3.0 / Double(newCount)
         var modifier = SphereOrbitPlacement(
-            position: initialPosition, turns: 2.25, phase: -.pi / 2,
-            radius: 100, style: .ring, orientation: .init(pitch: 0, roll: 0)
+            position: initialPosition,
+            geometry: .init(size: CGSize(width: 300, height: 300), configuration: .init(style: .ring, radius: 100)),
+            pose: .init(turns: 2.25, orientation: .init(pitch: 0, roll: 0))
         )
         #expect(modifier.animatableData == initialPosition)
         let start = modifier.placement
@@ -93,14 +103,15 @@ struct OrbitingSphereTests {
         }
         #expect(modifier.position == targetPosition)
         #expect(abs(modifier.placement.offset.x - start.offset.x) > 1)
-        #expect(modifier.turns == 2.25)
+        #expect(modifier.pose.turns == 2.25)
     }
 
     @Test("Spatial redistribution preserves perspective and crosses behind the center")
     func redistributionPreservesDepth() {
         var modifier = SphereOrbitPlacement(
-            position: 0.25, turns: 3, phase: 0,
-            radius: 100, style: .spatial, orientation: .init(pitch: -.pi / 4, roll: .pi / 6)
+            position: 0.25,
+            geometry: .init(size: CGSize(width: 300, height: 300), configuration: .init(radius: 100, phase: .zero)),
+            pose: .init(turns: 3, orientation: .init(pitch: -.pi / 4, roll: .pi / 6))
         )
         #expect(modifier.placement.depth > 0)
         #expect(modifier.placement.scale > 1)
@@ -110,7 +121,7 @@ struct OrbitingSphereTests {
         modifier.animatableData = 0.75
         #expect(modifier.placement.depth < 0)
         #expect(modifier.placement.scale < 1)
-        #expect(modifier.turns == 3)
+        #expect(modifier.pose.turns == 3)
     }
 
     @Test("Accessibility, scene state, and caller pause requests stop motion")

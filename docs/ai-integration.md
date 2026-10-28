@@ -78,6 +78,7 @@ Sizing the center and satellites to fit is the caller's responsibility; content 
 
 Revolution timing defaults to `theme.motion.orbitalRevolutionDuration` (12 seconds per turn).
 Reduce Motion, VoiceOver, and inactive scenes pause continuous motion automatically.
+Disappearing pauses elapsed time; reappearing resumes accumulated motion while the view's state is retained.
 Insertions and removals scale and fade satellites; survivors follow the orbit to their new spacing.
 Keep each model's ID stable when updating the array. Transitions work while paused, and use
 `theme.motion.animation(reducingMotion:)`. Reduce Motion fades only and updates spacing immediately.

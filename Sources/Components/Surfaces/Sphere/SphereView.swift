@@ -36,38 +36,46 @@ public struct SphereView<Content: View>: View {
         let color = tint ?? theme.colors.primary
         content
             .frame(width: side, height: side)
-            .background {
-                Circle()
-                    .fill(theme.colors.container)
-                    .overlay { Circle().fill(color.gradient) }
-                    .overlay {
-                        Circle().fill(
-                            RadialGradient(
-                                colors: [
-                                    theme.colors.onOverlay.opacity(SphereSurfaceMetrics.highlightOpacity), .clear,
-                                ],
-                                center: .topLeading,
-                                startRadius: 0,
-                                endRadius: side
-                            )
-                        )
-                    }
-                    .overlay {
-                        Circle().fill(
-                            RadialGradient(
-                                colors: [.clear, theme.colors.shadow.opacity(SphereSurfaceMetrics.shadeOpacity)],
-                                center: .topLeading,
-                                startRadius: side * SphereSurfaceMetrics.shadeStartRatio,
-                                endRadius: side
-                            )
-                        )
-                    }
-                    .overlay {
-                        Circle().strokeBorder(theme.colors.border, lineWidth: theme.stroke.hairline)
-                    }
-            }
+            .background { SphereSurface(diameter: side, tint: color) }
             .clipShape(Circle())
             .contentShape(Circle())
+    }
+}
+
+private struct SphereSurface: View {
+    let diameter: CGFloat
+    let tint: Color
+    @Environment(\.designTheme) private var theme
+
+    var body: some View {
+        Circle()
+            .fill(theme.colors.container)
+            .overlay { Circle().fill(tint.gradient) }
+            .overlay {
+                Circle().fill(
+                    RadialGradient(
+                        colors: [
+                            theme.colors.onOverlay.opacity(SphereSurfaceMetrics.highlightOpacity), .clear,
+                        ],
+                        center: .topLeading,
+                        startRadius: 0,
+                        endRadius: diameter
+                    )
+                )
+            }
+            .overlay {
+                Circle().fill(
+                    RadialGradient(
+                        colors: [.clear, theme.colors.shadow.opacity(SphereSurfaceMetrics.shadeOpacity)],
+                        center: .topLeading,
+                        startRadius: diameter * SphereSurfaceMetrics.shadeStartRatio,
+                        endRadius: diameter
+                    )
+                )
+            }
+            .overlay {
+                Circle().strokeBorder(theme.colors.border, lineWidth: theme.stroke.hairline)
+            }
     }
 }
 
