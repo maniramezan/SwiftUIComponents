@@ -17,6 +17,8 @@ struct OrbitingSphereDetailView: View {
     @State private var tint = Color.blue
     @State private var centerLabel = "+"
     @State private var selected = ""
+    @State private var pitch = ShowcaseOrbitTiltSettings(tilt: .defaultPitch, cycleDuration: 12 / 0.37)
+    @State private var roll = ShowcaseOrbitTiltSettings(tilt: .defaultRoll, cycleDuration: 12 / 0.23)
 
     var body: some View {
         VStack(alignment: .leading, spacing: theme.spacing.twoUnits) {
@@ -24,7 +26,8 @@ struct OrbitingSphereDetailView: View {
                 OrbitingSphere(
                     (0..<count).map { SphereShowcaseItem(id: $0) },
                     style: style, size: size, radius: radius, isAnimating: isAnimating,
-                    revolutionDuration: duration, phase: .degrees(phase), showsOrbit: showsOrbit
+                    revolutionDuration: duration, pitch: pitch.configuration, roll: roll.configuration,
+                    phase: .degrees(phase), showsOrbit: showsOrbit
                 ) {
                     SphereView(diameter: centerSize, tint: tint) {
                         Text(centerLabel).font(theme.typography.title).foregroundStyle(theme.colors.onPrimary)
@@ -54,6 +57,10 @@ struct OrbitingSphereDetailView: View {
                 LabeledContent("Seconds per turn") { Slider(value: $duration, in: 2...30) }
                 LabeledContent("Starting angle") { Slider(value: $phase, in: -180...180) }
             }
+            ShowcaseOrbitTiltControls(title: "Pitch", settings: $pitch)
+                .disabled(style != .spatial)
+            ShowcaseOrbitTiltControls(title: "Roll", settings: $roll)
+                .disabled(style != .spatial)
             ShowcaseSection("Size and appearance") {
                 LabeledContent("Canvas") { Slider(value: $size, in: 200...400) }
                 LabeledContent("Orbit radius") { Slider(value: $radius, in: 50...150) }
@@ -61,6 +68,52 @@ struct OrbitingSphereDetailView: View {
                 LabeledContent("Item diameter") { Slider(value: $itemSize, in: 24...64) }
                 ColorPicker("Sphere color", selection: $tint)
                 TextField("Center label", text: $centerLabel)
+            }
+        }
+    }
+}
+
+private struct ShowcaseOrbitTiltSettings {
+    var center: Double
+    var amplitude: Double
+    var cycleDuration: Double
+    var followsRevolution = true
+
+    init(tilt: SphereOrbitTilt, cycleDuration: Double) {
+        center = tilt.center.degrees
+        amplitude = tilt.amplitude.degrees
+        self.cycleDuration = cycleDuration
+    }
+
+    var configuration: SphereOrbitTilt {
+        SphereOrbitTilt(
+            center: .degrees(center), amplitude: .degrees(amplitude),
+            cycleDuration: followsRevolution ? nil : cycleDuration
+        )
+    }
+}
+
+private struct ShowcaseOrbitTiltControls: View {
+    let title: String
+    @Binding var settings: ShowcaseOrbitTiltSettings
+
+    var body: some View {
+        ShowcaseSection(title) {
+            LabeledContent("Center: \(settings.center.formatted(.number.precision(.fractionLength(1))))°") {
+                Slider(value: $settings.center, in: -180...180)
+            }
+            LabeledContent("Maximum deviation: \(settings.amplitude.formatted(.number.precision(.fractionLength(1))))°")
+            {
+                Slider(value: $settings.amplitude, in: 0...180)
+            }
+            Toggle("Follow revolution timing", isOn: $settings.followsRevolution)
+                .toggleStyle(ThemeToggleStyle())
+            if !settings.followsRevolution {
+                LabeledContent(
+                    "Cycle: \(settings.cycleDuration.formatted(.number.precision(.fractionLength(1)))) seconds"
+                ) {
+                    Slider(value: $settings.cycleDuration, in: 2...120)
+                }
             }
         }
     }

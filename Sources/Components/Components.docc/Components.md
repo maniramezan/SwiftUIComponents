@@ -61,9 +61,15 @@ open Package.swift   # Opens in Xcode
 
 ### Surfaces
 
+Use ``SphereOrbitTilt`` to configure ``OrbitingSphere`` pitch and roll independently.
+Each tilt provides a center angle, a maximum deviation, and an optional cycle duration
+in seconds. Omitting the duration preserves timing relative to satellite revolutions;
+zero deviation holds a fixed orientation. Tilt configuration applies only to the spatial style.
+
 - ``SphereView``
 - ``OrbitingSphere``
 - ``SphereOrbitStyle``
+- ``SphereOrbitTilt``
 
 - ``CardSurface``
 - ``CapsuleSurface``

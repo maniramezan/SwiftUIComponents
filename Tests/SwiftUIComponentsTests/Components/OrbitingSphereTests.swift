@@ -13,9 +13,11 @@ struct OrbitingSphereTests {
 
     @Test("Ring items stay on the radius without depth or scaling")
     func ringGeometry() {
+        let orientation = SphereOrbitGeometry.orientation(elapsed: 0, revolutionDuration: 12)
         for index in 0..<8 {
             let angle = SphereOrbitGeometry.angle(index: index, count: 8, turns: 0, phase: 0)
-            let placement = SphereOrbitGeometry.placement(angle: angle, turns: 0, radius: 100, style: .ring)
+            let placement = SphereOrbitGeometry.placement(
+                angle: angle, radius: 100, style: .ring, orientation: orientation)
             #expect(abs(hypot(placement.offset.x, placement.offset.y) - 100) < 0.0001)
             #expect(placement.scale == 1)
             #expect(placement.depth == 0)
@@ -24,8 +26,11 @@ struct OrbitingSphereTests {
 
     @Test("Spatial items scale with depth and pass behind the center")
     func spatialDepth() {
-        let front = SphereOrbitGeometry.placement(angle: .pi / 2, turns: 0, radius: 100, style: .spatial)
-        let back = SphereOrbitGeometry.placement(angle: -.pi / 2, turns: 0, radius: 100, style: .spatial)
+        let orientation = SphereOrbitGeometry.orientation(elapsed: 0, revolutionDuration: 12)
+        let front = SphereOrbitGeometry.placement(
+            angle: .pi / 2, radius: 100, style: .spatial, orientation: orientation)
+        let back = SphereOrbitGeometry.placement(
+            angle: -.pi / 2, radius: 100, style: .spatial, orientation: orientation)
         #expect(front.depth > 0)
         #expect(back.depth < 0)
         #expect(front.scale > 1)
@@ -36,11 +41,16 @@ struct OrbitingSphereTests {
     func revolution() {
         let angle = SphereOrbitGeometry.angle(index: 0, count: 4, turns: 0, phase: 0)
         let next = SphereOrbitGeometry.angle(index: 0, count: 4, turns: 1, phase: 0)
-        let first = SphereOrbitGeometry.placement(angle: angle, turns: 0, radius: 100, style: .ring)
-        let last = SphereOrbitGeometry.placement(angle: next, turns: 1, radius: 100, style: .ring)
+        let initialOrientation = SphereOrbitGeometry.orientation(elapsed: 0, revolutionDuration: 12)
+        let nextOrientation = SphereOrbitGeometry.orientation(elapsed: 12, revolutionDuration: 12)
+        let first = SphereOrbitGeometry.placement(
+            angle: angle, radius: 100, style: .ring, orientation: initialOrientation)
+        let last = SphereOrbitGeometry.placement(
+            angle: next, radius: 100, style: .ring, orientation: nextOrientation)
         #expect(abs(first.offset.x - last.offset.x) < 0.0001)
         #expect(abs(first.offset.y - last.offset.y) < 0.0001)
-        let tilted = SphereOrbitGeometry.placement(angle: next, turns: 1, radius: 100, style: .spatial)
+        let tilted = SphereOrbitGeometry.placement(
+            angle: next, radius: 100, style: .spatial, orientation: nextOrientation)
         #expect(abs(tilted.offset.y) > 0.01)
     }
 
@@ -98,6 +108,18 @@ struct OrbitingSphereTests {
                 size: CGSize(width: 320, height: 320)
             )
         }
+        renderForCoverage(
+            OrbitingSphere(
+                [Item(id: 1), Item(id: 2)], isAnimating: false,
+                pitch: .init(center: .degrees(-45), amplitude: .degrees(15), cycleDuration: 20),
+                roll: .init(center: .degrees(25))
+            ) {
+                SphereView { Text("Center") }
+            } satellite: { item in
+                SphereView { Text(item.id.formatted()) }
+            },
+            size: CGSize(width: 320, height: 320)
+        )
         renderForCoverage(
             OrbitingSphere([Item](), showsOrbit: false) {
                 SphereView { EmptyView() }

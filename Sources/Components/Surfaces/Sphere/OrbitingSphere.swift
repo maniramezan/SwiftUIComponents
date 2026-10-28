@@ -22,6 +22,8 @@ public struct OrbitingSphere<Item: Identifiable, Center: View, Satellite: View>:
     private let radius: CGFloat?
     private let isAnimating: Bool
     private let revolutionDuration: TimeInterval?
+    private let pitch: SphereOrbitTilt
+    private let roll: SphereOrbitTilt
     private let phase: Angle
     private let showsOrbit: Bool
     private let center: Center
@@ -45,6 +47,10 @@ public struct OrbitingSphere<Item: Identifiable, Center: View, Satellite: View>:
     ///   - isAnimating: Whether items revolve continuously. Pause this while users interact.
     ///   - revolutionDuration: Seconds per turn. `nil` uses `theme.motion.orbitalRevolutionDuration`.
     ///     Invalid values log a fault and use that token.
+    ///   - pitch: Spatial up/down tilt range and timing. Defaults to ``SphereOrbitTilt/defaultPitch``.
+    ///     Ignored for `.ring`.
+    ///   - roll: Spatial in-plane tilt range and timing. Defaults to ``SphereOrbitTilt/defaultRoll``.
+    ///     Ignored for `.ring`. Both tilts share the orbit's pause and accessibility behavior.
     ///   - phase: Starting item angle, defaulting to the top of the ring.
     ///   - showsOrbit: Whether a decorative orbit guide is visible.
     ///   - center: Custom center content, typically a ``SphereView`` or a button containing one.
@@ -56,6 +62,8 @@ public struct OrbitingSphere<Item: Identifiable, Center: View, Satellite: View>:
         radius: CGFloat? = nil,
         isAnimating: Bool = true,
         revolutionDuration: TimeInterval? = nil,
+        pitch: SphereOrbitTilt = .defaultPitch,
+        roll: SphereOrbitTilt = .defaultRoll,
         phase: Angle = .degrees(-90),
         showsOrbit: Bool = true,
         @ViewBuilder center: () -> Center,
@@ -67,6 +75,8 @@ public struct OrbitingSphere<Item: Identifiable, Center: View, Satellite: View>:
         self.radius = radius
         self.isAnimating = isAnimating
         self.revolutionDuration = revolutionDuration
+        self.pitch = pitch
+        self.roll = roll
         self.phase = phase
         self.showsOrbit = showsOrbit
         self.center = center()
@@ -90,9 +100,13 @@ public struct OrbitingSphere<Item: Identifiable, Center: View, Satellite: View>:
         TimelineView(.animation(paused: !moving)) { context in
             let currentElapsed = elapsed + (animationStartedAt.map { context.date.timeIntervalSince($0) } ?? 0)
             let turns = SphereOrbitGeometry.turns(elapsed: currentElapsed, duration: duration)
+            let orientation = SphereOrbitGeometry.orientation(
+                elapsed: currentElapsed, revolutionDuration: duration, pitch: pitch, roll: roll
+            )
             SphereOrbitFrame(
                 items: items, style: style, side: side, radius: orbitRadius, turns: turns,
-                phase: phase.radians, showsOrbit: showsOrbit, center: center, satellite: satellite
+                orientation: orientation, phase: phase.radians, showsOrbit: showsOrbit,
+                center: center, satellite: satellite
             )
         }
         .onChange(of: moving, initial: true) { _, active in
@@ -112,6 +126,7 @@ private struct SphereOrbitFrame<Item: Identifiable, Center: View, Satellite: Vie
     let side: CGFloat
     let radius: CGFloat
     let turns: Double
+    let orientation: SphereOrbitGeometry.Orientation
     let phase: Double
     let showsOrbit: Bool
     let center: Center
@@ -121,7 +136,7 @@ private struct SphereOrbitFrame<Item: Identifiable, Center: View, Satellite: Vie
     var body: some View {
         ZStack {
             if showsOrbit {
-                SphereOrbitPath(style: style, radius: radius, turns: turns)
+                SphereOrbitPath(style: style, radius: radius, orientation: orientation)
                     .stroke(theme.colors.border, lineWidth: theme.stroke.hairline)
                     .accessibilityHidden(true)
                     .allowsHitTesting(false)
@@ -129,7 +144,9 @@ private struct SphereOrbitFrame<Item: Identifiable, Center: View, Satellite: Vie
             center.zIndex(0)
             ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
                 let angle = SphereOrbitGeometry.angle(index: index, count: items.count, turns: turns, phase: phase)
-                let placement = SphereOrbitGeometry.placement(angle: angle, turns: turns, radius: radius, style: style)
+                let placement = SphereOrbitGeometry.placement(
+                    angle: angle, radius: radius, style: style, orientation: orientation
+                )
                 satellite(item)
                     .scaleEffect(placement.scale)
                     .offset(x: placement.offset.x, y: placement.offset.y)
@@ -143,13 +160,15 @@ private struct SphereOrbitFrame<Item: Identifiable, Center: View, Satellite: Vie
 private struct SphereOrbitPath: Shape {
     let style: SphereOrbitStyle
     let radius: CGFloat
-    let turns: Double
+    let orientation: SphereOrbitGeometry.Orientation
 
     func path(in rect: CGRect) -> Path {
         var path = Path()
         for sample in 0...SphereOrbitGeometry.pathSamples {
             let angle = Double(sample) / Double(SphereOrbitGeometry.pathSamples) * 2 * .pi
-            let placement = SphereOrbitGeometry.placement(angle: angle, turns: turns, radius: radius, style: style)
+            let placement = SphereOrbitGeometry.placement(
+                angle: angle, radius: radius, style: style, orientation: orientation
+            )
             let point = CGPoint(x: rect.midX + placement.offset.x, y: rect.midY + placement.offset.y)
             if sample == 0 { path.move(to: point) } else { path.addLine(to: point) }
         }

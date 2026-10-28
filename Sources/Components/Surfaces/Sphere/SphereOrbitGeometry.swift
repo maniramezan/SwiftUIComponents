@@ -9,13 +9,15 @@ nonisolated enum SphereOrbitGeometry {
         let depth: Double
     }
 
+    struct Orientation {
+        let pitch: Double
+        let roll: Double
+    }
+
     static let logger = Logger(subsystem: "com.swiftuicomponents", category: "OrbitingSphere")
     static let ringRadiusRatio = 0.38
     static let spatialRadiusRatio = 0.30
     static let cameraDistance = 4.5
-    static let pitchBias = -0.65
-    static let pitchAmplitude = 0.30
-    static let rollAmplitude = 0.50
     static let pitchRate = 0.37
     static let rollRate = 0.23
     static let pathSamples = 72
@@ -46,12 +48,32 @@ nonisolated enum SphereOrbitGeometry {
         return value
     }
 
-    static func placement(angle: Double, turns: Double, radius: CGFloat, style: SphereOrbitStyle) -> Placement {
+    static func orientation(
+        elapsed: TimeInterval, revolutionDuration: TimeInterval,
+        pitch: SphereOrbitTilt = .defaultPitch, roll: SphereOrbitTilt = .defaultRoll
+    ) -> Orientation {
+        Orientation(
+            pitch: tiltAngle(pitch, elapsed: elapsed, fallbackDuration: revolutionDuration / pitchRate),
+            roll: tiltAngle(roll, elapsed: elapsed, fallbackDuration: revolutionDuration / rollRate)
+        )
+    }
+
+    static func tiltAngle(_ tilt: SphereOrbitTilt, elapsed: TimeInterval, fallbackDuration: TimeInterval) -> Double {
+        let duration = tilt.cycleDuration ?? fallbackDuration
+        guard elapsed.isFinite, duration.isFinite, duration > 0 else { return tilt.center.radians }
+        let progress = max(0, elapsed).truncatingRemainder(dividingBy: duration) / duration
+        let angle = tilt.center.radians + tilt.amplitude.radians * sin(progress * 2 * .pi)
+        return angle.isFinite ? angle : tilt.center.radians
+    }
+
+    static func placement(
+        angle: Double, radius: CGFloat, style: SphereOrbitStyle, orientation: Orientation
+    ) -> Placement {
         guard style == .spatial else {
             return Placement(offset: CGPoint(x: cos(angle) * radius, y: sin(angle) * radius), scale: 1, depth: 0)
         }
-        let pitch = pitchBias + pitchAmplitude * sin(turns * pitchRate * 2 * .pi)
-        let roll = rollAmplitude * sin(turns * rollRate * 2 * .pi)
+        let pitch = orientation.pitch
+        let roll = orientation.roll
         let x = cos(angle)
         let z = sin(angle)
         let pitchedY = -z * sin(pitch)

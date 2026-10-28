@@ -43,7 +43,7 @@ Platforms: iOS 18+, macOS 15+, Mac Catalyst 18+. Swift language mode: 6 (strict 
 `SphereView(diameter:tint:content:)` draws a shaded sphere with arbitrary upright content.
 Its default diameter is `theme.spacing.sixUnits * 2`, and tint defaults to `theme.colors.primary`.
 
-`OrbitingSphere(_:style:size:radius:isAnimating:revolutionDuration:phase:showsOrbit:center:satellite:)`
+`OrbitingSphere(_:style:size:radius:isAnimating:revolutionDuration:pitch:roll:phase:showsOrbit:center:satellite:)`
 accepts an array of uniquely identifiable models and real SwiftUI center/satellite views.
 Use `.spatial` for a tilting orbit with perspective and occlusion, or `.ring` for a flat circle.
 The canvas defaults to `theme.spacing.sixUnits * 6`; orbit radius defaults to 30% of that canvas
@@ -51,6 +51,26 @@ for `.spatial`, 38% for `.ring`. Motion defaults to `theme.motion.orbitalRevolut
 (12 seconds per turn); Reduce Motion, VoiceOver, and inactive scenes pause it automatically.
 Set `isAnimating: false` for interactive controls. Pausing and resuming preserves the phase.
 Sizing the center and satellites to fit the canvas is the caller's responsibility.
+
+The `pitch` and `roll` parameters each accept a `SphereOrbitTilt(center:amplitude:cycleDuration:)`.
+Angles use SwiftUI `Angle`; amplitude is the maximum deviation on either side of the center.
+Zero amplitude holds a fixed angle. Defaults are `.defaultPitch` (−0.65 ± 0.30 radians) and
+`.defaultRoll` (0 ± 0.50 radians). A `nil` cycle duration follows satellite timing: pitch completes
+one oscillation in `revolutionDuration / 0.37` seconds, roll in `revolutionDuration / 0.23` seconds.
+Set a positive duration in seconds to control each tilt independently of satellite speed.
+Both start at their center toward the positive limit, share pause/accessibility behavior, and are
+ignored by `.ring`. Nonfinite centers and nonfinite/negative amplitudes log faults and use zero;
+nonpositive or nonfinite cycle durations log faults and use `nil`.
+
+    OrbitingSphere(
+        items,
+        pitch: .init(center: .degrees(-35), amplitude: .degrees(20), cycleDuration: 24),
+        roll: .init(center: .zero, amplitude: .degrees(30), cycleDuration: 40)
+    ) {
+        SphereView { Text("Center") }
+    } satellite: { item in
+        SphereView { Text(item.label) }
+    }
 
     OrbitingSphere(items, style: .ring, isAnimating: false) {
         SphereView { Image(systemName: "plus") }
