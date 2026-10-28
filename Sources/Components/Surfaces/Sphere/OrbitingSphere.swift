@@ -61,7 +61,6 @@ public struct OrbitingSphere<Item: Identifiable, Center: View, Satellite: View>:
 
     /// The center and orbiting child views, with motion resolved from the environment.
     public var body: some View {
-        let phase = SphereOrbitGeometry.phase(configuration.phase.radians)
         let duration = SphereOrbitGeometry.positive(
             motion.revolutionDuration, fallback: theme.motion.orbitalRevolutionDuration)
         let moving = SphereOrbitGeometry.shouldAnimate(
@@ -70,13 +69,7 @@ public struct OrbitingSphere<Item: Identifiable, Center: View, Satellite: View>:
         )
         SphereOrbitCanvasLayout(idealSide: theme.spacing.sixUnits * 6) {
             GeometryReader { geometry in
-                let side = min(geometry.size.width, geometry.size.height)
-                let orbitRadius = SphereOrbitGeometry.positive(
-                    configuration.radius,
-                    fallback: side
-                        * (configuration.style == .ring
-                            ? SphereOrbitGeometry.ringRadiusRatio : SphereOrbitGeometry.spatialRadiusRatio)
-                )
+                let frameGeometry = SphereOrbitFrameGeometry(size: geometry.size, configuration: configuration)
                 TimelineView(.animation(paused: !moving)) { context in
                     let currentElapsed = elapsed + (animationStartedAt.map { context.date.timeIntervalSince($0) } ?? 0)
                     let turns = SphereOrbitGeometry.turns(elapsed: currentElapsed, duration: duration)
@@ -84,10 +77,8 @@ public struct OrbitingSphere<Item: Identifiable, Center: View, Satellite: View>:
                         elapsed: currentElapsed, revolutionDuration: duration, pitch: motion.pitch, roll: motion.roll
                     )
                     SphereOrbitFrame(
-                        items: items, itemIDs: itemIDs, style: configuration.style, side: side,
-                        radius: orbitRadius, turns: turns, orientation: orientation,
-                        phase: phase,
-                        showsOrbit: configuration.showsOrbit, animatesChanges: motion.animatesChanges,
+                        items: items, itemIDs: itemIDs, geometry: frameGeometry,
+                        turns: turns, orientation: orientation,
                         center: center, satellite: satellite
                     )
                     .frame(width: geometry.size.width, height: geometry.size.height)
@@ -108,23 +99,20 @@ public struct OrbitingSphere<Item: Identifiable, Center: View, Satellite: View>:
 private struct SphereOrbitFrame<Item: Identifiable, Center: View, Satellite: View>: View {
     let items: [SphereOrbitSatelliteItem<Item>]
     let itemIDs: [Item.ID]
-    let style: SphereOrbitStyle
-    let side: CGFloat
-    let radius: CGFloat
+    let geometry: SphereOrbitFrameGeometry
     let turns: Double
     let orientation: SphereOrbitGeometry.Orientation
-    let phase: Double
-    let showsOrbit: Bool
-    let animatesChanges: Bool
     let center: Center
     let satellite: (Item) -> Satellite
+    @Environment(\.sphereOrbitConfiguration) private var configuration
+    @Environment(\.sphereOrbitMotion) private var motion
     @Environment(\.designTheme) private var theme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         ZStack {
-            if showsOrbit {
-                SphereOrbitPath(style: style, radius: radius, orientation: orientation)
+            if configuration.showsOrbit {
+                SphereOrbitPath(style: configuration.style, radius: geometry.radius, orientation: orientation)
                     .stroke(theme.colors.border, lineWidth: theme.stroke.hairline)
                     .accessibilityHidden(true)
                     .allowsHitTesting(false)
@@ -135,21 +123,22 @@ private struct SphereOrbitFrame<Item: Identifiable, Center: View, Satellite: Vie
                     .transition(reduceMotion ? .opacity : .scale(scale: 0).combined(with: .opacity))
                     .modifier(
                         SphereOrbitPlacement(
-                            position: entry.position, turns: turns, phase: phase,
-                            radius: radius, style: style, orientation: orientation
+                            position: entry.position, turns: turns, phase: geometry.phase,
+                            radius: geometry.radius, style: configuration.style, orientation: orientation
                         )
                     )
                     .animation(
-                        animatesChanges && !reduceMotion ? theme.motion.animation(reducingMotion: reduceMotion) : nil,
+                        motion.animatesChanges && !reduceMotion
+                            ? theme.motion.animation(reducingMotion: reduceMotion) : nil,
                         value: entry.position
                     )
             }
             .animation(
-                animatesChanges ? theme.motion.animation(reducingMotion: reduceMotion) : nil,
+                motion.animatesChanges ? theme.motion.animation(reducingMotion: reduceMotion) : nil,
                 value: itemIDs
             )
         }
-        .frame(width: side, height: side)
+        .frame(width: geometry.side, height: geometry.side)
     }
 }
 

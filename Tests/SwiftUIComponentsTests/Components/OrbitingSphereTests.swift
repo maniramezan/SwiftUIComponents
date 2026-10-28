@@ -211,6 +211,28 @@ struct OrbitingSphereTests {
         let satellite = try #require(satellitePoint)
         #expect(abs(hypot(satellite.x - center.x, satellite.y - center.y) - 60.8) < 1)
     }
+
+    @Test("The rendered frame uses inherited radius and phase", arguments: [0.0, 90, 180])
+    func inheritedFrameGeometry(phase: Double) throws {
+        var centerPoint: CGPoint?
+        var satellitePoint: CGPoint?
+        renderForCoverage(
+            OrbitingSphere([Item(id: 1)]) {
+                OrbitGeometryMarker { centerPoint = $0 }
+            } satellite: { _ in
+                OrbitGeometryMarker { satellitePoint = $0 }
+            }
+            .frame(width: 240, height: 160)
+            .sphereOrbitConfiguration(.init(style: .ring, radius: 48, phase: .degrees(phase), showsOrbit: false))
+            .sphereOrbitPaused()
+            .coordinateSpace(name: "OrbitFrameTest")
+        )
+        let center = try #require(centerPoint)
+        let satellite = try #require(satellitePoint)
+        let radians = phase * .pi / 180
+        #expect(abs(satellite.x - center.x - cos(radians) * 48) < 1)
+        #expect(abs(satellite.y - center.y - sin(radians) * 48) < 1)
+    }
 }
 
 private struct OrbitGeometryMarker: View {
