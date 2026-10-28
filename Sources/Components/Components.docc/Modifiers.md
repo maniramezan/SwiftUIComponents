@@ -119,6 +119,25 @@ Both target ``TitledPageView`` in the hierarchy below them.
   Tunes or disables the automatic swipe-hint animation. The `enabled:` form is
   shorthand for toggling it without touching timing or distance.
 
+## Orbits
+
+These modifiers configure ``OrbitingSphere`` instances in the hierarchy below them. The closest
+configuration or motion modifier wins; local style and pause overrides preserve other inherited fields.
+Use SwiftUI's `frame` modifiers to size a canvas. With no finite size proposal, its ideal square side
+is `theme.spacing.sixUnits * 6`; automatic radius follows the shorter side of the actual canvas.
+
+- term `sphereOrbitConfiguration(_ configuration: SphereOrbitConfiguration)`:
+  Shares projection, radius, starting phase, and guide visibility. A `nil` radius uses 38% of the
+  shorter canvas side for a ring or 30% for the spatial projection.
+- term `sphereOrbitMotion(_ motion: SphereOrbitMotion)`:
+  Shares revolution timing, pitch, roll, pause state, and collection transition behavior.
+  `.continuous` is the default; `.paused` keeps collection transitions while stopping revolution and tilt.
+- term `sphereOrbitStyle(_ style: SphereOrbitStyle)`:
+  Overrides only the inherited projection, choosing `.ring` or `.spatial`.
+- term `sphereOrbitPaused(_ paused: Bool = true)`:
+  Overrides only the inherited pause state. Resuming preserves elapsed time. Accessibility and scene
+  state can also pause continuous motion; Reduce Motion uses fades for collection transitions.
+
 ## Topics
 
 ### Supporting types
@@ -129,3 +148,5 @@ Both target ``TitledPageView`` in the hierarchy below them.
 - ``NoticeCard``
 - ``PaginationStyle``
 - ``TitledPageSwipeHintConfig``
+- ``SphereOrbitConfiguration``
+- ``SphereOrbitMotion``
