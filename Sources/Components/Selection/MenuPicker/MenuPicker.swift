@@ -59,7 +59,7 @@ public struct MenuPicker<Item: MenuPickerItem>: View {
     // MARK: - Items
 
     private let items: [Item]
-    private let longestLabel: String
+    private let labels: [String]
     private let preferredStyle: PresentationStyle
 
     // MARK: - Selection State
@@ -100,7 +100,7 @@ public struct MenuPicker<Item: MenuPickerItem>: View {
         self.items = items
         self._currentValue = currentValue
         // Include the current value so the trigger never clips it, even when it is missing from `items`.
-        self.longestLabel = Self.longestLabel(in: items + [currentValue.wrappedValue])
+        self.labels = (items + [currentValue.wrappedValue]).map(\.title)
         self.preferredStyle = preferredStyle
         self.onWidthChange = onWidthChange
     }
@@ -128,7 +128,6 @@ public struct MenuPicker<Item: MenuPickerItem>: View {
                     UIKitMenuPicker(
                         items: items,
                         currentValue: $currentValue,
-                        longestLabel: longestLabel,
                         horizontalPadding: theme.spacing.oneAndHalfUnits,
                         verticalPadding: theme.spacing.oneUnit,
                         minimumHitTarget: theme.motion.minimumHitTarget,
@@ -153,9 +152,6 @@ public struct MenuPicker<Item: MenuPickerItem>: View {
             AppKitMenuPicker(
                 items: items,
                 currentValue: $currentValue,
-                longestLabel: longestLabel,
-                horizontalPadding: theme.spacing.oneAndHalfUnits,
-                verticalPadding: theme.spacing.oneUnit,
                 triggerFont: theme.typography.controlNSFont,
                 width: requiredWidth,
                 onSelection: { newValue in
@@ -168,37 +164,6 @@ public struct MenuPicker<Item: MenuPickerItem>: View {
             .onChange(of: requiredWidth, initial: true) { _, newWidth in
                 handleWidthChange(newWidth)
             }
-        #else
-            Picker(selection: selectedID) {
-                ForEach(items) { item in
-                    Text(item.title)
-                        .font(theme.typography.control)
-                        .tag(item.id)
-                }
-            } label: {
-                ZStack(alignment: .leading) {
-                    Text(longestLabel)
-                        .font(theme.typography.control)
-                        .background(
-                            GeometryReader { proxy in
-                                Color.clear
-                                    .preference(key: LongestLabelWidthKey.self, value: proxy.size.width)
-                            }
-                        )
-                        .hidden()
-                    Text(currentValue.title)
-                        .font(theme.typography.control)
-                }
-                .frame(minWidth: measuredWidth, alignment: .leading)
-                .onPreferenceChange(LongestLabelWidthKey.self) { width in
-                    handleWidthChange(width)
-                }
-            }
-            .pickerStyle(.menu)
-            .menuIndicator(.hidden)
-            .frame(minWidth: measuredWidth, alignment: .leading)
-            .layoutPriority(1)
-            .accessibilityLabel(Text(Strings.MenuPicker.selectedOption(currentValue.title)))
         #endif
     }
 
@@ -217,17 +182,6 @@ private extension MenuPicker {
         }
     }
 
-    /// A binding over `Item.ID` used by the fallback SwiftUI `Picker`.
-    var selectedID: Binding<Item.ID> {
-        Binding(
-            get: { currentValue.id },
-            set: { newID in
-                if let newItem = items.first(where: { $0.id == newID }) {
-                    currentValue = newItem
-                }
-            }
-        )
-    }
 }
 
 // MARK: - Platform Measurement
@@ -235,7 +189,7 @@ private extension MenuPicker {
 #if canImport(UIKit)
     private extension MenuPicker {
         func measureWidth(for font: UIFont) -> CGFloat {
-            let textWidth = (longestLabel as NSString).size(withAttributes: [.font: font]).width
+            let textWidth = Self.maximumLabelWidth(labels, font: font)
             return max(
                 theme.motion.minimumHitTarget, textWidth + (theme.spacing.oneAndHalfUnits * 2) + theme.spacing.halfUnit)
         }
@@ -243,7 +197,7 @@ private extension MenuPicker {
 #elseif canImport(AppKit)
     private extension MenuPicker {
         func measureWidth(for font: NSFont) -> CGFloat {
-            let textWidth = (longestLabel as NSString).size(withAttributes: [.font: font]).width
+            let textWidth = Self.maximumLabelWidth(labels, font: font)
             return Self.appKitTriggerWidth(
                 textWidth: textWidth,
                 horizontalPadding: theme.spacing.oneAndHalfUnits,
@@ -254,16 +208,6 @@ private extension MenuPicker {
     }
 #endif
 
-// MARK: - Preference Keys
-
-private struct LongestLabelWidthKey: PreferenceKey {
-    static var defaultValue: CGFloat { 0 }
-
-    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
-        value = max(value, nextValue())
-    }
-}
-
 // MARK: - Helpers
 
 extension MenuPicker {
@@ -272,12 +216,15 @@ extension MenuPicker {
         CGSize(width: max(content.width, minimumHitTarget), height: max(content.height, minimumHitTarget))
     }
 
-    /// Determines the longest formatted label to stabilize layout width.
-    nonisolated static func longestLabel(in items: [Item]) -> String {
-        items
-            .map(\.title)
-            .max(by: { $0.count < $1.count }) ?? ""
-    }
+    #if canImport(UIKit)
+        static func maximumLabelWidth(_ labels: [String], font: UIFont) -> CGFloat {
+            labels.map { ($0 as NSString).size(withAttributes: [.font: font]).width }.max() ?? 0
+        }
+    #elseif canImport(AppKit)
+        static func maximumLabelWidth(_ labels: [String], font: NSFont) -> CGFloat {
+            labels.map { ($0 as NSString).size(withAttributes: [.font: font]).width }.max() ?? 0
+        }
+    #endif
 
     /// Determines whether the iOS picker should use its compact wheel sheet.
     nonisolated static func usesWheelSheet(

@@ -20,6 +20,11 @@ A platform-agnostic design token layer providing spacing, radius, stroke, motion
 
 ### Typography
 
+Custom ``Typography`` conformers supply the native `controlUIFont` on UIKit or `controlNSFont`
+on AppKit in addition to SwiftUI fonts. These requirements dispatch through the theme protocol.
+``DefaultTypography`` uses its configured family for native picker triggers as well as SwiftUI text.
+
+
 - ``Typography``
 - ``DefaultTypography``
 
@@ -45,5 +50,10 @@ A platform-agnostic design token layer providing spacing, radius, stroke, motion
 - ``AsyncLoadable``
 
 ### Caching
+
+``ImageCacheStore`` requires reference identity and `Sendable` conformance. An actor is a natural
+owner for cached image bytes. Retain a store while it remains authoritative; replacing it at the
+same URL starts a new request in `Components.CachedAsyncImage`. There is no package-global decoded cache.
+
 
 - ``ImageCacheStore``

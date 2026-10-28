@@ -22,6 +22,24 @@ struct PagedViewDetailView: View {
     ]
 
     @State private var selection: Int = 0
+    @State private var pageCount = 4
+    @State private var reversed = false
+    @State private var customChrome = false
+    @State private var peekWidth = 40.0
+    @State private var titleGap = 16.0
+    @State private var headerSpacing = 16.0
+    @State private var leadingInset = 0.0
+    @State private var usesInset = false
+    @State private var hintEnabled = false
+    @State private var hintDelay = 0.6
+    @State private var hintDistance = 40.0
+    @State private var usesCrossfade = true
+    @State private var titleColor = Color.primary
+    @State private var adjacentColor = Color.secondary
+    @State private var activeColor = Color.blue
+    @State private var inactiveColor = Color.gray
+    @State private var backgroundColor = Color.clear
+    @State private var largeFont = false
     @State private var indicatorStyle: PaginationIndicatorStyle = .dots
     @State private var peekDirection: PaginationPeekDirection = .bidirectional
     @State private var titleAlignment: TitledPageTitleAlignment = .automatic
@@ -50,6 +68,25 @@ struct PagedViewDetailView: View {
                             PillChip(alignmentLabel(a), isSelected: titleAlignment == a) { titleAlignment = a }
                         }
                     }
+                    Stepper("Pages: \(pageCount)", value: $pageCount, in: 0...4)
+                    Stepper("Selected ID: \(selection)", value: $selection, in: 0...3)
+                    Toggle("Reverse pages", isOn: $reversed)
+                    Toggle("Custom header and footer", isOn: $customChrome)
+                    Toggle("Large title font", isOn: $largeFont)
+                    Toggle("Reduced-motion crossfade", isOn: $usesCrossfade)
+                    LabeledContent("Peek width") { Slider(value: $peekWidth, in: 0...80) }
+                    LabeledContent("Title gap") { Slider(value: $titleGap, in: 0...32) }
+                    LabeledContent("Header spacing") { Slider(value: $headerSpacing, in: 0...32) }
+                    Toggle("Override title inset", isOn: $usesInset)
+                    LabeledContent("Title inset") { Slider(value: $leadingInset, in: 0...80) }
+                    ColorPicker("Title", selection: $titleColor)
+                    ColorPicker("Adjacent title", selection: $adjacentColor)
+                    ColorPicker("Active indicator", selection: $activeColor)
+                    ColorPicker("Inactive indicator", selection: $inactiveColor)
+                    ColorPicker("Background", selection: $backgroundColor, supportsOpacity: true)
+                    Toggle("Enable hint", isOn: $hintEnabled)
+                    LabeledContent("Hint delay") { Slider(value: $hintDelay, in: 0...3) }
+                    LabeledContent("Hint distance") { Slider(value: $hintDistance, in: 0...80) }
                     Toggle("Right-to-Left", isOn: $isRTL)
                         .toggleStyle(ThemeToggleStyle())
                 }
@@ -57,16 +94,25 @@ struct PagedViewDetailView: View {
 
             // The component itself
             ShowcaseSection("Result") {
-                TitledPageView(
-                    Self.pages,
-                    selection: $selection,
-                    title: \.title,
-                    titleAlignment: titleAlignment,
-                    indicatorStyle: indicatorStyle
-                ) { page in
-                    PagedViewPageCard(page: page)
-                }
-                .designPaginationStyle(.init(peekDirection: peekDirection))
+                ShowcasePagedPreview(
+                    pages: reversed
+                        ? Array(Self.pages.prefix(pageCount).reversed()) : Array(Self.pages.prefix(pageCount)),
+                    selection: $selection, titleAlignment: titleAlignment,
+                    indicatorStyle: indicatorStyle, customChrome: customChrome
+                )
+                .designPaginationStyle(
+                    .init(
+                        titleFont: largeFont ? theme.typography.largeTitle : nil,
+                        titleColor: titleColor, adjacentTitleColor: adjacentColor,
+                        background: AnyShapeStyle(backgroundColor),
+                        indicatorActiveColor: activeColor, indicatorInactiveColor: inactiveColor,
+                        peekDirection: peekDirection, peekWidth: peekWidth,
+                        headerSpacing: headerSpacing, titleGap: titleGap,
+                        titleLeadingPadding: usesInset ? leadingInset : nil,
+                        reduceMotionUsesCrossfade: usesCrossfade
+                    )
+                )
+                .designSwipeHint(.init(isEnabled: hintEnabled, delay: hintDelay, distance: hintDistance))
                 .frame(height: 220)
                 .environment(\.layoutDirection, isRTL ? .rightToLeft : .leftToRight)
             }
@@ -148,5 +194,36 @@ private struct PagedViewPageCard: View {
     ScrollView {
         PagedViewDetailView()
             .padding()
+    }
+}
+
+private struct ShowcasePagedPreview: View {
+    let pages: [PagedViewDetailView.Page]
+    @Binding var selection: Int
+    let titleAlignment: TitledPageTitleAlignment
+    let indicatorStyle: PaginationIndicatorStyle
+    let customChrome: Bool
+
+    var body: some View {
+        if customChrome {
+            TitledPageView(pages, selection: $selection, title: \.title) { context in
+                Text(context.currentTitle).designTextStyle(.headline)
+            } footerContent: { context in
+                HStack {
+                    Button("Previous") { context.selectPage(context.activeIndex - 1) }
+                    Text("\(context.activeIndex + 1) / \(context.pageCount)")
+                    Button("Next") { context.selectPage(context.activeIndex + 1) }
+                }
+            } content: {
+                PagedViewPageCard(page: $0)
+            }
+        } else {
+            TitledPageView(
+                pages, selection: $selection, title: \.title,
+                titleAlignment: titleAlignment, indicatorStyle: indicatorStyle
+            ) {
+                PagedViewPageCard(page: $0)
+            }
+        }
     }
 }

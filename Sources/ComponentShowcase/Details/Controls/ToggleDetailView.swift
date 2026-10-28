@@ -9,9 +9,13 @@ struct ToggleDetailView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: theme.spacing.twoUnits) {
+            ShowcaseSection("Controls") {
+                Toggle("Disable sample", isOn: $isDisabled)
+            }
             ShowcaseSection("Interactive") {
                 Toggle("Enable notifications", isOn: $isOn)
                     .toggleStyle(ThemeToggleStyle())
+                    .disabled(isDisabled)
                 Toggle("Show previews", isOn: .constant(false))
                     .toggleStyle(ThemeToggleStyle())
             }

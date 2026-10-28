@@ -24,6 +24,7 @@ struct MenuPickerDetailView: View {
     @State private var selected: FruitItem = Self.fruits[0]
     @State private var longSelected: FruitItem = Self.fruits[0]
     @State private var presentation: MenuPicker<FruitItem>.PresentationStyle = .wheel
+    @State private var customFont = false
     @State private var usesLongList = false
     @Environment(\.designTheme) private var theme
 
@@ -49,6 +50,7 @@ struct MenuPickerDetailView: View {
             }
 
             ShowcaseSection("Presentation playground") {
+                Toggle("Custom font family", isOn: $customFont)
                 Picker("Presentation", selection: $presentation) {
                     Text("Automatic").tag(MenuPicker<FruitItem>.PresentationStyle.automatic)
                     Text("Menu").tag(MenuPicker<FruitItem>.PresentationStyle.menu)
@@ -57,8 +59,12 @@ struct MenuPickerDetailView: View {
                 Toggle("Long list", isOn: $usesLongList)
                 if usesLongList {
                     MenuPicker(items: Self.longFruits, currentValue: $longSelected, preferredStyle: presentation)
+                        .designTheme(
+                            DefaultTheme(typography: DefaultTypography(fontFamily: customFont ? "Menlo" : nil)))
                 } else {
                     MenuPicker(items: Self.fruits, currentValue: $selected, preferredStyle: presentation)
+                        .designTheme(
+                            DefaultTheme(typography: DefaultTypography(fontFamily: customFont ? "Menlo" : nil)))
                 }
                 Text("Wheel presentation uses a native dropdown on macOS.")
             }

@@ -97,6 +97,6 @@ public extension View {
     ///
     /// - Parameter enabled: Pass `false` to suppress the hint animation.
     func designSwipeHint(enabled: Bool) -> some View {
-        designSwipeHint(.init(isEnabled: enabled))
+        transformEnvironment(\.designSwipeHintConfig) { $0.isEnabled = enabled }
     }
 }

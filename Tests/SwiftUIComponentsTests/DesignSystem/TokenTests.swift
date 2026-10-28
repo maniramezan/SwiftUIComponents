@@ -249,6 +249,12 @@ private struct MinimalColorTheme: ColorTheme {
 /// weight variants fall back to the protocol extension's defaults for any pre-existing
 /// custom conformer.
 private struct MinimalTypography: Typography {
+    #if canImport(UIKit)
+        @MainActor var controlUIFont: UIFont { DefaultTypography().controlUIFont }
+    #elseif canImport(AppKit)
+        @MainActor var controlNSFont: NSFont { DefaultTypography().controlNSFont }
+    #endif
+
     @MainActor var largeTitle: Font { .largeTitle }
     @MainActor var title: Font { .title }
     @MainActor var title2: Font { .title2 }
@@ -264,4 +270,15 @@ private struct MinimalTypography: Typography {
     @MainActor var control: Font { .body.weight(.medium) }
     @MainActor var badge: Font { .caption.weight(.semibold) }
     @MainActor var field: Font { .body }
+}
+
+@Test("Native typography honors its configured font family through the protocol")
+@MainActor
+func nativeTypographyDispatchesThroughTheme() {
+    let typography: any Typography = DefaultTypography(fontFamily: "Menlo")
+    #if canImport(UIKit)
+        #expect(typography.controlUIFont.familyName == "Menlo")
+    #elseif canImport(AppKit)
+        #expect(typography.controlNSFont.familyName == "Menlo")
+    #endif
 }

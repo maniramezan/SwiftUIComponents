@@ -31,7 +31,9 @@ public struct Container<Content: View>: View {
                 RoundedRectangle(cornerRadius: theme.radius.twoUnits, style: .continuous)
                     .strokeBorder(border, lineWidth: borderWidth)
             }
-            .shadow(color: shadowColor, radius: style == .elevated ? 12 : 0, y: style == .elevated ? 4 : 0)
+            .shadow(
+                color: shadowColor, radius: style == .elevated ? theme.spacing.oneAndHalfUnits : 0,
+                y: style == .elevated ? theme.spacing.halfUnit : 0)
     }
 
     @MainActor private var background: Color {

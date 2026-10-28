@@ -1,4 +1,5 @@
 import SwiftUI
+import TestCommonsUI
 import Testing
 
 @testable import Components
@@ -19,7 +20,7 @@ private func makePages(_ count: Int) -> [PagedFixturePage] {
 
 @Test("progress is zero when viewport width is zero")
 func progressIsZeroForUnmeasuredViewport() {
-    let result = TitledPageView<[PagedFixturePage], Int, EmptyView>.progress(
+    let result = TitledPageViewMath.progress(
         contentOffsetX: 250,
         viewportWidth: 0
     )
@@ -28,7 +29,7 @@ func progressIsZeroForUnmeasuredViewport() {
 
 @Test("progress equals offset divided by viewport width")
 func progressDividesOffsetByViewport() {
-    let result = TitledPageView<[PagedFixturePage], Int, EmptyView>.progress(
+    let result = TitledPageViewMath.progress(
         contentOffsetX: 400,
         viewportWidth: 200
     )
@@ -39,7 +40,7 @@ func progressDividesOffsetByViewport() {
 
 @Test("stepIndex returns starting index when count is zero")
 func stepIndexHandlesEmptyCollection() {
-    let result = TitledPageView<[PagedFixturePage], Int, EmptyView>.stepIndex(
+    let result = TitledPageViewMath.stepIndex(
         by: 3,
         from: 0,
         count: 0
@@ -49,7 +50,7 @@ func stepIndexHandlesEmptyCollection() {
 
 @Test("stepIndex clamps to upper bound")
 func stepIndexClampsAtUpperBound() {
-    let result = TitledPageView<[PagedFixturePage], Int, EmptyView>.stepIndex(
+    let result = TitledPageViewMath.stepIndex(
         by: +5,
         from: 4,
         count: 5
@@ -59,7 +60,7 @@ func stepIndexClampsAtUpperBound() {
 
 @Test("stepIndex clamps to lower bound")
 func stepIndexClampsAtLowerBound() {
-    let result = TitledPageView<[PagedFixturePage], Int, EmptyView>.stepIndex(
+    let result = TitledPageViewMath.stepIndex(
         by: -5,
         from: 0,
         count: 5
@@ -69,8 +70,8 @@ func stepIndexClampsAtLowerBound() {
 
 @Test("stepIndex advances by signed delta")
 func stepIndexAdvancesBySignedDelta() {
-    let plus = TitledPageView<[PagedFixturePage], Int, EmptyView>.stepIndex(by: +1, from: 1, count: 5)
-    let minus = TitledPageView<[PagedFixturePage], Int, EmptyView>.stepIndex(by: -1, from: 1, count: 5)
+    let plus = TitledPageViewMath.stepIndex(by: +1, from: 1, count: 5)
+    let minus = TitledPageViewMath.stepIndex(by: -1, from: 1, count: 5)
     #expect(plus == 2)
     #expect(minus == 0)
 }
@@ -79,11 +80,11 @@ func stepIndexAdvancesBySignedDelta() {
 
 @Test("accessibilityStep maps horizontal edges in left-to-right layout")
 func accessibilityStepMapsHorizontalEdgesInLTR() {
-    let leading = TitledPageView<[PagedFixturePage], Int, EmptyView>.accessibilityStep(
+    let leading = TitledPageViewMath.accessibilityStep(
         for: .leading,
         layoutDirection: .leftToRight
     )
-    let trailing = TitledPageView<[PagedFixturePage], Int, EmptyView>.accessibilityStep(
+    let trailing = TitledPageViewMath.accessibilityStep(
         for: .trailing,
         layoutDirection: .leftToRight
     )
@@ -94,11 +95,11 @@ func accessibilityStepMapsHorizontalEdgesInLTR() {
 
 @Test("accessibilityStep flips horizontal edges in right-to-left layout")
 func accessibilityStepMapsHorizontalEdgesInRTL() {
-    let leading = TitledPageView<[PagedFixturePage], Int, EmptyView>.accessibilityStep(
+    let leading = TitledPageViewMath.accessibilityStep(
         for: .leading,
         layoutDirection: .rightToLeft
     )
-    let trailing = TitledPageView<[PagedFixturePage], Int, EmptyView>.accessibilityStep(
+    let trailing = TitledPageViewMath.accessibilityStep(
         for: .trailing,
         layoutDirection: .rightToLeft
     )
@@ -109,11 +110,11 @@ func accessibilityStepMapsHorizontalEdgesInRTL() {
 
 @Test("accessibilityStep keeps vertical fallback stable")
 func accessibilityStepMapsVerticalEdges() {
-    let top = TitledPageView<[PagedFixturePage], Int, EmptyView>.accessibilityStep(
+    let top = TitledPageViewMath.accessibilityStep(
         for: .top,
         layoutDirection: .leftToRight
     )
-    let bottom = TitledPageView<[PagedFixturePage], Int, EmptyView>.accessibilityStep(
+    let bottom = TitledPageViewMath.accessibilityStep(
         for: .bottom,
         layoutDirection: .rightToLeft
     )
@@ -127,13 +128,13 @@ func accessibilityStepMapsVerticalEdges() {
 @Test("shouldShowIndicator is false for the hidden style regardless of count")
 func shouldShowIndicatorHiddenAlwaysFalse() {
     #expect(
-        TitledPageView<[PagedFixturePage], Int, EmptyView>.shouldShowIndicator(
+        TitledPageViewMath.shouldShowIndicator(
             count: 5,
             style: .hidden
         ) == false
     )
     #expect(
-        TitledPageView<[PagedFixturePage], Int, EmptyView>.shouldShowIndicator(
+        TitledPageViewMath.shouldShowIndicator(
             count: 0,
             style: .hidden
         ) == false
@@ -143,13 +144,13 @@ func shouldShowIndicatorHiddenAlwaysFalse() {
 @Test("shouldShowIndicator is false when there is only a single page")
 func shouldShowIndicatorHidesForSinglePage() {
     #expect(
-        TitledPageView<[PagedFixturePage], Int, EmptyView>.shouldShowIndicator(
+        TitledPageViewMath.shouldShowIndicator(
             count: 1,
             style: .dots
         ) == false
     )
     #expect(
-        TitledPageView<[PagedFixturePage], Int, EmptyView>.shouldShowIndicator(
+        TitledPageViewMath.shouldShowIndicator(
             count: 1,
             style: .bar
         ) == false
@@ -159,13 +160,13 @@ func shouldShowIndicatorHidesForSinglePage() {
 @Test("shouldShowIndicator is true for multiple pages with a visible style")
 func shouldShowIndicatorShowsForMultiplePages() {
     #expect(
-        TitledPageView<[PagedFixturePage], Int, EmptyView>.shouldShowIndicator(
+        TitledPageViewMath.shouldShowIndicator(
             count: 4,
             style: .dots
         ) == true
     )
     #expect(
-        TitledPageView<[PagedFixturePage], Int, EmptyView>.shouldShowIndicator(
+        TitledPageViewMath.shouldShowIndicator(
             count: 4,
             style: .bar
         ) == true
@@ -176,9 +177,12 @@ func shouldShowIndicatorShowsForMultiplePages() {
 
 @Test("Bidirectional layout leaves room for two peeks and two gaps")
 func bidirectionalSlotWidthAndStride() {
-    let width = TitledPageViewMath.slotWidth(viewportWidth: 400, peek: 40, gap: 16, direction: .bidirectional)
-    let stride = TitledPageViewMath.slotStride(viewportWidth: 400, peek: 40, gap: 16, direction: .bidirectional)
-    let padding = TitledPageViewMath.headerLeadingPadding(peek: 40, gap: 16, direction: .bidirectional)
+    let width = TitledPageViewMath.slotWidth(
+        viewportWidth: 400, peek: 40, gap: 16, layout: TitledPageViewMath.titleLayout(for: .bidirectional))
+    let stride = TitledPageViewMath.slotStride(
+        viewportWidth: 400, peek: 40, gap: 16, layout: TitledPageViewMath.titleLayout(for: .bidirectional))
+    let padding = TitledPageViewMath.headerLeadingPadding(
+        peek: 40, gap: 16, layout: TitledPageViewMath.titleLayout(for: .bidirectional))
     // 400 − 2×40 − 2×16 = 288
     #expect(width == 288)
     // 288 + 16 = 304
@@ -189,9 +193,12 @@ func bidirectionalSlotWidthAndStride() {
 
 @Test("Unidirectional layout reserves a single peek plus gap on the trailing edge")
 func unidirectionalSlotWidthAndStride() {
-    let width = TitledPageViewMath.slotWidth(viewportWidth: 400, peek: 40, gap: 16, direction: .unidirectional)
-    let stride = TitledPageViewMath.slotStride(viewportWidth: 400, peek: 40, gap: 16, direction: .unidirectional)
-    let padding = TitledPageViewMath.headerLeadingPadding(peek: 40, gap: 16, direction: .unidirectional)
+    let width = TitledPageViewMath.slotWidth(
+        viewportWidth: 400, peek: 40, gap: 16, layout: TitledPageViewMath.titleLayout(for: .unidirectional))
+    let stride = TitledPageViewMath.slotStride(
+        viewportWidth: 400, peek: 40, gap: 16, layout: TitledPageViewMath.titleLayout(for: .unidirectional))
+    let padding = TitledPageViewMath.headerLeadingPadding(
+        peek: 40, gap: 16, layout: TitledPageViewMath.titleLayout(for: .unidirectional))
     // 400 − 40 − 16 = 344
     #expect(width == 344)
     // 344 + 16 = 360
@@ -202,9 +209,12 @@ func unidirectionalSlotWidthAndStride() {
 
 @Test("None peek mode fills the viewport with each slot and uses no gap")
 func noneSlotWidthAndStride() {
-    let width = TitledPageViewMath.slotWidth(viewportWidth: 400, peek: 0, gap: 0, direction: .none)
-    let stride = TitledPageViewMath.slotStride(viewportWidth: 400, peek: 0, gap: 0, direction: .none)
-    let padding = TitledPageViewMath.headerLeadingPadding(peek: 0, gap: 0, direction: .none)
+    let width = TitledPageViewMath.slotWidth(
+        viewportWidth: 400, peek: 0, gap: 0, layout: TitledPageViewMath.titleLayout(for: .none))
+    let stride = TitledPageViewMath.slotStride(
+        viewportWidth: 400, peek: 0, gap: 0, layout: TitledPageViewMath.titleLayout(for: .none))
+    let padding = TitledPageViewMath.headerLeadingPadding(
+        peek: 0, gap: 0, layout: TitledPageViewMath.titleLayout(for: .none))
     #expect(width == 400)
     #expect(stride == 400)
     #expect(padding == 0)
@@ -235,7 +245,8 @@ func centerTitleLayoutSlotWidthAndStride() {
 
 @Test("slotWidth clamps to zero when the viewport is too small for the peek and gap")
 func slotWidthClampsToZeroForTinyViewport() {
-    let width = TitledPageViewMath.slotWidth(viewportWidth: 50, peek: 40, gap: 16, direction: .bidirectional)
+    let width = TitledPageViewMath.slotWidth(
+        viewportWidth: 50, peek: 40, gap: 16, layout: TitledPageViewMath.titleLayout(for: .bidirectional))
     #expect(width == 0)
 }
 
@@ -244,7 +255,8 @@ func slotWidthClampsToZeroForTinyViewport() {
 @Test("Header offset is zero at progress zero for every peek mode")
 func headerOffsetZeroAtZeroProgress() {
     for direction in PaginationPeekDirection.allCases {
-        let stride = TitledPageViewMath.slotStride(viewportWidth: 400, peek: 40, gap: 16, direction: direction)
+        let stride = TitledPageViewMath.slotStride(
+            viewportWidth: 400, peek: 40, gap: 16, layout: TitledPageViewMath.titleLayout(for: direction))
         let offset = TitledPageViewMath.headerOffset(progress: 0, stride: stride)
         #expect(offset == 0, "expected 0 offset at progress=0 for \(direction)")
     }
@@ -252,21 +264,24 @@ func headerOffsetZeroAtZeroProgress() {
 
 @Test("Bidirectional header offset at progress one equals negative stride")
 func bidirectionalFullProgress() {
-    let stride = TitledPageViewMath.slotStride(viewportWidth: 400, peek: 40, gap: 16, direction: .bidirectional)
+    let stride = TitledPageViewMath.slotStride(
+        viewportWidth: 400, peek: 40, gap: 16, layout: TitledPageViewMath.titleLayout(for: .bidirectional))
     let offset = TitledPageViewMath.headerOffset(progress: 1, stride: stride)
     #expect(offset == -304)
 }
 
 @Test("Unidirectional header offset at progress one equals negative stride")
 func unidirectionalFullProgress() {
-    let stride = TitledPageViewMath.slotStride(viewportWidth: 400, peek: 40, gap: 16, direction: .unidirectional)
+    let stride = TitledPageViewMath.slotStride(
+        viewportWidth: 400, peek: 40, gap: 16, layout: TitledPageViewMath.titleLayout(for: .unidirectional))
     let offset = TitledPageViewMath.headerOffset(progress: 1, stride: stride)
     #expect(offset == -360)
 }
 
 @Test("None header offset at progress one equals negative viewport width")
 func noneFullProgress() {
-    let stride = TitledPageViewMath.slotStride(viewportWidth: 400, peek: 0, gap: 0, direction: .none)
+    let stride = TitledPageViewMath.slotStride(
+        viewportWidth: 400, peek: 0, gap: 0, layout: TitledPageViewMath.titleLayout(for: .none))
     let offset = TitledPageViewMath.headerOffset(progress: 1, stride: stride)
     #expect(offset == -400)
 }
@@ -276,13 +291,15 @@ func noneFullProgress() {
 // RTL automatically, so the header must not flip the sign itself.
 @Test("Header offset does not depend on layout direction")
 func headerOffsetIsDirectionAgnostic() {
-    let stride = TitledPageViewMath.slotStride(viewportWidth: 400, peek: 40, gap: 16, direction: .bidirectional)
+    let stride = TitledPageViewMath.slotStride(
+        viewportWidth: 400, peek: 40, gap: 16, layout: TitledPageViewMath.titleLayout(for: .bidirectional))
     #expect(TitledPageViewMath.headerOffset(progress: 1, stride: stride) == -304)
 }
 
 @Test("Header offset is linear in progress")
 func headerOffsetLinearInProgress() {
-    let stride = TitledPageViewMath.slotStride(viewportWidth: 400, peek: 40, gap: 16, direction: .bidirectional)
+    let stride = TitledPageViewMath.slotStride(
+        viewportWidth: 400, peek: 40, gap: 16, layout: TitledPageViewMath.titleLayout(for: .bidirectional))
     let offsets: [(CGFloat, CGFloat)] = [
         (0.0, 0),
         (0.25, -76),
@@ -331,17 +348,6 @@ func effectivePeekIsZeroForNoneDirection() {
     #expect(value == 0)
 }
 
-@Test("Effective peek is preserved for center layout (adjacent titles are visible)")
-func effectivePeekIsPreservedForCenterTitleLayout() {
-    let value = TitledPageViewMath.effectivePeek(
-        configured: 40,
-        layout: .center,
-        reduceMotion: false,
-        usesCrossfade: true
-    )
-    #expect(value == 40)
-}
-
 @Test("Effective peek preserves configured value under Reduce Motion when crossfade is opted out")
 func effectivePeekHonorsCrossfadeOptOut() {
     let value = TitledPageViewMath.effectivePeek(
@@ -359,7 +365,7 @@ func effectivePeekHonorsCrossfadeOptOut() {
 @MainActor
 func resolveStyleFallsBackToTheme() {
     let theme = DefaultTheme()
-    let resolved = TitledPageView<[PagedFixturePage], Int, EmptyView>.resolveStyle(
+    let resolved = TitledPageViewMath.resolveStyle(
         override: PaginationStyle(),
         theme: theme
     )
@@ -377,7 +383,7 @@ func resolveStyleFallsBackToTheme() {
 func resolveStylePassesThroughTitleLeadingPadding() {
     let theme = DefaultTheme()
     let override = PaginationStyle(titleLeadingPadding: 24)
-    let resolved = TitledPageView<[PagedFixturePage], Int, EmptyView>.resolveStyle(
+    let resolved = TitledPageViewMath.resolveStyle(
         override: override,
         theme: theme
     )
@@ -397,7 +403,7 @@ func resolveStylePrefersOverrides() {
     override.reduceMotionUsesCrossfade = false
     override.titleLeadingPadding = 32
 
-    let resolved = TitledPageView<[PagedFixturePage], Int, EmptyView>.resolveStyle(
+    let resolved = TitledPageViewMath.resolveStyle(
         override: override,
         theme: theme
     )
@@ -417,7 +423,7 @@ func resolveStylePrefersViewTitleAlignment() {
     var override = PaginationStyle()
     override.titleAlignment = .leading
 
-    let resolved = TitledPageView<[PagedFixturePage], Int, EmptyView>.resolveStyle(
+    let resolved = TitledPageViewMath.resolveStyle(
         override: override,
         theme: theme,
         titleAlignment: .center
@@ -575,7 +581,7 @@ func singlePageRenders() {
     )
 }
 
-@Test("Unidirectional peek direction renders the trimmed visible-pages branch")
+@Test("Unidirectional peek direction keeps all pages available")
 @MainActor
 func unidirectionalPeekRenders() {
     let pages = makePages(4)
@@ -630,9 +636,7 @@ func jumpUpdatesSelection() {
     var selected = pages[0].id
     let selectionBinding = Binding(get: { selected }, set: { selected = $0 })
     let content = TitledPageViewPagedContent(
-        pages: pages,
-        idKeyPath: \PagedFixturePage.id,
-        titleKeyPath: \PagedFixturePage.title,
+        collection: TitledPageCollection(pages, id: \PagedFixturePage.id, title: \PagedFixturePage.title),
         titleAlignment: .automatic,
         indicatorStyle: .dots,
         customTitle: nil,
@@ -641,7 +645,7 @@ func jumpUpdatesSelection() {
         selection: selectionBinding,
         scrollOffsetX: .constant(0),
         viewportWidth: .constant(300),
-        unidirectionalBaseIndex: .constant(0),
+
         swipeHintOffset: .constant(0),
         isSwipeHintPlaying: .constant(false)
     )
@@ -657,9 +661,7 @@ func jumpIgnoresOutOfRangeIndex() {
     var selected = pages[0].id
     let selectionBinding = Binding(get: { selected }, set: { selected = $0 })
     let content = TitledPageViewPagedContent(
-        pages: pages,
-        idKeyPath: \PagedFixturePage.id,
-        titleKeyPath: \PagedFixturePage.title,
+        collection: TitledPageCollection(pages, id: \PagedFixturePage.id, title: \PagedFixturePage.title),
         titleAlignment: .automatic,
         indicatorStyle: .dots,
         customTitle: nil,
@@ -668,7 +670,7 @@ func jumpIgnoresOutOfRangeIndex() {
         selection: selectionBinding,
         scrollOffsetX: .constant(0),
         viewportWidth: .constant(300),
-        unidirectionalBaseIndex: .constant(0),
+
         swipeHintOffset: .constant(0),
         isSwipeHintPlaying: .constant(false)
     )
@@ -685,9 +687,7 @@ func unmatchedSelectionRendersFallbackIndex() {
     let selectionBinding = Binding<Int>(get: { -1 }, set: { _ in })
     renderForCoverage(
         TitledPageViewPagedContent(
-            pages: pages,
-            idKeyPath: \PagedFixturePage.id,
-            titleKeyPath: \PagedFixturePage.title,
+            collection: TitledPageCollection(pages, id: \PagedFixturePage.id, title: \PagedFixturePage.title),
             titleAlignment: .automatic,
             indicatorStyle: .dots,
             customTitle: nil,
@@ -696,7 +696,7 @@ func unmatchedSelectionRendersFallbackIndex() {
             selection: selectionBinding,
             scrollOffsetX: .constant(40),
             viewportWidth: .constant(300),
-            unidirectionalBaseIndex: .constant(0),
+
             swipeHintOffset: .constant(0),
             isSwipeHintPlaying: .constant(false)
         )
@@ -717,9 +717,7 @@ func swipeHintPlaysWhenEnabled() async throws {
     var offset: CGFloat = 0
     var isPlaying = false
     let content = TitledPageViewPagedContent(
-        pages: pages,
-        idKeyPath: \PagedFixturePage.id,
-        titleKeyPath: \PagedFixturePage.title,
+        collection: TitledPageCollection(pages, id: \PagedFixturePage.id, title: \PagedFixturePage.title),
         titleAlignment: .automatic,
         indicatorStyle: .dots,
         customTitle: nil,
@@ -728,7 +726,7 @@ func swipeHintPlaysWhenEnabled() async throws {
         selection: binding,
         scrollOffsetX: .constant(0),
         viewportWidth: .constant(300),
-        unidirectionalBaseIndex: .constant(0),
+
         swipeHintOffset: Binding(get: { offset }, set: { offset = $0 }),
         isSwipeHintPlaying: Binding(get: { isPlaying }, set: { isPlaying = $0 })
     )
@@ -744,17 +742,13 @@ func swipeHintPlaysWhenEnabled() async throws {
 func stepScrollAdvancesActivePage() {
     var jumpedTo: Int?
     let scrollView = TitledPageViewPagesScrollView<PagedFixturePage, Int, Text>(
-        pages: makePages(3),
-        idKeyPath: \PagedFixturePage.id,
-        titleKeyPath: \PagedFixturePage.title,
+        collection: TitledPageCollection(makePages(3), id: \PagedFixturePage.id, title: \PagedFixturePage.title),
         content: { page in Text(page.title) },
-        peekDirection: .bidirectional,
-        selection: 0,
         swipeHintOffset: 0,
         isSwipeHintPlaying: false,
         activeIndex: 0,
         scrollOffsetX: .constant(0),
-        unidirectionalBaseIndex: .constant(0),
+
         selectionBinding: .constant(0),
         layoutDirection: .leftToRight,
         onJump: { jumpedTo = $0 }
@@ -774,4 +768,242 @@ func resolvedStylePreservesOverrides() {
     )
     #expect(style.titleColor == .red)
     #expect(style.titleLeadingPadding == 24)
+}
+
+@Test("Prepared pages keep identities and titles synchronized across reordering and replacement")
+func preparedPagesFollowModelIdentity() {
+    let original = makePages(4)
+    let collection = TitledPageCollection([original[3], original[1], original[0]], id: \.id, title: \.title)
+    #expect(collection.entries.map(\.id) == [3, 1, 0])
+    #expect(collection.header.map(\.id) == [3, 1, 0])
+    #expect(collection.titles == ["Page 3", "Page 1", "Page 0"])
+    #expect(collection.indices[1] == 1)
+    let renamed = TitledPageCollection([PagedFixturePage(id: 1, title: "Changed")], id: \.id, title: \.title)
+    #expect(renamed.header[0].id == collection.header[1].id)
+    #expect(renamed.titles == ["Changed"])
+}
+
+@Test("Production header metrics suppress all peek and gap for none and reduced-motion crossfades")
+@MainActor
+func productionHeaderPolicy() {
+    for direction in PaginationPeekDirection.allCases {
+        let style = TitledPageViewMath.resolveStyle(override: .init(peekDirection: direction), theme: DefaultTheme())
+        let reduced = TitledPageViewMetrics(viewportWidth: 400, style: style, reduceMotion: true)
+        #expect(reduced.slotWidth == 400)
+        #expect(reduced.slotStride == 400)
+        #expect(reduced.leadingPadding == 0)
+        if direction == .none {
+            let normal = TitledPageViewMetrics(viewportWidth: 400, style: style, reduceMotion: false)
+            #expect(normal.slotWidth == 400)
+            #expect(normal.leadingPadding == 0)
+        }
+    }
+}
+
+@Test("Next-title peeking permits backward and forward navigation across the full collection")
+@MainActor
+func nextTitlePeekDoesNotRestrictNavigation() {
+    var selection = 3
+    let content = TitledPageViewPagedContent(
+        collection: TitledPageCollection(makePages(4), id: \.id, title: \.title),
+        titleAlignment: .automatic, indicatorStyle: .dots,
+        customTitle: nil, customFooter: nil, content: { Text($0.title) },
+        selection: Binding(get: { selection }, set: { selection = $0 }),
+        scrollOffsetX: .constant(0), viewportWidth: .constant(320),
+        swipeHintOffset: .constant(0), isSwipeHintPlaying: .constant(false)
+    )
+    for target in [0, 1, 2, 3, 1] {
+        content.jump(to: target, reduceMotion: true)
+        #expect(selection == target)
+    }
+    renderForCoverage(
+        TitledPageView(makePages(4), selection: .constant(2), title: \.title) { Text($0.title) }
+            .designPaginationStyle(.init(peekDirection: .unidirectional))
+            .designSwipeHint(enabled: false)
+
+    )
+}
+
+@Test("The reduced-motion page presentation renders a single stable page")
+@MainActor
+func crossfadePresentationRenders() {
+    let collection = TitledPageCollection(makePages(3), id: \.id, title: \.title)
+    renderForCoverage(
+        TitledPageCrossfadeContent(
+            collection: collection, activeID: collection.entries[1].id,
+            content: { Text($0.title) }, onStep: { _ in }
+        )
+    )
+}
+
+@Test("A local swipe-hint toggle preserves inherited timing and distance in either value")
+@MainActor
+func swipeHintTogglePreservesInheritedPolicy() throws {
+    for enabled in [true, false] {
+        var observed: TitledPageSwipeHintConfig?
+        renderForCoverage(
+            SwipeHintEnvironmentProbe { observed = $0 }
+                .designSwipeHint(enabled: enabled)
+                .designSwipeHint(.init(delay: 2, distance: 75))
+        )
+        let configuration = try #require(observed)
+        #expect(configuration == .init(isEnabled: enabled, delay: 2, distance: 75))
+    }
+    var observed: TitledPageSwipeHintConfig?
+    renderForCoverage(
+        SwipeHintEnvironmentProbe { observed = $0 }
+            .designSwipeHint(.init(delay: 3, distance: 90))
+            .designSwipeHint(enabled: false)
+    )
+    #expect(observed == .init(delay: 3, distance: 90))
+}
+
+private struct SwipeHintEnvironmentProbe: View {
+    @Environment(\.designSwipeHintConfig) private var configuration
+    let observe: (TitledPageSwipeHintConfig) -> Void
+    var body: some View {
+        Color.clear.onAppear { observe(configuration) }
+    }
+}
+
+@MainActor
+@Suite("Page model observation and retained crossfades", .serialized)
+struct TitledPageLifetimeTests {
+    @Test("A constructed pager observes title mutations without being reconstructed")
+    func observesPageTitles() async throws {
+        let page = ObservableFixturePage()
+        var titles: [String] = []
+        let pager = TitledPageView(
+            [page], selection: .constant(0), title: \.title,
+            titleContent: { context in
+                Text(context.currentTitle)
+                    .onChange(of: context.currentTitle, initial: true) { _, title in titles.append(title) }
+            }, content: { _ in Color.clear }
+        )
+        let host = HostedView(pager, size: CGSize(width: 320, height: 240))
+        defer { host.close() }
+        try await waitUntil { titles.last == "Original" }
+        page.title = "Updated"
+        try await waitUntil { titles.last == "Updated" }
+        #expect(titles == ["Original", "Updated"])
+    }
+
+    @Test("Crossfades retain visited page state through navigation and reordering, and defer unvisited content")
+    func retainsVisitedState() async throws {
+        let model = CrossfadeFixtureModel()
+        let host = HostedView(CrossfadeFixtureHost(model: model), size: CGSize(width: 320, height: 240))
+        defer { host.close() }
+        try await waitUntil { model.identities[0] != nil }
+        let original = try #require(model.identities[0])
+        #expect(model.identities[1] == nil)
+        #expect(model.identities[2] == nil)
+
+        model.selection = 1
+        try await waitUntil { model.identities[1] != nil }
+        model.pages.reverse()
+        model.selection = 0
+        model.revision += 1
+        try await waitUntil { model.revisions[0] == model.revision }
+        #expect(model.identities[0] == original)
+        #expect(model.identities[2] == nil)
+
+        model.pages.removeAll { $0.id == 0 }
+        try await waitUntil { model.removed.contains(0) }
+        model.pages.append(PagedFixturePage(id: 0, title: "Replacement"))
+        model.revision += 1
+        try await waitUntil { model.revisions[0] == model.revision }
+        #expect(model.identities[0] != original)
+    }
+
+    private func waitUntil(_ condition: () -> Bool) async throws {
+        for _ in 0..<100 {
+            if condition() { return }
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        try #require(condition())
+    }
+}
+
+@MainActor
+@Observable
+private final class ObservableFixturePage: Identifiable {
+    let id = 0
+    var title = "Original"
+}
+
+@MainActor
+@Observable
+private final class CrossfadeFixtureModel {
+    var pages = makePages(3)
+    var selection = 0
+    var revision = 0
+    @ObservationIgnored var identities: [Int: UUID] = [:]
+    @ObservationIgnored var revisions: [Int: Int] = [:]
+    @ObservationIgnored var removed: Set<Int> = []
+}
+
+private struct CrossfadeFixtureHost: View {
+    let model: CrossfadeFixtureModel
+
+    var body: some View {
+        TitledPageCrossfadeContent(
+            collection: TitledPageCollection(model.pages, id: \.id, title: \.title),
+            activeID: model.selection,
+            content: { CrossfadeFixturePage(page: $0, model: model) },
+            onStep: { _ in }
+        )
+    }
+}
+
+private struct CrossfadeFixturePage: View {
+    let page: PagedFixturePage
+    let model: CrossfadeFixtureModel
+    @State private var identity = UUID()
+
+    var body: some View {
+        Text(page.title)
+            .onChange(of: model.revision, initial: true) { _, revision in
+                model.identities[page.id] = identity
+                model.revisions[page.id] = revision
+            }
+            .onDisappear { model.removed.insert(page.id) }
+    }
+}
+
+@Test("None peeking renders only the selected title regardless of neighboring labels")
+@MainActor
+func noneHeaderDoesNotRenderNeighbors() throws {
+    let style = TitledPageViewMath.resolveStyle(override: .init(peekDirection: .none), theme: DefaultTheme())
+    let first = TitledPageCollection(
+        [PagedFixturePage(id: 0, title: "Current"), PagedFixturePage(id: 1, title: "Neighbor")],
+        id: \.id, title: \.title
+    )
+    let changed = TitledPageCollection(
+        [PagedFixturePage(id: 0, title: "Current"), PagedFixturePage(id: 1, title: "Much longer changed neighbor")],
+        id: \.id, title: \.title
+    )
+    let firstRenderer = ImageRenderer(
+        content:
+            TitledPageViewHeader(
+                resolved: style, entries: first.header, progress: 0, activeIndex: 0,
+                viewportWidth: 320, reduceMotion: false, onJump: { _ in }
+            )
+            .frame(width: 320, height: 60)
+    )
+    let secondRenderer = ImageRenderer(
+        content:
+            TitledPageViewHeader(
+                resolved: style, entries: changed.header, progress: 0, activeIndex: 0,
+                viewportWidth: 320, reduceMotion: false, onJump: { _ in }
+            )
+            .frame(width: 320, height: 60)
+    )
+    #if canImport(UIKit)
+        let firstImage = try #require(firstRenderer.uiImage?.pngData())
+        let secondImage = try #require(secondRenderer.uiImage?.pngData())
+    #elseif canImport(AppKit)
+        let firstImage = try #require(firstRenderer.nsImage?.tiffRepresentation)
+        let secondImage = try #require(secondRenderer.nsImage?.tiffRepresentation)
+    #endif
+    #expect(firstImage == secondImage)
 }

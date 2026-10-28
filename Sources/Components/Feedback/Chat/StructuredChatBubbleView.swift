@@ -18,15 +18,17 @@ import SwiftUI
 /// ```
 ///
 /// Structured parsing only ever applies to the `.assistant` role; `.user`
-/// and `.system` content always renders through ``ChatBubbleView``.
+/// and `.system` content always renders as plain text.
+/// A retained presentation model prepares Markdown on appearance and input changes.
+/// Unchanged inputs reuse the prepared result; the current source text appears until preparation finishes.
 public struct StructuredChatBubbleView: View {
 
     private let role: ChatMessageRole
     private let content: String
     private let isTyping: Bool
-    private let autoPromotingHeadings: [String]
-    private let minimumSectionCount: Int
+    private let request: StructuredChatRequest
     private let contentLayoutDirection: LayoutDirection?
+    @State private var presentation = StructuredChatPresentation()
 
     /// Creates a structured-or-plain chat bubble.
     ///
@@ -59,31 +61,27 @@ public struct StructuredChatBubbleView: View {
         self.role = role
         self.content = content
         self.isTyping = isTyping
-        self.autoPromotingHeadings = autoPromotingHeadings
-        self.minimumSectionCount = minimumSectionCount
+        self.request = StructuredChatRequest(
+            role: role, content: content, isTyping: isTyping,
+            autoPromotingHeadings: autoPromotingHeadings, minimumSectionCount: minimumSectionCount
+        )
         self.contentLayoutDirection = contentLayoutDirection
     }
 
+    /// Renders cached Markdown, preparing it only when the message or parsing policy changes.
     public var body: some View {
-        if role == .assistant,
-            !isTyping,
-            let sections = StructuredMessageParser.sections(
-                from: content,
-                autoPromotingHeadings: autoPromotingHeadings,
-                minimumSectionCount: minimumSectionCount
-            )
-        {
-            ChatBubble(role: .assistant, contentLayoutDirection: contentLayoutDirection) {
+        ChatBubble(role: role, contentLayoutDirection: contentLayoutDirection) {
+            if isTyping && content.isEmpty {
+                TypingDotsView()
+            } else if presentation.request == request, let sections = presentation.sections {
                 StructuredChatBubbleContent(sections: sections)
+            } else if presentation.request == request, let text = presentation.text {
+                Text(text)
+            } else {
+                Text(content)
             }
-        } else {
-            ChatBubbleView(
-                role: role,
-                content: content,
-                isTyping: isTyping,
-                contentLayoutDirection: contentLayoutDirection
-            )
         }
+        .task(id: request) { presentation.update(request) }
     }
 }
 
@@ -94,17 +92,17 @@ public struct StructuredChatBubbleView: View {
 /// so SwiftUI can diff and update this subtree independently of the rest of
 /// `StructuredChatBubbleView`.
 private struct StructuredChatBubbleContent: View {
-    let sections: [StructuredMessageParser.Section]
+    let sections: [StructuredChatSection]
     @Environment(\.designTheme) private var theme
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            ForEach(Array(sections.enumerated()), id: \.element.id) { index, section in
+            ForEach(sections) { section in
                 VStack(alignment: .leading, spacing: theme.spacing.oneUnit) {
                     Text(section.title)
                         .font(theme.typography.headline)
                         .foregroundStyle(theme.colors.textPrimary)
-                    Text(attributedBody(section.body))
+                    Text(section.body)
                         .font(theme.typography.subheadline)
                         .foregroundStyle(theme.colors.textSecondary)
                         .lineSpacing(theme.spacing.halfUnit)
@@ -113,7 +111,7 @@ private struct StructuredChatBubbleContent: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.vertical, theme.spacing.oneUnit)
 
-                if index < sections.count - 1 {
+                if section.id != sections.last?.id {
                     Divider().padding(.vertical, theme.spacing.halfUnit)
                 }
             }
@@ -121,9 +119,6 @@ private struct StructuredChatBubbleContent: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private func attributedBody(_ text: String) -> AttributedString {
-        AttributedString(markdownOrPlainText: text)
-    }
 }
 
 #Preview("Structured chat bubble") {

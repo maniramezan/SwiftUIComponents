@@ -3,6 +3,7 @@ import DesignSystem
 import SwiftUI
 
 struct ErrorBannerDetailView: View {
+    @State private var message = "Unable to load items."
     @State private var noticeBackground = Color.blue.opacity(0.15)
     @State private var usesCustomCornerRadius = false
     @State private var cornerRadius = 12.0
@@ -12,6 +13,11 @@ struct ErrorBannerDetailView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: theme.spacing.twoUnits) {
+            ShowcaseSection("Playground") {
+                TextField("Message", text: $message)
+                ErrorBanner(message)
+            }
+
             ShowcaseSection("Short message") {
                 ErrorBanner("Something went wrong.")
             }

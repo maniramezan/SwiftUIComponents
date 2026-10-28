@@ -33,6 +33,14 @@ public protocol Typography: Sendable {
     /// Font used for text input fields.
     @MainActor var field: Font { get }
 
+    #if canImport(UIKit)
+        /// Native control font, including the theme family and Dynamic Type scaling.
+        @MainActor var controlUIFont: UIFont { get }
+    #elseif canImport(AppKit)
+        /// Native control font matching the theme's control typography.
+        @MainActor var controlNSFont: NSFont { get }
+    #endif
+
     // MARK: Weight variants
 
     /// Bold large title, for a hero heading that must outweigh a dense screen.

@@ -13,6 +13,8 @@ struct SectionHeaderDetailView: View {
         var id: String { rawValue }
     }
 
+    @State private var flowSpacing = 8.0
+    @State private var lineSpacing = 8.0
     @State private var title = "Recent Items"
     @State private var showsAction = true
     @State private var fontChoice: TitleFontChoice = .theme
@@ -55,7 +57,9 @@ struct SectionHeaderDetailView: View {
 
             ShowcaseSection("Flow layout below a header") {
                 SectionHeader(title: "Tags")
-                FlowLayout(spacing: theme.spacing.oneUnit, lineSpacing: theme.spacing.oneUnit) {
+                LabeledContent("Item spacing") { Slider(value: $flowSpacing, in: 0...32) }
+                LabeledContent("Line spacing") { Slider(value: $lineSpacing, in: 0...32) }
+                FlowLayout(spacing: flowSpacing, lineSpacing: lineSpacing) {
                     ForEach(["Alpha", "Beta", "Gamma", "Delta", "Epsilon", "Zeta"], id: \.self) { tag in
                         Badge(tag)
                     }

@@ -46,10 +46,9 @@ where Data: RandomAccessCollection, ID: Hashable, Content: View {
 
     @State var geometry = CarouselGeometry()
     @State var viewportWidth: CGFloat = 0
+    @State var scrollTarget: ID?
 
     @Environment(\.designTheme) var theme
-    @Environment(\.layoutDirection) var layoutDirection
-    @Environment(\.accessibilityReduceMotion) var reduceMotion
 
     nonisolated private static var logger: Logger {
         Logger(subsystem: "com.swiftuicomponents", category: "CarouselRow")

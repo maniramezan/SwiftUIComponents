@@ -145,7 +145,7 @@ private struct StubFailure: Error, Equatable, Sendable {
     let message: String
 }
 
-private struct StubCache: ImageCacheStore {
+private actor StubCache: ImageCacheStore {
     func imageData(for url: URL) async throws -> Data { Data() }
     func removeValue(for url: URL) async throws {}
 }

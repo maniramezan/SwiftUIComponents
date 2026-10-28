@@ -96,4 +96,13 @@ enum CarouselRowMath {
             return 1
         }
     }
+    nonisolated static func accessibilityTarget(current: Int, count: Int, rows: Int, columns: Int, direction: Int)
+        -> Int
+    {
+        guard count > 0 else { return 0 }
+        let rowCount = max(1, rows)
+        let lastColumn = (count - 1) / rowCount
+        let column = min(max(0, current / rowCount + direction * max(1, columns)), lastColumn)
+        return column * rowCount
+    }
 }

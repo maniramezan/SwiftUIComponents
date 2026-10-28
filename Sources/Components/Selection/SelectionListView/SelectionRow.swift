@@ -73,8 +73,7 @@ struct SelectionRowContent: View {
             }
             VStack(alignment: .leading, spacing: theme.spacing.halfUnit) {
                 Text(title)
-                    .font(theme.typography.body)
-                    .fontWeight(isSelected ? .semibold : .regular)
+                    .font(isSelected ? theme.typography.bodySemibold : theme.typography.body)
                     .foregroundStyle(isSelected ? theme.colors.primary : theme.colors.textPrimary)
                 if let subtitle {
                     Text(subtitle)
@@ -90,8 +89,7 @@ struct SelectionRowContent: View {
                     .accessibilityHidden(true)
             } else if let disclosure {
                 Image(systemName: "chevron.forward")
-                    .font(theme.typography.subheadline)
-                    .fontWeight(.semibold)
+                    .font(theme.typography.subheadlineSemibold)
                     .foregroundStyle(theme.colors.textSecondary)
                     .rotationEffect(.degrees(disclosure ? Self.expandedRotation(for: layoutDirection) : 0))
                     .accessibilityHidden(true)
