@@ -3,15 +3,20 @@ import OSLog
 struct TitledPageCollection<Element, ID: Hashable> {
     struct Entry: Identifiable {
         let id: ID
-        let title: String
         let element: Element
         let index: Int
+        let titleKeyPath: KeyPath<Element, String>
+
+        var title: String { element[keyPath: titleKeyPath] }
     }
 
     let entries: [Entry]
-    let titles: [String]
     let indices: [ID: Int]
-    let header: [TitledPageTitle<ID>]
+
+    var titles: [String] { entries.map(\.title) }
+    var header: [TitledPageTitle<ID>] {
+        entries.map { TitledPageTitle(id: $0.id, title: $0.title, index: $0.index) }
+    }
 
     init(_ elements: some RandomAccessCollection<Element>, id: KeyPath<Element, ID>, title: KeyPath<Element, String>) {
         var entries: [Entry] = []
@@ -24,12 +29,10 @@ struct TitledPageCollection<Element, ID: Hashable> {
                 continue
             }
             indices[identity] = entries.count
-            entries.append(Entry(id: identity, title: element[keyPath: title], element: element, index: entries.count))
+            entries.append(Entry(id: identity, element: element, index: entries.count, titleKeyPath: title))
         }
         self.entries = entries
         self.indices = indices
-        self.titles = entries.map(\.title)
-        self.header = entries.map { TitledPageTitle(id: $0.id, title: $0.title, index: $0.index) }
     }
 }
 

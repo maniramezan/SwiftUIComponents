@@ -18,14 +18,17 @@ import SwiftUI
 /// ```
 ///
 /// Structured parsing only ever applies to the `.assistant` role; `.user`
-/// and `.system` content always renders through ``ChatBubbleView``.
+/// and `.system` content always renders as plain text.
+/// A retained presentation model prepares Markdown on appearance and input changes.
+/// Unchanged inputs reuse the prepared result; the current source text appears until preparation finishes.
 public struct StructuredChatBubbleView: View {
 
     private let role: ChatMessageRole
     private let content: String
     private let isTyping: Bool
-    private let sections: [StructuredChatSection]?
+    private let request: StructuredChatRequest
     private let contentLayoutDirection: LayoutDirection?
+    @State private var presentation = StructuredChatPresentation()
 
     /// Creates a structured-or-plain chat bubble.
     ///
@@ -58,28 +61,27 @@ public struct StructuredChatBubbleView: View {
         self.role = role
         self.content = content
         self.isTyping = isTyping
-        self.sections =
-            role == .assistant && !isTyping
-            ? StructuredMessageParser.sections(
-                from: content, autoPromotingHeadings: autoPromotingHeadings,
-                minimumSectionCount: minimumSectionCount
-            )?.map(StructuredChatSection.init) : nil
+        self.request = StructuredChatRequest(
+            role: role, content: content, isTyping: isTyping,
+            autoPromotingHeadings: autoPromotingHeadings, minimumSectionCount: minimumSectionCount
+        )
         self.contentLayoutDirection = contentLayoutDirection
     }
 
+    /// Renders cached Markdown, preparing it only when the message or parsing policy changes.
     public var body: some View {
-        if let sections {
-            ChatBubble(role: .assistant, contentLayoutDirection: contentLayoutDirection) {
+        ChatBubble(role: role, contentLayoutDirection: contentLayoutDirection) {
+            if isTyping && content.isEmpty {
+                TypingDotsView()
+            } else if presentation.request == request, let sections = presentation.sections {
                 StructuredChatBubbleContent(sections: sections)
+            } else if presentation.request == request, let text = presentation.text {
+                Text(text)
+            } else {
+                Text(content)
             }
-        } else {
-            ChatBubbleView(
-                role: role,
-                content: content,
-                isTyping: isTyping,
-                contentLayoutDirection: contentLayoutDirection
-            )
         }
+        .task(id: request) { presentation.update(request) }
     }
 }
 
@@ -117,18 +119,6 @@ private struct StructuredChatBubbleContent: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-}
-
-private struct StructuredChatSection: Identifiable {
-    let id: String
-    let title: String
-    let body: AttributedString
-
-    init(_ section: StructuredMessageParser.Section) {
-        id = section.id
-        title = section.title
-        body = AttributedString(markdownOrPlainText: section.body)
-    }
 }
 
 #Preview("Structured chat bubble") {

@@ -115,7 +115,10 @@ Disappearing pauses elapsed time; reappearing resumes accumulated motion while t
 Title peeking controls appearance only; every mode retains the full page collection and permits
 navigation in either direction. `.none` shows only the selected title. With Reduce Motion enabled,
 `PaginationStyle.reduceMotionUsesCrossfade` selects opacity transitions for pages and titles.
-Stable model IDs connect page content, prepared title metadata, and selection across updates.
+Stable model IDs connect page content and selection across updates. Titles are read from live models
+so Observation can track title changes even when the pager is constructed once. Crossfades create
+page content on first selection and keep visited pages mounted while their IDs remain in the collection,
+preserving page-local state. Inactive pages are hidden from interaction and accessibility.
 
 
 - ``TitledPageView``
@@ -141,6 +144,10 @@ Stable model IDs connect page content, prepared title metadata, and selection ac
 - ``CarouselShelfBuilder``
 
 ### Feedback
+
+``StructuredChatBubbleView`` retains an observable presentation model that prepares sections and
+attributed fallback text only when its message or parsing policy changes. Lifecycle-bound preparation
+keeps view initialization cheap; pending preparation displays the current source text.
 
 - ``EmptyStateView``
 - ``LoadingView``

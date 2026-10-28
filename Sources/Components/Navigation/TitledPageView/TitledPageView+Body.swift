@@ -110,7 +110,7 @@ struct TitledPageViewPagedContent<Element, ID: Hashable, PageContent: View>: Vie
 
             if crossfades, collection.entries.indices.contains(activeIdx) {
                 TitledPageCrossfadeContent(
-                    entry: collection.entries[activeIdx], content: content,
+                    collection: collection, activeID: collection.entries[activeIdx].id, content: content,
                     onStep: step
                 )
             } else {
@@ -359,7 +359,8 @@ private struct SwipeHintTaskID: Equatable {
 }
 
 struct TitledPageCrossfadeContent<Element, ID: Hashable, PageContent: View>: View {
-    let entry: TitledPageCollection<Element, ID>.Entry
+    let collection: TitledPageCollection<Element, ID>
+    let activeID: ID
     let content: (Element) -> PageContent
     let onStep: (Int) -> Void
     @Environment(\.designTheme) private var theme
@@ -367,14 +368,12 @@ struct TitledPageCrossfadeContent<Element, ID: Hashable, PageContent: View>: Vie
 
     var body: some View {
         ZStack {
-            content(entry.element)
-                .id(entry.id)
-                .transition(.opacity)
-                .accessibilityElement(children: .contain)
-                .accessibilityLabel(Text(entry.title))
+            ForEach(collection.entries) { entry in
+                TitledPageCrossfadePage(entry: entry, isActive: entry.id == activeID, content: content)
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .animation(theme.motion.animation(reducingMotion: true), value: entry.id)
+        .animation(theme.motion.animation(reducingMotion: true), value: activeID)
         .gesture(
             DragGesture().onEnded { value in
                 guard abs(value.translation.width) > theme.motion.minimumHitTarget else { return }
@@ -384,6 +383,29 @@ struct TitledPageCrossfadeContent<Element, ID: Hashable, PageContent: View>: Vie
         )
         .accessibilityScrollAction { edge in
             onStep(TitledPageViewMath.accessibilityStep(for: edge, layoutDirection: layoutDirection))
+        }
+    }
+}
+
+private struct TitledPageCrossfadePage<Element, ID: Hashable, PageContent: View>: View {
+    let entry: TitledPageCollection<Element, ID>.Entry
+    let isActive: Bool
+    let content: (Element) -> PageContent
+    @State private var hasBeenActive = false
+
+    var body: some View {
+        Group {
+            if isActive || hasBeenActive {
+                content(entry.element)
+                    .accessibilityElement(children: .contain)
+                    .accessibilityLabel(Text(entry.title))
+            }
+        }
+        .opacity(isActive ? 1 : 0)
+        .allowsHitTesting(isActive)
+        .accessibilityHidden(!isActive)
+        .onChange(of: isActive, initial: true) { _, active in
+            if active && !hasBeenActive { hasBeenActive = true }
         }
     }
 }

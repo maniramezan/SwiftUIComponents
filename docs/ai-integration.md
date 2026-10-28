@@ -353,11 +353,15 @@ Paging:
 
 The keyed initializer adds `id: KeyPath<Element, ID>` before `title:`. You may provide only
 `titleContent:` (with `indicatorStyle:`) or only `footerContent:` (with `titleAlignment:`).
-The binding uses stable page IDs, never collection offsets. Titles and lookup metadata are prepared
-from the current collection outside scroll updates. Duplicate IDs log faults and keep the first page.
+The binding uses stable page IDs, never collection offsets. Identity lookup metadata is prepared
+from the current collection outside scroll updates. Titles are read from live models during rendering,
+including properties on `@Observable` page models. Duplicate IDs log faults and keep the first page.
 `peekDirection` changes title presentation only: every mode supports navigation in both directions.
 `.none` displays only the active title. Reduce Motion uses opacity transitions when
 `reduceMotionUsesCrossfade` is true, including for swipe and accessibility navigation.
+Crossfades construct page content on first selection and retain visited pages while their IDs remain
+in the collection, preserving local state across navigation and reordering. Inactive pages stay mounted
+but are hidden from interaction and accessibility; removing a page releases its local state.
 `.designSwipeHint(enabled:)` changes only enablement; inherited delay and distance are preserved.
 Put narrow local overrides closer to the pager than complete inherited configurations.
 
@@ -500,7 +504,10 @@ Assistant conversation UI (streaming chat feature: quick-action chips + turn log
         ChatBubbleView(role: .assistant, content: revealed)
     }
 
-Completed structured messages are prepared before their view body renders. Parsing preserves the
+Structured messages retain an observable presentation model for the view's lifetime. A lifecycle task
+prepares Markdown only when the content, role, typing state, promoted labels, or section threshold changes.
+Until preparation finishes, the current source text is shown without stale content from an earlier request.
+Unrelated parent updates reuse the prepared sections or attributed fallback. Parsing preserves the
 original Markdown fallback when there is a nonempty preamble or an unclosed code fence.
 Bare labels are promoted only at line starts, followed by whitespace and an uppercase or non-ASCII
 letter. Labels embedded in prose stay untouched. Headings inside code fences stay body text.

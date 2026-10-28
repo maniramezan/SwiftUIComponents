@@ -1,4 +1,5 @@
 import SwiftUI
+import TestCommonsUI
 import Testing
 
 @testable import Components
@@ -828,7 +829,10 @@ func nextTitlePeekDoesNotRestrictNavigation() {
 func crossfadePresentationRenders() {
     let collection = TitledPageCollection(makePages(3), id: \.id, title: \.title)
     renderForCoverage(
-        TitledPageCrossfadeContent(entry: collection.entries[1], content: { Text($0.title) }, onStep: { _ in })
+        TitledPageCrossfadeContent(
+            collection: collection, activeID: collection.entries[1].id,
+            content: { Text($0.title) }, onStep: { _ in }
+        )
     )
 }
 
@@ -859,6 +863,110 @@ private struct SwipeHintEnvironmentProbe: View {
     let observe: (TitledPageSwipeHintConfig) -> Void
     var body: some View {
         Color.clear.onAppear { observe(configuration) }
+    }
+}
+
+@MainActor
+@Suite("Page model observation and retained crossfades", .serialized)
+struct TitledPageLifetimeTests {
+    @Test("A constructed pager observes title mutations without being reconstructed")
+    func observesPageTitles() async throws {
+        let page = ObservableFixturePage()
+        var titles: [String] = []
+        let pager = TitledPageView(
+            [page], selection: .constant(0), title: \.title,
+            titleContent: { context in
+                Text(context.currentTitle)
+                    .onChange(of: context.currentTitle, initial: true) { _, title in titles.append(title) }
+            }, content: { _ in Color.clear }
+        )
+        let host = HostedView(pager, size: CGSize(width: 320, height: 240))
+        defer { host.close() }
+        try await waitUntil { titles.last == "Original" }
+        page.title = "Updated"
+        try await waitUntil { titles.last == "Updated" }
+        #expect(titles == ["Original", "Updated"])
+    }
+
+    @Test("Crossfades retain visited page state through navigation and reordering, and defer unvisited content")
+    func retainsVisitedState() async throws {
+        let model = CrossfadeFixtureModel()
+        let host = HostedView(CrossfadeFixtureHost(model: model), size: CGSize(width: 320, height: 240))
+        defer { host.close() }
+        try await waitUntil { model.identities[0] != nil }
+        let original = try #require(model.identities[0])
+        #expect(model.identities[1] == nil)
+        #expect(model.identities[2] == nil)
+
+        model.selection = 1
+        try await waitUntil { model.identities[1] != nil }
+        model.pages.reverse()
+        model.selection = 0
+        model.revision += 1
+        try await waitUntil { model.revisions[0] == model.revision }
+        #expect(model.identities[0] == original)
+        #expect(model.identities[2] == nil)
+
+        model.pages.removeAll { $0.id == 0 }
+        try await waitUntil { model.removed.contains(0) }
+        model.pages.append(PagedFixturePage(id: 0, title: "Replacement"))
+        model.revision += 1
+        try await waitUntil { model.revisions[0] == model.revision }
+        #expect(model.identities[0] != original)
+    }
+
+    private func waitUntil(_ condition: () -> Bool) async throws {
+        for _ in 0..<100 {
+            if condition() { return }
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        try #require(condition())
+    }
+}
+
+@MainActor
+@Observable
+private final class ObservableFixturePage: Identifiable {
+    let id = 0
+    var title = "Original"
+}
+
+@MainActor
+@Observable
+private final class CrossfadeFixtureModel {
+    var pages = makePages(3)
+    var selection = 0
+    var revision = 0
+    @ObservationIgnored var identities: [Int: UUID] = [:]
+    @ObservationIgnored var revisions: [Int: Int] = [:]
+    @ObservationIgnored var removed: Set<Int> = []
+}
+
+private struct CrossfadeFixtureHost: View {
+    let model: CrossfadeFixtureModel
+
+    var body: some View {
+        TitledPageCrossfadeContent(
+            collection: TitledPageCollection(model.pages, id: \.id, title: \.title),
+            activeID: model.selection,
+            content: { CrossfadeFixturePage(page: $0, model: model) },
+            onStep: { _ in }
+        )
+    }
+}
+
+private struct CrossfadeFixturePage: View {
+    let page: PagedFixturePage
+    let model: CrossfadeFixtureModel
+    @State private var identity = UUID()
+
+    var body: some View {
+        Text(page.title)
+            .onChange(of: model.revision, initial: true) { _, revision in
+                model.identities[page.id] = identity
+                model.revisions[page.id] = revision
+            }
+            .onDisappear { model.removed.insert(page.id) }
     }
 }
 
