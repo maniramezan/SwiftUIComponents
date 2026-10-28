@@ -2,6 +2,8 @@ import SwiftUI
 
 /// Motion and interaction tokens shared by components.
 public protocol Motion: Sendable {
+    /// Seconds for one full revolution in an orbiting component.
+    var orbitalRevolutionDuration: TimeInterval { get }
     /// Minimum tap/click target size recommended for controls.
     var minimumHitTarget: CGFloat { get }
     /// Opacity applied to disabled interactive elements.
@@ -28,6 +30,8 @@ public protocol Motion: Sendable {
 }
 
 public extension Motion {
+    /// Default revolution period for continuous orbital motion, in seconds.
+    var orbitalRevolutionDuration: TimeInterval { 12 }
     /// Opacity applied to a pressed (but still enabled) interactive element.
     /// Defaults to `0.82` when a theme does not override it.
     var pressedOpacity: Double { 0.82 }
@@ -58,6 +62,8 @@ public extension Motion {
 
 /// Default motion and interaction tokens.
 public struct DefaultMotion: Motion {
+    /// Seconds for one full revolution in an orbiting component.
+    public let orbitalRevolutionDuration: TimeInterval
     /// Minimum tap/click target size recommended for controls.
     public let minimumHitTarget: CGFloat
     /// Opacity applied to disabled interactive elements.
@@ -85,6 +91,7 @@ public struct DefaultMotion: Motion {
     /// Creates motion and interaction tokens.
     public init(
         minimumHitTarget: CGFloat = 44,
+        orbitalRevolutionDuration: TimeInterval = 12,
         disabledOpacity: Double = 0.45,
         pressedOpacity: Double = 0.82,
         standardDuration: TimeInterval = 0.2,
@@ -92,6 +99,7 @@ public struct DefaultMotion: Motion {
         pagingSpring: MotionSpring = .paging,
         snapBackSpring: MotionSpring = .snapBack
     ) {
+        self.orbitalRevolutionDuration = orbitalRevolutionDuration
         self.minimumHitTarget = minimumHitTarget
         self.disabledOpacity = disabledOpacity
         self.pressedOpacity = pressedOpacity

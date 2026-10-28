@@ -23,6 +23,7 @@ enum ShowcaseComponent: String, CaseIterable, Identifiable {
     case sectionHeader = "Section Header"
 
     // MARK: - Surfaces
+    case orbitingSphere = "Orbiting Sphere"
     case surfaces = "Surfaces"
     case adaptiveSurface = "Adaptive Surface"
     case selectableCard = "Selectable Card"
@@ -69,6 +70,7 @@ enum ShowcaseComponent: String, CaseIterable, Identifiable {
         case .listRow: return "list.bullet.rectangle"
         case .avatar: return "person.crop.circle"
         case .sectionHeader: return "text.justify.leading"
+        case .orbitingSphere: return "circle.hexagongrid"
         case .surfaces: return "square.on.square"
         case .adaptiveSurface: return "square.stack.3d.up"
         case .selectableCard: return "checkmark.square"
@@ -99,7 +101,7 @@ enum ShowcaseComponent: String, CaseIterable, Identifiable {
             return "Controls"
         case .badges, .textStyles, .listRow, .avatar, .sectionHeader:
             return "Display"
-        case .surfaces, .adaptiveSurface, .selectableCard, .flipCard, .containers:
+        case .orbitingSphere, .surfaces, .adaptiveSurface, .selectableCard, .flipCard, .containers:
             return "Surfaces"
         case .errorBanner, .errorSection, .loading, .ghostLoading, .emptyState, .toast, .progress, .asyncContent:
             return "Feedback"

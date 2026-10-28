@@ -59,6 +59,7 @@ SwiftUI only builds on Apple platforms. In a Linux container (for example a clou
 - `open Package.swift` launches Xcode 16 for previews, Instruments, and doc comments.
 
 ## Documentation Requirements
+- Keep temporary prompts, audit notes, and scratch artifacts in `/tmp`, outside the repository. Commit skills, agent instructions, and documentation only when they are intended for lasting reference.
 - **Every** public symbol (type, property, method, enum case, initializer) **must** have a `///` doc comment before it can be merged.
 - Doc comments should describe behavior, inputs, and assumptions — not just restate the name.
 - `Scripts/check-doc-comments.py` (run by `Scripts/validate.sh` in CI) fails on any public declaration without a `///` comment — including enum cases and members of `public extension`/`public protocol` blocks. DocC's `--warnings-as-errors` (also run in CI) catches broken symbol links, but not missing docs.

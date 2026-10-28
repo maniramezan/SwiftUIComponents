@@ -53,6 +53,7 @@ private struct ShowcaseDetailContent: View {
         case .listRow: ListRowDetailView()
         case .avatar: AvatarDetailView()
         case .sectionHeader: SectionHeaderDetailView()
+        case .orbitingSphere: OrbitingSphereDetailView()
         case .surfaces: SurfacesDetailView()
         case .adaptiveSurface: AdaptiveSurfaceDetailView()
         case .selectableCard: SelectableCardDetailView()
@@ -72,5 +73,17 @@ private struct ShowcaseDetailContent: View {
         case .carouselRow: CarouselRowDetailView()
         case .carouselBoard: CarouselBoardDetailView()
         }
+    }
+}
+
+#Preview("Scrollable Detail") {
+    NavigationStack {
+        ShowcaseDetailView(component: .buttons)
+    }
+}
+
+#Preview("Full-Pane Detail") {
+    NavigationStack {
+        ShowcaseDetailView(component: .chat)
     }
 }
