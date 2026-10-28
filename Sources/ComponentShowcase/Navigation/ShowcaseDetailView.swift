@@ -75,3 +75,15 @@ private struct ShowcaseDetailContent: View {
         }
     }
 }
+
+#Preview("Scrollable Detail") {
+    NavigationStack {
+        ShowcaseDetailView(component: .buttons)
+    }
+}
+
+#Preview("Full-Pane Detail") {
+    NavigationStack {
+        ShowcaseDetailView(component: .chat)
+    }
+}
