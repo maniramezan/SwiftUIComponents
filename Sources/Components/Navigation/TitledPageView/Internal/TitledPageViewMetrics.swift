@@ -13,23 +13,18 @@ struct TitledPageViewMetrics: Equatable, Sendable {
     /// place at `progress == 0` for the selected peek direction.
     let leadingPadding: CGFloat
 
-    init(viewportWidth: CGFloat, peek: CGFloat, gap: CGFloat, layout: TitledPageTitleLayout) {
-        self.slotWidth = TitledPageViewMath.slotWidth(
-            viewportWidth: viewportWidth,
-            peek: peek,
-            gap: gap,
-            layout: layout
+    init(viewportWidth: CGFloat, style: ResolvedPaginationStyle, reduceMotion: Bool) {
+        let layout =
+            TitledPageViewMath.titleLayout(
+                for: style.titleAlignment, fallbackDirection: style.peekDirection
+            ) ?? .center
+        let peek = TitledPageViewMath.effectivePeek(
+            configured: style.peekWidth, direction: style.peekDirection,
+            reduceMotion: reduceMotion, usesCrossfade: style.reduceMotionUsesCrossfade
         )
-        self.slotStride = TitledPageViewMath.slotStride(
-            viewportWidth: viewportWidth,
-            peek: peek,
-            gap: gap,
-            layout: layout
-        )
-        self.leadingPadding = TitledPageViewMath.headerLeadingPadding(
-            peek: peek,
-            gap: gap,
-            layout: layout
-        )
+        let gap = style.peekDirection == .none || (reduceMotion && style.reduceMotionUsesCrossfade) ? 0 : style.titleGap
+        slotWidth = TitledPageViewMath.slotWidth(viewportWidth: viewportWidth, peek: peek, gap: gap, layout: layout)
+        slotStride = TitledPageViewMath.slotStride(viewportWidth: viewportWidth, peek: peek, gap: gap, layout: layout)
+        leadingPadding = TitledPageViewMath.headerLeadingPadding(peek: peek, gap: gap, layout: layout)
     }
 }

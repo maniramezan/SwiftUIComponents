@@ -129,7 +129,7 @@ private struct TitledPageViewBarIndicator: View {
     // No spacing/stroke token matches 3pt exactly (`stroke.regular` is 2pt,
     // `stroke.thick` is 4pt); changing this to the nearest token would
     // visibly thicken or thin the bar, so it stays a documented literal.
-    private var barThickness: CGFloat { 3 }
+    private var barThickness: CGFloat { theme.stroke.regular }
 
     var body: some View {
         GeometryReader { proxy in

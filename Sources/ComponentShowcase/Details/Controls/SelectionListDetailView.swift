@@ -3,6 +3,11 @@ import DesignSystem
 import SwiftUI
 
 struct SelectionListDetailView: View {
+    @State private var inlineTitle = "Items"
+    @State private var placeholder = "Find an item"
+    @State private var searchable = true
+    @State private var grouped = true
+    @State private var empty = false
     @State private var isSinglePresented = false
     @State private var isMultiPresented = false
     @State private var category = "banana"
@@ -11,6 +16,19 @@ struct SelectionListDetailView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: theme.spacing.twoUnits) {
+            ShowcaseSection("Inline configuration") {
+                TextField("Title", text: $inlineTitle)
+                TextField("Search placeholder", text: $placeholder)
+                Toggle("Search", isOn: $searchable)
+                Toggle("Grouped background", isOn: $grouped)
+                Toggle("Empty collection", isOn: $empty)
+                SelectionListContentView(
+                    nodes: empty ? [] : Self.categories, selectedID: category,
+                    isSearchable: searchable, searchPlaceholder: placeholder,
+                    showsContainerBackground: grouped
+                ) { category = $0 }
+                .frame(height: 320)
+            }
             ShowcaseSection("Single choice, two-level, searchable") {
                 Button("Category: \(category)") { isSinglePresented = true }
             }
@@ -21,7 +39,7 @@ struct SelectionListDetailView: View {
         }
         .sheet(isPresented: $isSinglePresented) {
             SelectionListView(
-                title: "Category",
+                title: inlineTitle,
                 nodes: Self.categories,
                 selectedID: category,
                 isSearchable: true

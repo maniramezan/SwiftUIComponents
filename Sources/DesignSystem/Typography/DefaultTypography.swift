@@ -2,7 +2,7 @@ import SwiftUI
 
 /// Default Dynamic Type-aware typography tokens.
 public struct DefaultTypography: Typography {
-    private let fontFamily: String?
+    let fontFamily: String?
 
     /// Creates typography tokens.
     /// - Parameter fontFamily: Optional custom font family name used for text styles.

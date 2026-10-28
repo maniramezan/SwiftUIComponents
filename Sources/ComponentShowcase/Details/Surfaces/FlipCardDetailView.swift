@@ -3,12 +3,37 @@ import DesignSystem
 import SwiftUI
 
 struct FlipCardDetailView: View {
+    @State private var axis = FlipAxis.horizontal
+    @State private var timing = 0
+    @State private var front = "Front"
+    @State private var back = "Back"
     @State private var controlledFaceUp = true
     @Environment(\.designTheme) private var theme
 
     var body: some View {
         ShowcaseSection("Tap a card to flip it") {
             VStack(spacing: theme.spacing.threeUnits) {
+                TextField("Front", text: $front)
+                TextField("Back", text: $back)
+                Picker("Axis", selection: $axis) {
+                    Text("Horizontal").tag(FlipAxis.horizontal)
+                    Text("Vertical").tag(FlipAxis.vertical)
+                }
+                Picker("Animation", selection: $timing) {
+                    Text("Theme").tag(0)
+                    Text("Linear").tag(1)
+                    Text("Spring").tag(2)
+                }
+                Toggle("Face up", isOn: $controlledFaceUp)
+                FlipCard(
+                    isFaceUp: $controlledFaceUp, axis: axis,
+                    animation: timing == 0 ? nil : timing == 1 ? .linear(duration: 0.5) : .spring()
+                ) {
+                    Text(front)
+                } back: {
+                    Text(back)
+                }
+
                 VStack(spacing: theme.spacing.oneUnit) {
                     Text("Horizontal (self-managing)")
                         .designTextStyle(.secondary)

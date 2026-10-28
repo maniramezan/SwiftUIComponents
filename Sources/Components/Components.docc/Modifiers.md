@@ -86,7 +86,8 @@ DesignText("Section", slot: .headlineSemibold)
 - term `toast(_:role:isPresented:edge:duration:action:)` and `toast(isPresented:content:)`:
   Presents a transient ``ToastView`` over a full-bleed parent. Top/bottom
   placement is safe-area-aware, honours Reduce Motion, and swipe-to-dismiss is
-  always on.
+  always on. Changing duration restarts its deadline; adding an action cancels a pending timer.
+  Changing the message alone keeps the current deadline.
 
 ```swift
 VStack {
@@ -117,7 +118,9 @@ Both target ``TitledPageView`` in the hierarchy below them.
   over the theme; `nil` properties keep resolving from the `Theme`.
 - term `designSwipeHint(_ config: TitledPageSwipeHintConfig)` / `designSwipeHint(enabled: Bool)`:
   Tunes or disables the automatic swipe-hint animation. The `enabled:` form is
-  shorthand for toggling it without touching timing or distance.
+  shorthand for toggling it without touching inherited timing or distance. Apply this narrow
+  override closer to the pager than a complete shared configuration. A complete configuration
+  replaces all fields; normal SwiftUI environment precedence applies.
 
 ## Orbits
 

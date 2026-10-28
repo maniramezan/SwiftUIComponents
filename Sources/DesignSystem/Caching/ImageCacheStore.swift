@@ -1,5 +1,8 @@
 import Foundation
 
+/// A reference-identified cache whose lifetime defines an image request namespace.
+/// Replacing the store restarts image loading even when the URL stays the same.
+///
 /// Minimum surface required by `CachedAsyncImage` to fetch and invalidate
 /// image data for a URL.
 ///
@@ -14,7 +17,7 @@ import Foundation
 ///     func removeValue(for url: URL) async throws { ... }
 /// }
 /// ```
-public protocol ImageCacheStore: Sendable {
+public protocol ImageCacheStore: AnyObject, Sendable {
 
     /// Returns the raw bytes for the image at `url`, fetching and caching
     /// them as needed.

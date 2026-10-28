@@ -3,6 +3,10 @@ import DesignSystem
 import SwiftUI
 
 struct GhostLoadingDetailView: View {
+    @State private var width = 120.0
+    @State private var height = 24.0
+    @State private var radius = 8.0
+    @State private var fillsWidth = false
     @Environment(\.designTheme) private var theme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -10,6 +14,16 @@ struct GhostLoadingDetailView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: theme.spacing.twoUnits) {
+            ShowcaseSection("Block dimensions") {
+                GhostLoadingBlock(width: fillsWidth ? nil : width, height: height, cornerRadius: radius)
+                    .designGhostShimmer()
+                    .environment(\.isGhostShimmerDisabled, !sweepEnabled)
+                Toggle("Fill available width", isOn: $fillsWidth)
+                LabeledContent("Width") { Slider(value: $width, in: 20...240) }
+                LabeledContent("Height") { Slider(value: $height, in: 4...120) }
+                LabeledContent("Corner radius") { Slider(value: $radius, in: 0...40) }
+            }
+
             ShowcaseSection("Controls") {
                 VStack(alignment: .leading, spacing: theme.spacing.oneUnit) {
                     Toggle("Sweep highlight", isOn: $sweepEnabled)

@@ -2,6 +2,7 @@ import Foundation
 
 /// Controls how much of the adjacent pages' titles is visible alongside the
 /// current page's title in the header strip of ``TitledPageView``.
+/// This setting never restricts navigation or removes pages.
 public enum PaginationPeekDirection: Sendable, Hashable, CaseIterable {
 
     /// Both the previous and next page titles peek into the header on the

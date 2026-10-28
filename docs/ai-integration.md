@@ -15,11 +15,12 @@ When you use Claude Code (or another AI assistant that reads `CLAUDE.md` files) 
 ```markdown
 ## Dependency: SwiftUIComponents
 
-SwiftUIComponents currently ships three SwiftPM library products:
+SwiftUIComponents currently ships four SwiftPM library products:
 
 - `DesignSystem`: design tokens and theming primitives.
 - `Components`: reusable SwiftUI views and modifiers. Depends on `DesignSystem`.
 - `ComponentShowcase`: demo/reference screens exposed as a library product for previews and exploration. Do not depend on this from production app targets.
+- `SwiftUIComponentsDynamic`: one dynamic library containing `DesignSystem` and `Components`.
 
 For application code, import the first two:
 
@@ -32,7 +33,7 @@ Platforms: iOS 18+, macOS 15+, Mac Catalyst 18+. Swift language mode: 6 (strict 
 
 ### Package Architecture Decisions
 
-- `DesignSystem` owns tokens and theme protocols. Keep product branding and token definitions here.
+- `DesignSystem` owns reusable token contracts, neutral defaults, and theme environment wiring. App-specific theme implementations belong in the consuming app.
 - `Components` owns reusable UI primitives and view modifiers. Shared app UI should live here, not in `ComponentShowcase`.
 - `ComponentShowcase` is for demos, previews, and exploration only. Do not import it into shipping app code.
 - Apply `.designTheme(...)` once near the root of a feature or app. Components read the active theme from the environment.
@@ -216,6 +217,10 @@ font only; compose `.foregroundStyle(…)` yourself. Use `DesignText(verbatim:sl
 strings that must not be localized. `TypographySlot.font(_:)` resolves the `Font` directly
 when a view needs the value.
 
+`Typography` requires `controlUIFont` on UIKit platforms and `controlNSFont` on AppKit.
+Provide those native fonts in custom conformers; picker triggers dispatch through the protocol.
+`DefaultTypography(fontFamily:)` applies its family to both SwiftUI and native control fonts.
+
 All `colors` and `typography` access is @MainActor — use only from View.body or @MainActor functions.
 
 ### Component Reference
@@ -225,6 +230,28 @@ Buttons:
     // roles: .primary (default) | .secondary | .tertiary | .destructive
     ThemeButton(role: .secondary, action: { }) { Label("Share", systemImage: "square.and.arrow.up") }
     Button("Label") { }.buttonStyle(ThemeButtonStyle(role: .primary))
+
+Compact action:
+    CompactActionButton(title: "Action", icon: "star", isDisabled: false) { performAction() }
+
+Section header:
+    SectionHeader(title: "Items", actionLabel: "Action", onAction: { performAction() }, titleFont: nil)
+
+Cached images:
+    CachedAsyncImage(url: imageURL, cache: imageStore) { image in
+        image.resizable().scaledToFit()
+    } placeholder: {
+        ProgressView()
+    }
+    CachedAsyncImage(url: imageURL) { $0.resizable().scaledToFit() } placeholder: { ProgressView() }
+        .imageCache(imageStore)
+
+`ImageCacheStore` is `AnyObject & Sendable`: use an actor or concurrency-safe reference type.
+Keep the store's identity stable while its contents remain authoritative. The URL and store identity
+jointly identify the request; replacing either cancels loading and clears stale displayed content.
+The store owns caching policy. Decoded images are retained only by the view for its current request.
+No decoded results are shared globally. Missing URLs or stores display the placeholder; invalid image
+bytes are evicted through `removeValue(for:)`.
 
 Search:
     SearchBar(text: $query, placeholder: "Search", isFocused: $isFocused, onSubmit: { })
@@ -308,6 +335,32 @@ Segmented picker (horizontal, single-selection; scrolls with fading edges when o
         HStack { Image(systemName: tab.systemImage); Text(tab.title) }
     }
 
+Paging:
+    TitledPageView(pages, selection: $selectedID, title: \.title,
+                   titleAlignment: .automatic, indicatorStyle: .dots) { page in
+        PageContent(page: page)
+    }
+    .designPaginationStyle(.init(peekDirection: .unidirectional))
+    .designSwipeHint(.init(isEnabled: true, delay: 0.6, distance: nil))
+
+    TitledPageView(pages, selection: $selectedID, title: \.title) { context in
+        Text(context.currentTitle)
+    } footerContent: { context in
+        Button("Next") { context.selectPage(context.activeIndex + 1) }
+    } content: { page in
+        PageContent(page: page)
+    }
+
+The keyed initializer adds `id: KeyPath<Element, ID>` before `title:`. You may provide only
+`titleContent:` (with `indicatorStyle:`) or only `footerContent:` (with `titleAlignment:`).
+The binding uses stable page IDs, never collection offsets. Titles and lookup metadata are prepared
+from the current collection outside scroll updates. Duplicate IDs log faults and keep the first page.
+`peekDirection` changes title presentation only: every mode supports navigation in both directions.
+`.none` displays only the active title. Reduce Motion uses opacity transitions when
+`reduceMotionUsesCrossfade` is true, including for swipe and accessibility navigation.
+`.designSwipeHint(enabled:)` changes only enablement; inherited delay and distance are preserved.
+Put narrow local overrides closer to the pager than complete inherited configurations.
+
 Carousel row (horizontal, browse-only; reveals a sliver of the next item; edge-fade veil):
     // Identifiable convenience
     CarouselRow(apps) { app in FeaturedCard(app) }
@@ -386,6 +439,8 @@ Toast (transient overlay; roles: .info | .success | .warning | .error):
     .toast(isPresented: $showToast) { ToastView("Custom", role: .info) }
     // Apply .toast to a full-bleed parent (it anchors an overlay); top/bottom placement is safe-area-aware; honors Reduce Motion; swipe-to-dismiss always on.
     // A11y: announces to VoiceOver on appear and supports the escape (two-finger scrub) gesture to dismiss.
+    // Changing duration restarts the timer; adding an action cancels any pending timer.
+    // Replacing the message alone keeps the current deadline.
 
 Async state container:
     AsyncContentView(state: profileState) { profile in
@@ -444,6 +499,16 @@ Assistant conversation UI (streaming chat feature: quick-action chips + turn log
     TypewriterReveal(text: streamingResponse, charactersPerSecond: 60) { revealed in
         ChatBubbleView(role: .assistant, content: revealed)
     }
+
+Completed structured messages are prepared before their view body renders. Parsing preserves the
+original Markdown fallback when there is a nonempty preamble or an unclosed code fence.
+Bare labels are promoted only at line starts, followed by whitespace and an uppercase or non-ASCII
+letter. Labels embedded in prose stay untouched. Headings inside code fences stay body text.
+`StructuredMessageParser.Section.id` is a deterministic `String` built from heading and duplicate
+occurrence; manual construction uses `Section(id:title:body:)` with caller-owned identity.
+Repeated headings remain distinct. Keep the source message when `sections(from:)` returns `nil`.
+Typewriter deadlines survive streaming extensions; disappearing pauses the schedule. Reduce Motion
+and VoiceOver display the complete current target immediately.
 
 Modifiers:
     // rounded card with border

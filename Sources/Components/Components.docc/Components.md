@@ -112,6 +112,12 @@ Disappearing pauses elapsed time; reappearing resumes accumulated motion while t
 
 ### Pagination
 
+Title peeking controls appearance only; every mode retains the full page collection and permits
+navigation in either direction. `.none` shows only the selected title. With Reduce Motion enabled,
+`PaginationStyle.reduceMotionUsesCrossfade` selects opacity transitions for pages and titles.
+Stable model IDs connect page content, prepared title metadata, and selection across updates.
+
+
 - ``TitledPageView``
 - ``TitledPageTitleAlignment``
 - ``TitledPageViewContext``
@@ -171,8 +177,20 @@ Disappearing pauses elapsed time; reappearing resumes accumulated motion while t
 
 ### Media
 
+``CachedAsyncImage`` identifies requests by URL and the reference identity of the injected
+`DesignSystem.ImageCacheStore`. The store owns caching policy; the view retains only its current
+decoded result. Changing the URL or store cancels the previous request and replaces stale content
+with the placeholder. Cache stores must be actors or concurrency-safe reference types.
+
+
 - ``CachedAsyncImage``
 
 ### Parsing
+
+``StructuredMessageParser`` retains heading identity across repeated parses, including duplicate
+headings. It returns `nil` instead of discarding a preamble or accepting an unclosed fence. Code
+fences and indented code do not produce sections; bare-label promotion applies only at line starts.
+`Section(id:title:body:)` accepts explicit `String` identity for manually constructed sections.
+
 
 - ``StructuredMessageParser``

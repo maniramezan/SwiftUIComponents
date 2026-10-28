@@ -6,12 +6,16 @@ import SwiftUI
 /// changes to a value that does not extend that prefix, revealing restarts
 /// from the beginning. The content closure keeps rendering independent of the
 /// effect, so it can drive plain text, markdown, or custom chat content.
+/// Streaming extensions retain the pending reveal deadline. Disappearing pauses
+/// the schedule. Reduce Motion and VoiceOver show the full current target immediately.
 public struct TypewriterReveal<Content: View>: View {
     private let text: String
     private let charactersPerSecond: Int
     private let content: (String) -> Content
 
-    @State private var revealedText = ""
+    @State private var reveal = TypewriterRevealState()
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.accessibilityVoiceOverEnabled) private var voiceOver
 
     /// Creates a progressive text reveal.
     ///
@@ -30,29 +34,78 @@ public struct TypewriterReveal<Content: View>: View {
         self.content = content
     }
 
+    /// Reveals text incrementally, or immediately under Reduce Motion or VoiceOver.
     public var body: some View {
-        content(revealedText)
-            .task(id: RevealTaskID(text: text, charactersPerSecond: charactersPerSecond)) {
-                revealedText = TypewriterRevealPacing.resumePoint(revealed: revealedText, target: text)
-
-                let step = TypewriterRevealPacing.charactersPerTick(charactersPerSecond: charactersPerSecond)
-                let delay = TypewriterRevealPacing.tickInterval(charactersPerSecond: charactersPerSecond)
-                // Walk a `String.Index` forward instead of re-deriving it from a character count
-                // each tick, which kept a long streamed reply quadratic in its length.
-                var index = text.index(text.startIndex, offsetBy: revealedText.count)
-                while index < text.endIndex, !Task.isCancelled {
-                    try? await Task.sleep(for: delay)
+        let immediate = reduceMotion || voiceOver
+        content(immediate ? text : reveal.revealedText)
+            .task(id: RevealTaskID(text: text, rate: charactersPerSecond, immediate: immediate)) {
+                let clock = ContinuousClock()
+                reveal.update(text: text, rate: charactersPerSecond, at: clock.now)
+                if immediate {
+                    reveal.finish()
+                    return
+                }
+                while let deadline = reveal.deadline, !Task.isCancelled {
+                    do {
+                        try await clock.sleep(until: deadline)
+                    } catch {
+                        return
+                    }
                     guard !Task.isCancelled else { return }
-                    index = text.index(index, offsetBy: step, limitedBy: text.endIndex) ?? text.endIndex
-                    revealedText = String(text[..<index])
+                    reveal.advance(at: clock.now)
                 }
             }
+            .onDisappear { reveal.pause() }
     }
 }
 
 private struct RevealTaskID: Hashable {
     let text: String
-    let charactersPerSecond: Int
+    let rate: Int
+    let immediate: Bool
+}
+
+nonisolated struct TypewriterRevealState {
+    private(set) var revealedText = ""
+    private(set) var deadline: ContinuousClock.Instant?
+    private var target = ""
+    private var index = "".startIndex
+    private var rate = 60
+
+    mutating func update(text: String, rate: Int, at now: ContinuousClock.Instant) {
+        let resumed = TypewriterRevealPacing.resumePoint(revealed: revealedText, target: text)
+        let changedDirection = !text.hasPrefix(revealedText)
+        let changedRate = self.rate != rate
+        target = text
+        revealedText = resumed
+        index = target.index(target.startIndex, offsetBy: resumed.count)
+        self.rate = rate
+        if index == target.endIndex {
+            deadline = nil
+        } else if deadline == nil || changedDirection || changedRate {
+            deadline = now.advanced(by: TypewriterRevealPacing.tickInterval(charactersPerSecond: rate))
+        }
+    }
+
+    mutating func advance(at now: ContinuousClock.Instant) {
+        guard let deadline, now >= deadline else { return }
+        let step = TypewriterRevealPacing.charactersPerTick(charactersPerSecond: rate)
+        index = target.index(index, offsetBy: step, limitedBy: target.endIndex) ?? target.endIndex
+        revealedText = String(target[..<index])
+        self.deadline =
+            index == target.endIndex
+            ? nil : now.advanced(by: TypewriterRevealPacing.tickInterval(charactersPerSecond: rate))
+    }
+
+    mutating func finish() {
+        revealedText = target
+        index = target.endIndex
+        deadline = nil
+    }
+
+    mutating func pause() {
+        deadline = nil
+    }
 }
 
 /// Pure pacing rules for ``TypewriterReveal``, kept separate so they can be

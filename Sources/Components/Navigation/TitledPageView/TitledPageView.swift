@@ -84,9 +84,7 @@ where
 
     // MARK: - Stored properties
 
-    let pages: [Data.Element]
-    let idKeyPath: KeyPath<Data.Element, ID>
-    let titleKeyPath: KeyPath<Data.Element, String>
+    let collection: TitledPageCollection<Data.Element, ID>
     let titleAlignment: TitledPageTitleAlignment
     let indicatorStyle: PaginationIndicatorStyle
     let customTitle: ((TitledPageViewContext<ID>) -> AnyView)?
@@ -97,19 +95,10 @@ where
 
     @State var scrollOffsetX: CGFloat = 0
     @State var viewportWidth: CGFloat = 0
-    /// In unidirectional mode, tracks the lowest visible page index. Updated
-    /// only after the scroll settles so that pages aren't removed mid-swipe.
-    @State var unidirectionalBaseIndex: Int = 0
     /// Visual offset applied to the page content during the swipe-hint animation.
     /// Zero at all other times.
     @State var swipeHintOffset: CGFloat = 0
     @State var isSwipeHintPlaying: Bool = false
-
-    @Environment(\.designTheme) var theme
-    @Environment(\.designPaginationStyle) var styleOverride
-    @Environment(\.layoutDirection) var layoutDirection
-    @Environment(\.accessibilityReduceMotion) var reduceMotion
-    @Environment(\.designSwipeHintConfig) var swipeHintConfig
 
     // MARK: - Initializers
 
@@ -142,10 +131,8 @@ where
         indicatorStyle: PaginationIndicatorStyle = .dots,
         @ViewBuilder content: @escaping (Data.Element) -> PageContent
     ) {
-        self.pages = Array(pages)
+        self.collection = TitledPageCollection(pages, id: id, title: title)
         self._selection = selection
-        self.idKeyPath = id
-        self.titleKeyPath = title
         self.titleAlignment = titleAlignment
         self.indicatorStyle = indicatorStyle
         self.customTitle = nil
@@ -177,10 +164,8 @@ where
         @ViewBuilder footerContent: @escaping (TitledPageViewContext<ID>) -> FooterContent,
         @ViewBuilder content: @escaping (Data.Element) -> PageContent
     ) {
-        self.pages = Array(pages)
+        self.collection = TitledPageCollection(pages, id: id, title: title)
         self._selection = selection
-        self.idKeyPath = id
-        self.titleKeyPath = title
         self.titleAlignment = .automatic
         self.indicatorStyle = .hidden
         self.customTitle = { AnyView(titleContent($0)) }
@@ -213,10 +198,8 @@ where
         @ViewBuilder titleContent: @escaping (TitledPageViewContext<ID>) -> TitleContent,
         @ViewBuilder content: @escaping (Data.Element) -> PageContent
     ) {
-        self.pages = Array(pages)
+        self.collection = TitledPageCollection(pages, id: id, title: title)
         self._selection = selection
-        self.idKeyPath = id
-        self.titleKeyPath = title
         self.titleAlignment = .automatic
         self.indicatorStyle = indicatorStyle
         self.customTitle = { AnyView(titleContent($0)) }
@@ -249,10 +232,8 @@ where
         @ViewBuilder footerContent: @escaping (TitledPageViewContext<ID>) -> FooterContent,
         @ViewBuilder content: @escaping (Data.Element) -> PageContent
     ) {
-        self.pages = Array(pages)
+        self.collection = TitledPageCollection(pages, id: id, title: title)
         self._selection = selection
-        self.idKeyPath = id
-        self.titleKeyPath = title
         self.titleAlignment = titleAlignment
         self.indicatorStyle = .hidden
         self.customTitle = nil
@@ -265,7 +246,7 @@ where
     /// The SwiftUI body for the paged view.
     public var body: some View {
         Group {
-            if pages.isEmpty {
+            if collection.entries.isEmpty {
                 EmptyView()
             } else {
                 pagedBody

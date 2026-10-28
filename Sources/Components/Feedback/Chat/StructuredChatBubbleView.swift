@@ -24,8 +24,7 @@ public struct StructuredChatBubbleView: View {
     private let role: ChatMessageRole
     private let content: String
     private let isTyping: Bool
-    private let autoPromotingHeadings: [String]
-    private let minimumSectionCount: Int
+    private let sections: [StructuredChatSection]?
     private let contentLayoutDirection: LayoutDirection?
 
     /// Creates a structured-or-plain chat bubble.
@@ -59,20 +58,17 @@ public struct StructuredChatBubbleView: View {
         self.role = role
         self.content = content
         self.isTyping = isTyping
-        self.autoPromotingHeadings = autoPromotingHeadings
-        self.minimumSectionCount = minimumSectionCount
+        self.sections =
+            role == .assistant && !isTyping
+            ? StructuredMessageParser.sections(
+                from: content, autoPromotingHeadings: autoPromotingHeadings,
+                minimumSectionCount: minimumSectionCount
+            )?.map(StructuredChatSection.init) : nil
         self.contentLayoutDirection = contentLayoutDirection
     }
 
     public var body: some View {
-        if role == .assistant,
-            !isTyping,
-            let sections = StructuredMessageParser.sections(
-                from: content,
-                autoPromotingHeadings: autoPromotingHeadings,
-                minimumSectionCount: minimumSectionCount
-            )
-        {
+        if let sections {
             ChatBubble(role: .assistant, contentLayoutDirection: contentLayoutDirection) {
                 StructuredChatBubbleContent(sections: sections)
             }
@@ -94,17 +90,17 @@ public struct StructuredChatBubbleView: View {
 /// so SwiftUI can diff and update this subtree independently of the rest of
 /// `StructuredChatBubbleView`.
 private struct StructuredChatBubbleContent: View {
-    let sections: [StructuredMessageParser.Section]
+    let sections: [StructuredChatSection]
     @Environment(\.designTheme) private var theme
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            ForEach(Array(sections.enumerated()), id: \.element.id) { index, section in
+            ForEach(sections) { section in
                 VStack(alignment: .leading, spacing: theme.spacing.oneUnit) {
                     Text(section.title)
                         .font(theme.typography.headline)
                         .foregroundStyle(theme.colors.textPrimary)
-                    Text(attributedBody(section.body))
+                    Text(section.body)
                         .font(theme.typography.subheadline)
                         .foregroundStyle(theme.colors.textSecondary)
                         .lineSpacing(theme.spacing.halfUnit)
@@ -113,7 +109,7 @@ private struct StructuredChatBubbleContent: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.vertical, theme.spacing.oneUnit)
 
-                if index < sections.count - 1 {
+                if section.id != sections.last?.id {
                     Divider().padding(.vertical, theme.spacing.halfUnit)
                 }
             }
@@ -121,8 +117,17 @@ private struct StructuredChatBubbleContent: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private func attributedBody(_ text: String) -> AttributedString {
-        AttributedString(markdownOrPlainText: text)
+}
+
+private struct StructuredChatSection: Identifiable {
+    let id: String
+    let title: String
+    let body: AttributedString
+
+    init(_ section: StructuredMessageParser.Section) {
+        id = section.id
+        title = section.title
+        body = AttributedString(markdownOrPlainText: section.body)
     }
 }
 

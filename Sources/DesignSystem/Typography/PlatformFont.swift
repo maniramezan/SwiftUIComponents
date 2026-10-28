@@ -3,22 +3,23 @@ import SwiftUI
 #if canImport(UIKit)
     import UIKit
 
-    public extension Typography {
-        /// Dynamic Type-aware platform font for bridged UIKit controls using the design control role.
-        @MainActor var controlUIFont: UIFont {
-            let base = UIFont.systemFont(ofSize: UIFont.labelFontSize, weight: .medium)
+    extension DefaultTypography {
+        /// The themed native control font, scaled using the body text style.
+        @MainActor public var controlUIFont: UIFont {
+            let base =
+                fontFamily.flatMap { UIFont(name: $0, size: UIFont.labelFontSize) }
+                ?? UIFont.systemFont(ofSize: UIFont.labelFontSize, weight: .medium)
             return UIFontMetrics(forTextStyle: .body).scaledFont(for: base)
         }
     }
-#endif
-
-#if canImport(AppKit)
+#elseif canImport(AppKit)
     import AppKit
 
-    public extension Typography {
-        /// Platform font for bridged AppKit controls using the design control role.
-        @MainActor var controlNSFont: NSFont {
-            NSFont.systemFont(ofSize: NSFont.systemFontSize, weight: .medium)
+    extension DefaultTypography {
+        /// The themed native control font used by AppKit picker triggers.
+        @MainActor public var controlNSFont: NSFont {
+            fontFamily.flatMap { NSFont(name: $0, size: NSFont.systemFontSize) }
+                ?? NSFont.systemFont(ofSize: NSFont.systemFontSize, weight: .medium)
         }
     }
 #endif

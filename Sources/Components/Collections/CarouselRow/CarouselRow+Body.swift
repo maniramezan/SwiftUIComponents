@@ -27,7 +27,8 @@ extension CarouselRow {
             rowHeight: rowHeight,
             content: content,
             viewportWidth: $viewportWidth,
-            geometry: $geometry
+            geometry: $geometry,
+            scrollTarget: $scrollTarget
         )
     }
 }
@@ -55,58 +56,58 @@ where Data: RandomAccessCollection, ID: Hashable, Content: View {
 
     @Binding var viewportWidth: CGFloat
     @Binding var geometry: CarouselGeometry
+    @Binding var scrollTarget: ID?
 
     @Environment(\.designTheme) private var theme
     @Environment(\.layoutDirection) private var layoutDirection
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        ScrollViewReader { proxy in
-            ScrollView(.horizontal, showsIndicators: false) {
-                CarouselRowLane(
-                    items: items,
-                    idKeyPath: idKeyPath,
-                    rows: rows,
-                    rowHeight: rowHeight,
-                    spacing: spacing,
-                    sizing: sizing,
-                    viewportWidth: viewportWidth,
-                    content: content
-                )
-                .scrollTargetLayout()
-            }
-            .modifier(CarouselScrollSnappingModifier(snapping: snapping))
-            .contentMargins(.horizontal, spacing, for: .scrollContent)
-            .background {
-                GeometryReader { geometryProxy in
-                    Color.clear.preference(
-                        key: CarouselViewportWidthKey.self,
-                        value: geometryProxy.size.width
-                    )
-                }
-            }
-            .onPreferenceChange(CarouselViewportWidthKey.self) { width in
-                viewportWidth = width
-            }
-            .onScrollGeometryChange(for: CarouselGeometry.self) { scrollGeometry in
-                CarouselGeometry(
-                    offsetX: scrollGeometry.contentOffset.x,
-                    contentWidth: scrollGeometry.contentSize.width,
-                    viewportWidth: scrollGeometry.containerSize.width
-                )
-            } action: { _, new in
-                geometry = new
-            }
-            .scrollEdgeVeil(
-                geometry: geometry,
-                animation: veilAnimation,
-                troughColor: theme.colors.background,
-                bandWidth: theme.spacing.fourUnits
+        ScrollView(.horizontal, showsIndicators: false) {
+            CarouselRowLane(
+                items: items,
+                idKeyPath: idKeyPath,
+                rows: rows,
+                rowHeight: rowHeight,
+                spacing: spacing,
+                sizing: sizing,
+                viewportWidth: viewportWidth,
+                content: content
             )
-            .accessibilityElement(children: .contain)
-            .accessibilityScrollAction { edge in
-                stepScroll(edge: edge, proxy: proxy)
+            .scrollTargetLayout()
+        }
+        .modifier(CarouselScrollSnappingModifier(snapping: snapping))
+        .scrollPosition(id: $scrollTarget, anchor: .leading)
+        .contentMargins(.horizontal, spacing, for: .scrollContent)
+        .background {
+            GeometryReader { geometryProxy in
+                Color.clear.preference(
+                    key: CarouselViewportWidthKey.self,
+                    value: geometryProxy.size.width
+                )
             }
+        }
+        .onPreferenceChange(CarouselViewportWidthKey.self) { width in
+            viewportWidth = width
+        }
+        .onScrollGeometryChange(for: CarouselGeometry.self) { scrollGeometry in
+            CarouselGeometry(
+                offsetX: scrollGeometry.contentOffset.x,
+                contentWidth: scrollGeometry.contentSize.width,
+                viewportWidth: scrollGeometry.containerSize.width
+            )
+        } action: { _, new in
+            geometry = new
+        }
+        .scrollEdgeVeil(
+            geometry: geometry,
+            animation: veilAnimation,
+            troughColor: theme.colors.background,
+            bandWidth: theme.spacing.fourUnits
+        )
+        .accessibilityElement(children: .contain)
+        .accessibilityScrollAction { edge in
+            stepScroll(edge: edge)
         }
     }
 
@@ -115,32 +116,19 @@ where Data: RandomAccessCollection, ID: Hashable, Content: View {
         theme.motion.animation(reducingMotion: reduceMotion)
     }
 
-    /// Advances the row by one page of visible items in response to a VoiceOver
-    /// scroll gesture, estimating the current position from the scroll offset.
-    ///
-    /// Not `private` so tests can drive it directly with a real
-    /// `ScrollViewProxy` obtained from a hosted `ScrollViewReader`, without
-    /// having to simulate an actual VoiceOver scroll gesture.
-    func stepScroll(edge: Edge, proxy: ScrollViewProxy) {
+    /// Advances by visible columns from the native scroll target, including intrinsic-width items.
+    func stepScroll(edge: Edge) {
         let direction = CarouselRowMath.accessibilityStep(for: edge, layoutDirection: layoutDirection)
-        guard direction != 0 else { return }
         let ids = items.map { $0[keyPath: idKeyPath] }
         guard !ids.isEmpty else { return }
-
-        let width = CarouselRowMath.itemWidth(
-            viewportWidth: viewportWidth,
-            sizing: sizing,
-            spacing: spacing
+        let current = scrollTarget.flatMap { ids.firstIndex(of: $0) } ?? 0
+        let target = CarouselRowMath.accessibilityTarget(
+            current: current, count: ids.count, rows: rowHeight == nil ? 1 : rows,
+            columns: CarouselRowMath.pageStride(sizing: sizing), direction: direction
         )
-        let step = (width ?? viewportWidth) + spacing
-        let current = step > 0 ? Int((geometry.offsetX / step).rounded()) : 0
-        let stride = CarouselRowMath.pageStride(sizing: sizing)
-        let target = CarouselRowMath.clampedIndex(current + direction * stride, count: ids.count)
-
-        withAnimation(veilAnimation) {
-            proxy.scrollTo(ids[target], anchor: .leading)
-        }
+        withAnimation(veilAnimation) { scrollTarget = ids[target] }
     }
+
 }
 
 // MARK: - Scroll snapping
