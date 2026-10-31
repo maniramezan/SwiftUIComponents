@@ -39,9 +39,9 @@ jobs:
       - name: Verify Swift toolchain
         run: |
           case "$(swift --version)" in
-            *"Apple Swift version 6.2"*) ;;
+            *"Apple Swift version 6.4"*) ;;
             *)
-              echo "Expected Apple Swift 6.2 from Xcode 26.3."
+              echo "Expected Apple Swift 6.4 from Xcode 27.1."
               exit 1
               ;;
           esac
@@ -97,9 +97,9 @@ jobs:
       - name: Verify Swift toolchain
         run: |
           case "$(swift --version)" in
-            *"Apple Swift version 6.2"*) ;;
+            *"Apple Swift version 6.4"*) ;;
             *)
-              echo "Expected Apple Swift 6.2 from Xcode 26.3."
+              echo "Expected Apple Swift 6.4 from Xcode 27.1."
               exit 1
               ;;
           esac
