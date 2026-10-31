@@ -46,11 +46,9 @@ public struct ConfirmToolbarButton: ToolbarContent {
 
     #if canImport(UIKit)
         private static var placement: ToolbarItemPlacement {
-            #if canImport(SwiftUI, _version: 8.0)
-                if #available(iOS 27, *) {
-                    return .topBarPinnedTrailing
-                }
-            #endif
+            if #available(iOS 27, *) {
+                return .topBarPinnedTrailing
+            }
             return .topBarTrailing
         }
     #endif
