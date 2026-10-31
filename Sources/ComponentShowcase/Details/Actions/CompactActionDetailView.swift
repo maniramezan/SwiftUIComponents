@@ -24,7 +24,7 @@ struct CompactActionDetailView: View {
             }
 
             ShowcaseSection("Action row") {
-                HStack(spacing: theme.spacing.oneUnit) {
+                FlowLayout(spacing: theme.spacing.oneUnit, lineSpacing: theme.spacing.oneUnit) {
                     CompactActionButton(title: "Share", icon: "square.and.arrow.up") {}
                     CompactActionButton(title: "Simplify", icon: "wand.and.stars") {}
                     CompactActionButton(title: "Details", icon: "info.circle") {}

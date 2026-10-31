@@ -51,7 +51,7 @@ struct MenuPickerDetailView: View {
 
             ShowcaseSection("Presentation playground") {
                 Toggle("Custom font family", isOn: $customFont)
-                Picker("Presentation", selection: $presentation) {
+                ShowcasePicker("Presentation", selection: $presentation) {
                     Text("Automatic").tag(MenuPicker<FruitItem>.PresentationStyle.automatic)
                     Text("Menu").tag(MenuPicker<FruitItem>.PresentationStyle.menu)
                     Text("Wheel").tag(MenuPicker<FruitItem>.PresentationStyle.wheel)

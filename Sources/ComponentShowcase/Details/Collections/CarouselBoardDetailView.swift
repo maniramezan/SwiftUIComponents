@@ -52,7 +52,8 @@ struct CarouselBoardDetailView: View {
                             onSeeAll: { actionCount += 1 }, rows: rows, rowHeight: rowHeight,
                             titleFont: largeTitle ? theme.typography.title : nil
                         ) { item in
-                            Text(item.name).padding().frame(height: rowHeight).designCardSurface()
+                            Text(item.name).padding().frame(maxWidth: .infinity).frame(height: rowHeight)
+                                .designCardSurface()
                         }
                     }
                 }

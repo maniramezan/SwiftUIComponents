@@ -93,7 +93,7 @@ private struct DesignTextPlayground: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: theme.spacing.oneAndHalfUnits) {
-            Picker("Slot", selection: $slot) {
+            ShowcasePicker("Slot", selection: $slot) {
                 ForEach(Self.slots, id: \.slot) { entry in
                     Text(entry.name).tag(entry.slot)
                 }

@@ -24,7 +24,7 @@ struct CachedAsyncImageDetailView: View {
                 .frame(width: side, height: side)
             }
             ShowcaseSection("Controls") {
-                Picker("Source", selection: $source) {
+                ShowcasePicker("Source", selection: $source) {
                     Text("First image").tag("first")
                     Text("Second image").tag("second")
                     Text("Invalid bytes").tag("invalid")

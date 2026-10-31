@@ -92,7 +92,7 @@ private struct ShowcaseOrbitPlacementControls: View {
 
     var body: some View {
         ShowcaseSection("Placement") {
-            Picker("Projection", selection: $configuration.style) {
+            ShowcasePicker("Projection", selection: $configuration.style) {
                 Text("Spatial").tag(SphereOrbitStyle.spatial)
                 Text("Ring").tag(SphereOrbitStyle.ring)
             }

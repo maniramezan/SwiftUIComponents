@@ -73,7 +73,7 @@ struct ListRowDetailView: View {
                 Toggle("Custom icon tint", isOn: $usesCustomTint)
                     .toggleStyle(ThemeToggleStyle())
                     .disabled(!showsIcon)
-                Picker("Accessory", selection: $accessory) {
+                ShowcasePicker("Accessory", selection: $accessory) {
                     ForEach(AccessoryKind.allCases) { kind in
                         Text(kind.rawValue).tag(kind)
                     }

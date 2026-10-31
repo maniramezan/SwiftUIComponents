@@ -47,7 +47,7 @@ struct ChatComposerDetailView: View {
                     Toggle("Voice input", isOn: $showsVoiceInput)
                         .toggleStyle(ThemeToggleStyle())
                     if showsVoiceInput {
-                        Picker("Voice state", selection: $voiceMode) {
+                        ShowcasePicker("Voice state", selection: $voiceMode) {
                             ForEach(VoiceMode.allCases) { mode in
                                 Text(mode.rawValue).tag(mode)
                             }

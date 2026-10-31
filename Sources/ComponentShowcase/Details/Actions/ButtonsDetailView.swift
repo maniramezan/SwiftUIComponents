@@ -14,7 +14,7 @@ struct ButtonsDetailView: View {
         VStack(alignment: .leading, spacing: theme.spacing.twoUnits) {
             ShowcaseSection("Playground") {
                 ShowcaseTextField("Title", text: $title)
-                Picker("Role", selection: $role) {
+                ShowcasePicker("Role", selection: $role) {
                     Text("Primary").tag(0)
                     Text("Secondary").tag(1)
                     Text("Tertiary").tag(2)

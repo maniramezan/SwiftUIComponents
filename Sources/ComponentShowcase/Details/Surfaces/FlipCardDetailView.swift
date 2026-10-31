@@ -15,11 +15,11 @@ struct FlipCardDetailView: View {
             VStack(spacing: theme.spacing.threeUnits) {
                 ShowcaseTextField("Front", text: $front)
                 ShowcaseTextField("Back", text: $back)
-                Picker("Axis", selection: $axis) {
+                ShowcasePicker("Axis", selection: $axis) {
                     Text("Horizontal").tag(FlipAxis.horizontal)
                     Text("Vertical").tag(FlipAxis.vertical)
                 }
-                Picker("Animation", selection: $timing) {
+                ShowcasePicker("Animation", selection: $timing) {
                     Text("Theme").tag(0)
                     Text("Linear").tag(1)
                     Text("Spring").tag(2)

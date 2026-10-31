@@ -21,7 +21,7 @@ struct ToastDetailView: View {
         VStack(alignment: .leading, spacing: theme.spacing.twoUnits) {
             ShowcaseSection("Playground") {
                 ShowcaseTextField("Message", text: $message)
-                Picker("Role", selection: $role) {
+                ShowcasePicker("Role", selection: $role) {
                     Text("Information").tag(0)
                     Text("Success").tag(1)
                     Text("Warning").tag(2)
