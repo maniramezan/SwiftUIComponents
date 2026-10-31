@@ -6,7 +6,8 @@ import SwiftUI
 /// A plain `Picker` inside a showcase card is not in a `Form`, so SwiftUI draws only
 /// its selected value and the control's purpose is lost. This shows the title as a
 /// caption above the picker. The caption is hidden from assistive technology because
-/// the picker keeps its title as its accessibility label. Apply `pickerStyle(_:)`
+/// the picker keeps its title as its accessibility label, and the picker spans the
+/// full width so it left-aligns inside centered stacks. Apply `pickerStyle(_:)`
 /// to the picker as usual; it flows through to the wrapped `Picker`.
 struct ShowcasePicker<SelectionValue: Hashable, Content: View>: View {
 
@@ -32,8 +33,8 @@ struct ShowcasePicker<SelectionValue: Hashable, Content: View>: View {
                 .accessibilityHidden(true)
             Picker(title, selection: $selection) { content }
                 .labelsHidden()
-                .accessibilityLabel(title)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
