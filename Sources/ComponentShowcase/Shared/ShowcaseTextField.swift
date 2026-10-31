@@ -6,7 +6,7 @@ import SwiftUI
 /// A plain `TextField` inside a showcase card renders as bare text, so a control's
 /// purpose and editability are unclear once it holds a value. This shows the
 /// title as a caption above a rounded-border field. The caption is hidden from
-/// assistive technology because the field already carries the same title as its name.
+/// assistive technology because the field carries the same title as its explicit accessibility label.
 struct ShowcaseTextField: View {
 
     let title: String
@@ -25,6 +25,7 @@ struct ShowcaseTextField: View {
                 .accessibilityHidden(true)
             TextField(title, text: $text)
                 .textFieldStyle(.roundedBorder)
+                .accessibilityLabel(title)
         }
     }
 }

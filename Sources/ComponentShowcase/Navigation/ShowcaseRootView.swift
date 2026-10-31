@@ -21,6 +21,7 @@ public struct ShowcaseRootView: View {
 
     @State private var selection: ShowcaseComponent?
     @Environment(\.designTheme) private var theme
+    @ScaledMetric(relativeTo: .body) private var sidebarIdealWidth: CGFloat = 280
 
     /// Creates the showcase browser.
     public init() {}
@@ -49,6 +50,9 @@ public struct ShowcaseRootView: View {
                 }
             }
             .navigationTitle("Components")
+            // Grows with Dynamic Type so labels wrap at word boundaries instead of
+            // breaking mid-word in a fixed-width column at accessibility sizes.
+            .navigationSplitViewColumnWidth(min: 280, ideal: sidebarIdealWidth, max: 560)
         } detail: {
             if let selection {
                 ShowcaseDetailView(component: selection)

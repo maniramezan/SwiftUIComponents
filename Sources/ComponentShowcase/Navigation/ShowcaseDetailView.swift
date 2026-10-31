@@ -25,7 +25,7 @@ struct ShowcaseDetailView: View {
         }
         .navigationTitle(component.rawValue)
         #if os(iOS) || targetEnvironment(macCatalyst)
-            .navigationBarTitleDisplayMode(component.fillsDetailPane ? .inline : .large)
+            .navigationBarTitleDisplayMode(.inline)
         #endif
     }
 }
