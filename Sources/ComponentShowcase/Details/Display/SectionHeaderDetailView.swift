@@ -44,11 +44,10 @@ struct SectionHeaderDetailView: View {
             }
 
             ShowcaseSection("Controls") {
-                TextField("Title", text: $title)
-                    .textFieldStyle(.roundedBorder)
+                ShowcaseTextField("Title", text: $title)
                 Toggle("Trailing action", isOn: $showsAction)
                     .toggleStyle(ThemeToggleStyle())
-                Picker("Title font", selection: $fontChoice) {
+                ShowcasePicker("Title font", selection: $fontChoice) {
                     ForEach(TitleFontChoice.allCases) { choice in
                         Text(choice.rawValue).tag(choice)
                     }

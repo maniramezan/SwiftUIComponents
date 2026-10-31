@@ -92,7 +92,7 @@ private struct ShowcaseOrbitPlacementControls: View {
 
     var body: some View {
         ShowcaseSection("Placement") {
-            Picker("Projection", selection: $configuration.style) {
+            ShowcasePicker("Projection", selection: $configuration.style) {
                 Text("Spatial").tag(SphereOrbitStyle.spatial)
                 Text("Ring").tag(SphereOrbitStyle.ring)
             }
@@ -144,7 +144,7 @@ private struct ShowcaseSphereAppearanceControls: View {
             LabeledContent("Center diameter") { Slider(value: $appearance.centerSize, in: 44...180) }
             LabeledContent("Item diameter") { Slider(value: $appearance.itemSize, in: 24...64) }
             ColorPicker("Sphere color", selection: $appearance.tint)
-            TextField("Center label", text: $appearance.centerLabel)
+            ShowcaseTextField("Center label", text: $appearance.centerLabel)
         }
     }
 }

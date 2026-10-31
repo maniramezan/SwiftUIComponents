@@ -93,14 +93,13 @@ private struct DesignTextPlayground: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: theme.spacing.oneAndHalfUnits) {
-            Picker("Slot", selection: $slot) {
+            ShowcasePicker("Slot", selection: $slot) {
                 ForEach(Self.slots, id: \.slot) { entry in
                     Text(entry.name).tag(entry.slot)
                 }
             }
 
-            TextField("Sample text", text: $sample)
-                .textFieldStyle(.roundedBorder)
+            ShowcaseTextField("Sample text", text: $sample)
 
             DesignText(verbatim: sample, slot: slot)
                 .frame(maxWidth: .infinity, alignment: .leading)
