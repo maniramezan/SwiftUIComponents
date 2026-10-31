@@ -40,8 +40,7 @@ struct ChatComposerDetailView: View {
 
             ShowcaseSection("Controls") {
                 VStack(alignment: .leading, spacing: theme.spacing.oneUnit) {
-                    TextField("Prompt", text: $prompt)
-                        .textFieldStyle(.roundedBorder)
+                    ShowcaseTextField("Prompt", text: $prompt)
                     Toggle("Enabled", isOn: $isEnabled)
                         .toggleStyle(ThemeToggleStyle())
                     Stepper("Max lines: \(maximumLines)", value: $maximumLines, in: 1...8)

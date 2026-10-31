@@ -10,8 +10,8 @@ struct ErrorSectionDetailView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: theme.spacing.twoUnits) {
             ShowcaseSection("Playground") {
-                TextField("Title", text: $title)
-                TextField("Message", text: $message)
+                ShowcaseTextField("Title", text: $title)
+                ShowcaseTextField("Message", text: $message)
                 ErrorSection(title: title, message: message)
             }
 

@@ -14,7 +14,7 @@ struct ErrorBannerDetailView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: theme.spacing.twoUnits) {
             ShowcaseSection("Playground") {
-                TextField("Message", text: $message)
+                ShowcaseTextField("Message", text: $message)
                 ErrorBanner(message)
             }
 

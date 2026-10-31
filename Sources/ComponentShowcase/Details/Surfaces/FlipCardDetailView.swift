@@ -13,8 +13,8 @@ struct FlipCardDetailView: View {
     var body: some View {
         ShowcaseSection("Tap a card to flip it") {
             VStack(spacing: theme.spacing.threeUnits) {
-                TextField("Front", text: $front)
-                TextField("Back", text: $back)
+                ShowcaseTextField("Front", text: $front)
+                ShowcaseTextField("Back", text: $back)
                 Picker("Axis", selection: $axis) {
                     Text("Horizontal").tag(FlipAxis.horizontal)
                     Text("Vertical").tag(FlipAxis.vertical)

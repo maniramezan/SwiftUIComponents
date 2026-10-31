@@ -741,8 +741,7 @@ private struct QuickActionRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: theme.spacing.halfUnit) {
             HStack(spacing: theme.spacing.oneUnit) {
-                TextField("Title", text: $action.title)
-                    .textFieldStyle(.roundedBorder)
+                ShowcaseTextField("Title", text: $action.title)
 
                 Picker("Icon", selection: $action.systemImage) {
                     ForEach(demoActionSymbols, id: \.self) { symbol in

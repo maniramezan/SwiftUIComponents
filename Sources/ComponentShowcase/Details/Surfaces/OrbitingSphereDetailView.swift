@@ -144,7 +144,7 @@ private struct ShowcaseSphereAppearanceControls: View {
             LabeledContent("Center diameter") { Slider(value: $appearance.centerSize, in: 44...180) }
             LabeledContent("Item diameter") { Slider(value: $appearance.itemSize, in: 24...64) }
             ColorPicker("Sphere color", selection: $appearance.tint)
-            TextField("Center label", text: $appearance.centerLabel)
+            ShowcaseTextField("Center label", text: $appearance.centerLabel)
         }
     }
 }

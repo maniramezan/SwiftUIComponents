@@ -33,8 +33,7 @@ struct TextInputFieldDetailView: View {
             }
 
             ShowcaseSection("Controls") {
-                TextField("Title", text: $title)
-                    .textFieldStyle(.roundedBorder)
+                ShowcaseTextField("Title", text: $title)
                 Toggle("Prompt", isOn: $showsPrompt)
                     .toggleStyle(ThemeToggleStyle())
                 Toggle("Helper text", isOn: $showsHelper)

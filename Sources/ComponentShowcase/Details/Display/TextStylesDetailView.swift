@@ -99,8 +99,7 @@ private struct DesignTextPlayground: View {
                 }
             }
 
-            TextField("Sample text", text: $sample)
-                .textFieldStyle(.roundedBorder)
+            ShowcaseTextField("Sample text", text: $sample)
 
             DesignText(verbatim: sample, slot: slot)
                 .frame(maxWidth: .infinity, alignment: .leading)
