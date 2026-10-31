@@ -2,6 +2,11 @@ import Components
 import DesignSystem
 import SwiftUI
 
+/// Showcase page for `.toast(...)`.
+///
+/// Owns its `ScrollView` (see `ShowcaseComponent.ownsScrollView`) so the toast
+/// overlays attach to the visible detail pane rather than to the bottom of the
+/// full scroll content, which is off-screen until the user scrolls to it.
 struct ToastDetailView: View {
     @Environment(\.designTheme) private var theme
 
@@ -18,47 +23,51 @@ struct ToastDetailView: View {
     @State private var undoCount = 0
 
     var body: some View {
-        VStack(alignment: .leading, spacing: theme.spacing.twoUnits) {
-            ShowcaseSection("Playground") {
-                TextField("Message", text: $message)
-                Picker("Role", selection: $role) {
-                    Text("Information").tag(0)
-                    Text("Success").tag(1)
-                    Text("Warning").tag(2)
-                    Text("Error").tag(3)
+        ScrollView {
+            VStack(alignment: .leading, spacing: theme.spacing.twoUnits) {
+                ShowcaseSection("Playground") {
+                    TextField("Message", text: $message)
+                    Picker("Role", selection: $role) {
+                        Text("Information").tag(0)
+                        Text("Success").tag(1)
+                        Text("Warning").tag(2)
+                        Text("Error").tag(3)
+                    }
+                    Toggle("Top edge", isOn: $top)
+                    Toggle("Action makes the toast persistent", isOn: $action)
+                    Toggle("Custom icon", isOn: $customIcon)
+                    LabeledContent("Duration") { Slider(value: $seconds, in: 1...10) }
+                    Button("Present") { playground = true }
                 }
-                Toggle("Top edge", isOn: $top)
-                Toggle("Action makes the toast persistent", isOn: $action)
-                Toggle("Custom icon", isOn: $customIcon)
-                LabeledContent("Duration") { Slider(value: $seconds, in: 1...10) }
-                Button("Present") { playground = true }
-            }
 
-            ShowcaseSection("Roles") {
-                VStack(spacing: theme.spacing.oneUnit) {
-                    ToastView("New version available", role: .info)
-                    ToastView("Saved to your library", role: .success)
-                    ToastView("Battery is low", role: .warning)
-                    ToastView("Upload failed", role: .error, systemImage: "wifi.slash")
+                ShowcaseSection("Roles") {
+                    VStack(spacing: theme.spacing.oneUnit) {
+                        ToastView("New version available", role: .info)
+                        ToastView("Saved to your library", role: .success)
+                        ToastView("Battery is low", role: .warning)
+                        ToastView("Upload failed", role: .error, systemImage: "wifi.slash")
+                    }
+                }
+
+                ShowcaseSection("With action") {
+                    ToastView("Item deleted", role: .info, action: .init("Undo") {})
+                }
+
+                ShowcaseSection("Presentation") {
+                    VStack(spacing: theme.spacing.oneUnit) {
+                        ThemeButton("Show bottom toast (auto-dismiss)") { showBottom = true }
+                        ThemeButton("Show top toast (auto-dismiss)", role: .secondary) { showTop = true }
+                        ThemeButton("Show persistent toast with Undo", role: .secondary) { showPersistent = true }
+                        Text("Undo tapped \(undoCount) time(s)")
+                            .designTextStyle(.secondary)
+                    }
                 }
             }
-
-            ShowcaseSection("With action") {
-                ToastView("Item deleted", role: .info, action: .init("Undo") {})
-            }
-
-            ShowcaseSection("Presentation") {
-                VStack(spacing: theme.spacing.oneUnit) {
-                    ThemeButton("Show bottom toast (auto-dismiss)") { showBottom = true }
-                    ThemeButton("Show top toast (auto-dismiss)", role: .secondary) { showTop = true }
-                    ThemeButton("Show persistent toast with Undo", role: .secondary) { showPersistent = true }
-                    Text("Undo tapped \(undoCount) time(s)")
-                        .designTextStyle(.secondary)
-                }
-            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding()
         }
-        // Anchors the toast overlays to the full detail area.
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        // Applied outside the ScrollView so the overlays anchor to the visible
+        // detail pane instead of the bottom of the scroll content.
         .toast(
             message, role: [ToastRole.info, .success, .warning, .error][role],
             systemImage: customIcon ? "star" : nil, isPresented: $playground,
@@ -78,8 +87,5 @@ struct ToastDetailView: View {
 }
 
 #Preview {
-    ScrollView {
-        ToastDetailView()
-            .padding()
-    }
+    ToastDetailView()
 }
