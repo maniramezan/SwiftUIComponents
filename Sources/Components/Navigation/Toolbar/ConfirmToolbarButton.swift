@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Toolbar confirmation button placed at the trailing edge.
+/// Toolbar confirmation button pinned at the trailing edge when the system supports it.
 ///
 /// Accepts a configurable system image and accessibility label. Use this as the standard
 /// save, add, or accept button in sheets and modal presentations.
@@ -30,22 +30,40 @@ public struct ConfirmToolbarButton: ToolbarContent {
 
     public var body: some ToolbarContent {
         #if canImport(UIKit)
-            ToolbarItem(placement: .topBarTrailing) {
-                Button(action: action) {
-                    Image(systemName: systemImage)
-                }
-                .disabled(isDisabled)
-                .accessibilityLabel(accessibilityLabel)
+            ToolbarItem(placement: Self.placement) {
+                ToolbarConfirmationContent(
+                    title: accessibilityLabel, systemImage: systemImage, isDisabled: isDisabled, action: action
+                )
             }
         #else
             ToolbarItem(placement: .confirmationAction) {
-                Button(action: action) {
-                    Image(systemName: systemImage)
-                }
-                .disabled(isDisabled)
-                .accessibilityLabel(accessibilityLabel)
+                ToolbarConfirmationContent(
+                    title: accessibilityLabel, systemImage: systemImage, isDisabled: isDisabled, action: action
+                )
             }
         #endif
+    }
+
+    #if canImport(UIKit)
+        private static var placement: ToolbarItemPlacement {
+            if #available(iOS 27, *) {
+                return .topBarPinnedTrailing
+            }
+            return .topBarTrailing
+        }
+    #endif
+}
+
+struct ToolbarConfirmationContent: View {
+    let title: String
+    let systemImage: String
+    let isDisabled: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(title, systemImage: systemImage, action: action)
+            .labelStyle(.iconOnly)
+            .disabled(isDisabled)
     }
 }
 
