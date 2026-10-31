@@ -57,4 +57,9 @@ struct AccessibilityStringsTests {
     func chatComposerPlaceholder() {
         #expect(String(localized: Strings.ChatComposer.placeholder) == "Message")
     }
+
+    @Test("chat composer field name resolves to \"Message\" independent of the placeholder")
+    func chatComposerFieldLabel() {
+        #expect(String(localized: Strings.ChatComposer.fieldLabel) == "Message")
+    }
 }

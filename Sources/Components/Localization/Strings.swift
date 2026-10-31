@@ -92,6 +92,13 @@ enum Strings {
                 "Placeholder shown in an empty chat message field when the caller supplies no placeholder of its own."
         )
 
+        static let fieldLabel = LocalizedStringResource(
+            "Message",
+            bundle: .atURL(Bundle.module.bundleURL),
+            comment:
+                "Placeholder shown in an empty chat message field when the caller supplies no placeholder of its own."
+        )
+
         static let sendButton = LocalizedStringResource(
             "Send",
             bundle: .atURL(Bundle.module.bundleURL),
