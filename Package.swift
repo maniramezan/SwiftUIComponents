@@ -68,7 +68,10 @@ let package = Package(
         ),
         .testTarget(
             name: "ComponentShowcaseTests",
-            dependencies: ["ComponentShowcase"]
+            dependencies: [
+                .product(name: "TestCommonsUI", package: "SwiftTestCommons"),
+                "ComponentShowcase",
+            ]
         ),
     ],
     swiftLanguageModes: [.v6]

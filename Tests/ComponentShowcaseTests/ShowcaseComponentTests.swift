@@ -1,3 +1,5 @@
+import SwiftUI
+import TestCommonsUI
 import Testing
 
 @testable import ComponentShowcase
@@ -32,5 +34,22 @@ struct ShowcaseComponentTests {
             #expect(!component.systemImage.isEmpty)
             #expect(groups.contains(component.group))
         }
+    }
+}
+
+@MainActor
+@Suite("Showcase pages", .serialized)
+struct ShowcasePageRenderTests {
+
+    @Test("every showcase page renders in a hosted window", arguments: ShowcaseComponent.allCases)
+    func rendersPage(component: ShowcaseComponent) throws {
+        let host = HostedView(
+            NavigationStack { ShowcaseDetailView(component: component) },
+            size: CGSize(width: 600, height: 900)
+        )
+        defer { host.close() }
+        _ = host.renderPNG()
+        RunLoop.current.run(until: Date(timeIntervalSinceNow: 0.05))
+        #expect(host.renderPNG() != nil)
     }
 }
