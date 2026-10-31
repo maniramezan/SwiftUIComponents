@@ -122,4 +122,14 @@ enum ShowcaseComponent: String, CaseIterable, Identifiable {
     var fillsDetailPane: Bool {
         self == .chat
     }
+
+    /// `true` when the page supplies its own `ScrollView` instead of being
+    /// wrapped in the shared one.
+    ///
+    /// Pages that attach overlays to the visible pane (e.g. `.toast`) need this:
+    /// inside the shared scroll content an edge-anchored overlay lands at the
+    /// edge of the full content height, which can be off-screen.
+    var ownsScrollView: Bool {
+        fillsDetailPane || self == .toast
+    }
 }
