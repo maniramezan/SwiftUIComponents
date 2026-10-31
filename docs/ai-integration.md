@@ -614,6 +614,7 @@ Use the showcase for reference, not reuse:
 ### Accessibility & Localization
 
 - Components include VoiceOver support out of the box (labels, traits, hidden decorations, Reduce Motion, adjustable/scroll actions on paged + segmented controls).
+- `ConfirmToolbarButton` pins to the trailing edge on iOS 27+ (`.topBarPinnedTrailing`, falling back to `.topBarTrailing`) and uses `.confirmationAction` elsewhere; `DismissToolbarButton` uses `.cancellationAction` on every platform.
 - The package localizes only its own chrome (dismiss button, loading/typing announcements, error prefix, paginator + clear-search labels, chat-composer placeholder + send/voice button labels) via a String Catalog in `Bundle.module`; supported locales are translated and validated in CI.
 - Content you pass in is rendered verbatim and is your app's responsibility to localize: `ThemeButton` titles, `SearchBar` and `ChatComposer` placeholders, `SelectionNode` titles, `TextInputField` titles and messages, `ListRow` text, `AvatarView` names, `ConfirmToolbarButton` accessibility label. Pass already-localized values (e.g. `String(localized:)`).
 

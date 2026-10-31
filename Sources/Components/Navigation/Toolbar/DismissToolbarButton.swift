@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Toolbar dismiss button (xmark) placed at the leading edge.
+/// Toolbar dismiss button (xmark) placed in the system's cancellation position.
 ///
 /// Use this as the standard close button in sheets and modal presentations.
 public struct DismissToolbarButton: ToolbarContent {
@@ -12,21 +12,10 @@ public struct DismissToolbarButton: ToolbarContent {
     }
 
     public var body: some ToolbarContent {
-        #if canImport(UIKit)
-            ToolbarItem(placement: .topBarLeading) {
-                Button(action: action) {
-                    Image(systemName: "xmark")
-                }
-                .accessibilityLabel(String(localized: Strings.Toolbar.close))
-            }
-        #else
-            ToolbarItem(placement: .cancellationAction) {
-                Button(action: action) {
-                    Image(systemName: "xmark")
-                }
-                .accessibilityLabel(String(localized: Strings.Toolbar.close))
-            }
-        #endif
+        ToolbarItem(placement: .cancellationAction) {
+            Button(String(localized: Strings.Toolbar.close), systemImage: "xmark", action: action)
+                .labelStyle(.iconOnly)
+        }
     }
 }
 
