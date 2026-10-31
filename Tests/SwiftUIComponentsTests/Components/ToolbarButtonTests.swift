@@ -43,4 +43,14 @@ struct ToolbarButtonTests {
             }
         )
     }
+
+    @Test("renders the confirmation content in enabled and disabled states")
+    func rendersConfirmationContent() {
+        renderForCoverage(
+            ToolbarConfirmationContent(title: "Save", systemImage: "checkmark", isDisabled: false, action: {})
+        )
+        renderForCoverage(
+            ToolbarConfirmationContent(title: "Save", systemImage: "checkmark", isDisabled: true, action: {})
+        )
+    }
 }

@@ -54,7 +54,7 @@ public struct ConfirmToolbarButton: ToolbarContent {
     #endif
 }
 
-private struct ToolbarConfirmationContent: View {
+struct ToolbarConfirmationContent: View {
     let title: String
     let systemImage: String
     let isDisabled: Bool
