@@ -14,6 +14,7 @@ enum ShowcaseComponent: String, CaseIterable, Identifiable {
     case selectionList = "Selection List"
     case pillChips = "Pill Chips"
     case textInputField = "Text Input Field"
+    case questionnaire = "Questionnaire"
 
     // MARK: - Display
     case badges = "Badges"
@@ -65,6 +66,7 @@ enum ShowcaseComponent: String, CaseIterable, Identifiable {
         case .selectionList: return "checklist"
         case .pillChips: return "capsule.fill"
         case .textInputField: return "character.cursor.ibeam"
+        case .questionnaire: return "list.number"
         case .segmentedPicker: return "rectangle.split.3x1.fill"
         case .badges: return "seal.fill"
         case .textStyles: return "textformat"
@@ -99,7 +101,7 @@ enum ShowcaseComponent: String, CaseIterable, Identifiable {
         switch self {
         case .buttons, .compactAction:
             return "Actions"
-        case .searchBar, .toggle, .menuPicker, .selectionList, .pillChips, .textInputField:
+        case .searchBar, .toggle, .menuPicker, .selectionList, .pillChips, .textInputField, .questionnaire:
             return "Controls"
         case .badges, .textStyles, .listRow, .avatar, .sectionHeader, .cachedAsyncImage:
             return "Display"
