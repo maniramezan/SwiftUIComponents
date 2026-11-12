@@ -230,4 +230,47 @@ enum Strings {
             comment: "Accessibility action label for moving the paged view to the previous page."
         )
     }
+
+    enum Questionnaire {
+        static let back = LocalizedStringResource(
+            "Back",
+            bundle: .atURL(Bundle.module.bundleURL),
+            comment: "Button title that returns a step-by-step questionnaire to the previous question."
+        )
+
+        static let next = LocalizedStringResource(
+            "Next",
+            bundle: .atURL(Bundle.module.bundleURL),
+            comment: "Button title that moves a step-by-step questionnaire to the next question."
+        )
+
+        static let done = LocalizedStringResource(
+            "Done",
+            bundle: .atURL(Bundle.module.bundleURL),
+            comment:
+                "Button title on the last question of a step-by-step questionnaire that submits all answers."
+        )
+
+        static let skip = LocalizedStringResource(
+            "Skip",
+            bundle: .atURL(Bundle.module.bundleURL),
+            comment:
+                "Button title that skips the remaining questions of a step-by-step questionnaire without answering."
+        )
+
+        static let optional = LocalizedStringResource(
+            "Optional",
+            bundle: .atURL(Bundle.module.bundleURL),
+            comment: "Caption under a questionnaire question that can be left unanswered."
+        )
+
+        static func progress(_ index: Int, _ total: Int) -> LocalizedStringResource {
+            LocalizedStringResource(
+                "Question \(index) of \(total)",
+                bundle: .atURL(Bundle.module.bundleURL),
+                comment:
+                    "Progress label above a step-by-step questionnaire. Interpolations are the 1-based number of the current question and the total number of questions."
+            )
+        }
+    }
 }
