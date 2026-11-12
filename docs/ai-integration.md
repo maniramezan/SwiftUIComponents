@@ -240,6 +240,7 @@ Floating action buttons:
         isExpanded: $isExpanded,
         direction: .up,
         showsTitle: false,
+        showsItemTitles: true,
         collapsesOnSelection: true,
         isItemDisabled: { $0.isDisabled },
         onSelect: { performAction($0) }
@@ -254,6 +255,7 @@ Floating action buttons:
     Supply a finite presentation frame, normally in an overlay. Only the action strip scrolls.
     The trigger remains fixed and the first item is nearest it. Both trigger labels are measured
     together to keep its size stable. All labels are caller-localized SwiftUI content.
+    Set showsItemTitles to false for icon-only menu actions; SwiftUI Label titles remain accessible.
     .disabled() disables the whole component. Empty items log a fault, disable the trigger,
     and reset expansion. Selection collapses before onSelect unless collapsesOnSelection is false.
     Escape and accessibility escape dismiss the strip; outside-tap dismissal is caller-managed.

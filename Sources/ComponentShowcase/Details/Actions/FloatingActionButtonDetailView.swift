@@ -4,7 +4,7 @@ import SwiftUI
 
 struct FloatingActionButtonDetailView: View {
     @State private var title = "Add item"
-    @State private var symbol = "plus"
+    @State private var icon = FloatingActionIcon.plus
     @State private var showsTitle = false
     @State private var disabled = false
     @State private var taps = 0
@@ -13,15 +13,23 @@ struct FloatingActionButtonDetailView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: theme.spacing.twoUnits) {
             ShowcaseSection("Playground") {
-                TextField("Title", text: $title)
-                TextField("System image", text: $symbol)
-                Toggle("Show title", isOn: $showsTitle).toggleStyle(ThemeToggleStyle())
-                Toggle("Disabled", isOn: $disabled).toggleStyle(ThemeToggleStyle())
                 FloatingActionButton(showsTitle: showsTitle, action: { taps += 1 }) {
-                    Label(title, systemImage: symbol)
+                    Label(title, systemImage: icon.rawValue)
                 }
                 .disabled(disabled)
-                Text("Actions: \(taps)")
+                Text("Button taps: \(taps)")
+                Text("Tap any demo button to increase the count.")
+                    .foregroundStyle(.secondary)
+            }
+
+            ShowcaseSection("Preview settings") {
+                LabeledContent("Button title") {
+                    TextField("Button title", text: $title)
+                        .labelsHidden()
+                }
+                FloatingActionIconPicker(title: "Button icon", selection: $icon)
+                Toggle("Show title", isOn: $showsTitle).toggleStyle(ThemeToggleStyle())
+                Toggle("Disabled", isOn: $disabled).toggleStyle(ThemeToggleStyle())
             }
 
             ShowcaseSection("Styles") {

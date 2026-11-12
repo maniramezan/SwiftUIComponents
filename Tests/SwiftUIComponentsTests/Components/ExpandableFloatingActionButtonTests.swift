@@ -164,6 +164,29 @@ struct FloatingActionButtonInteractionTests {
 @Suite("Expandable floating action rendering", .serialized)
 struct ExpandableFloatingActionButtonTests {
     @Test(
+        "icon-only actions hide visual titles and can switch back to labeled actions",
+        arguments: FloatingActionButtonDirection.allCases)
+    func itemTitleVisibility(direction: FloatingActionButtonDirection) throws {
+        let state = FloatingActionTestState()
+        state.expanded = true
+        state.direction = direction
+        state.showsItemTitles = false
+        state.items = [FloatingActionTestItem(id: 0, title: "First action")]
+        let host = HostedView(FloatingActionTestView(state: state), size: CGSize(width: 300, height: 240))
+        defer { host.close() }
+        _ = host.waitForStableRender()
+        let iconsOnly = try #require(host.renderPNG())
+        let iconWidth = try #require(state.itemFrames[0]).width
+        #expect(iconWidth > 0)
+        state.items = [FloatingActionTestItem(id: 0, title: "A different action title")]
+        _ = host.waitForStableRender()
+        #expect(host.renderPNG() == iconsOnly)
+        state.showsItemTitles = true
+        _ = host.waitForStableRender()
+        #expect(host.renderPNG() != iconsOnly)
+    }
+
+    @Test(
         "all directions render expanded and collapsed", arguments: FloatingActionButtonDirection.allCases,
         [false, true])
     func rendersDirections(direction: FloatingActionButtonDirection, expanded: Bool) {
@@ -303,20 +326,21 @@ struct ExpandableFloatingActionButtonTests {
             #expect(CGRect(x: 0, y: 0, width: 300, height: 240).contains(last))
         }
 
-        @Test("real button clicks toggle and select while hidden actions cannot activate")
-        func pointerInteraction() throws {
+        @Test("real button clicks toggle and select while hidden actions cannot activate", arguments: [false, true])
+        func pointerInteraction(showsItemTitles: Bool) throws {
             let state = FloatingActionTestState()
+            state.showsItemTitles = showsItemTitles
             let host = HostedView(FloatingActionTestView(state: state), size: CGSize(width: 300, height: 240))
             defer { host.close() }
             _ = host.waitForStableRender()
             try click(host, at: CGPoint(x: 276, y: 24))
             _ = host.waitForStableRender()
             #expect(state.expanded)
-            try click(host, at: CGPoint(x: 250, y: 78))
+            try click(host, at: CGPoint(x: 276, y: 78))
             _ = host.waitForStableRender()
             #expect(state.selections == [0])
             #expect(!state.expanded)
-            try click(host, at: CGPoint(x: 250, y: 78))
+            try click(host, at: CGPoint(x: 276, y: 78))
             #expect(state.selections == [0])
         }
 
@@ -408,6 +432,7 @@ private final class FloatingActionTestState {
     var disabled = false
     var firstItemDisabled = false
     var showsTitle = false
+    var showsItemTitles = true
     var triggerFrame = CGRect.zero
     var rightToLeft = false
     var itemFrames: [Int: CGRect] = [:]
@@ -429,6 +454,7 @@ private struct FloatingActionTestView: View {
             isExpanded: $state.expanded,
             direction: state.direction,
             showsTitle: state.showsTitle,
+            showsItemTitles: state.showsItemTitles,
             isItemDisabled: { state.firstItemDisabled && $0.id == 0 },
             onSelect: { state.selections.append($0.id) }
         ) { expanded in

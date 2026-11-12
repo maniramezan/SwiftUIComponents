@@ -63,7 +63,7 @@ enum ShowcaseComponent: String, CaseIterable, Identifiable {
         case .buttons: return "button.programmable"
         case .compactAction: return "circle.grid.2x1.fill"
         case .floatingAction: return "plus.circle.fill"
-        case .expandableFloatingAction: return "plus.circle.on.circle.fill"
+        case .expandableFloatingAction: return "ellipsis.circle.fill"
         case .searchBar: return "magnifyingglass"
         case .toggle: return "switch.2"
         case .menuPicker: return "list.bullet"

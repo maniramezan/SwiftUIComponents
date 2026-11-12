@@ -2,7 +2,7 @@ import DesignSystem
 import OSLog
 import SwiftUI
 
-/// An anchored floating action button that reveals a scrollable strip of labeled actions.
+/// An anchored floating action button that reveals a scrollable strip of actions.
 ///
 /// Use a finite frame to define the presentation area, normally inside an overlay.
 /// The trigger remains at the opposite end of the expansion direction: bottom
@@ -10,6 +10,8 @@ import SwiftUI
 /// horizontal expansion. The first item is nearest the trigger. Leading and
 /// trailing mirror with the layout direction. Empty items log a fault and render
 /// a disabled, collapsed trigger.
+/// Set `showsItemTitles` to `false` to display only action icons. SwiftUI `Label`
+/// titles remain available to assistive technologies in this mode.
 ///
 /// ```swift
 /// ExpandableFloatingActionButton(
@@ -26,6 +28,7 @@ public struct ExpandableFloatingActionButton<Item: Identifiable, TriggerLabel: V
     @Binding private var isExpanded: Bool
     private let direction: FloatingActionButtonDirection
     private let showsTitle: Bool
+    private let showsItemTitles: Bool
     private let collapsesOnSelection: Bool
     private let isItemDisabled: (Item) -> Bool
     private let onSelect: (Item) -> Void
@@ -45,6 +48,8 @@ public struct ExpandableFloatingActionButton<Item: Identifiable, TriggerLabel: V
     ///   - isExpanded: Two-way expansion state. Empty items reset this binding to `false`.
     ///   - direction: Expansion direction. Defaults to `.up`.
     ///   - showsTitle: Whether the trigger shows its title in an extended capsule.
+    ///   - showsItemTitles: Whether menu actions display titles beside their icons.
+    ///     Defaults to `true`. When `false`, SwiftUI `Label` titles remain accessible.
     ///   - collapsesOnSelection: Whether to collapse before invoking `onSelect`. Defaults to `true`.
     ///   - isItemDisabled: Returns whether an item is disabled. Defaults to all items enabled.
     ///   - onSelect: Invoked once when an enabled action is activated while expanded.
@@ -57,6 +62,7 @@ public struct ExpandableFloatingActionButton<Item: Identifiable, TriggerLabel: V
         isExpanded: Binding<Bool>,
         direction: FloatingActionButtonDirection = .up,
         showsTitle: Bool = false,
+        showsItemTitles: Bool = true,
         collapsesOnSelection: Bool = true,
         isItemDisabled: @escaping (Item) -> Bool = { _ in false },
         onSelect: @escaping (Item) -> Void,
@@ -67,6 +73,7 @@ public struct ExpandableFloatingActionButton<Item: Identifiable, TriggerLabel: V
         self._isExpanded = isExpanded
         self.direction = direction
         self.showsTitle = showsTitle
+        self.showsItemTitles = showsItemTitles
         self.collapsesOnSelection = collapsesOnSelection
         self.isItemDisabled = isItemDisabled
         self.onSelect = onSelect
@@ -112,6 +119,7 @@ public struct ExpandableFloatingActionButton<Item: Identifiable, TriggerLabel: V
             FloatingActionStrip(
                 items: items,
                 direction: direction,
+                showsItemTitles: showsItemTitles,
                 isItemDisabled: isItemDisabled,
                 onSelect: { item in
                     FloatingActionButtonInteraction.select(
@@ -159,6 +167,7 @@ public struct ExpandableFloatingActionButton<Item: Identifiable, TriggerLabel: V
 private struct FloatingActionStrip<Item: Identifiable, ItemLabel: View>: View {
     let items: [Item]
     let direction: FloatingActionButtonDirection
+    let showsItemTitles: Bool
     let isItemDisabled: (Item) -> Bool
     let onSelect: (Item) -> Void
     let itemLabel: (Item) -> ItemLabel
@@ -171,6 +180,7 @@ private struct FloatingActionStrip<Item: Identifiable, ItemLabel: View>: View {
                 ScrollView(direction.isHorizontal ? .horizontal : .vertical) {
                     FloatingActionItems(
                         items: items, direction: direction, viewport: geometry.size,
+                        showsItemTitles: showsItemTitles,
                         isItemDisabled: isItemDisabled, onSelect: onSelect, itemLabel: itemLabel
                     )
                 }
@@ -205,6 +215,7 @@ private struct FloatingActionItems<Item: Identifiable, ItemLabel: View>: View {
     let items: [Item]
     let direction: FloatingActionButtonDirection
     let viewport: CGSize
+    let showsItemTitles: Bool
     let isItemDisabled: (Item) -> Bool
     let onSelect: (Item) -> Void
     let itemLabel: (Item) -> ItemLabel
@@ -222,12 +233,7 @@ private struct FloatingActionItems<Item: Identifiable, ItemLabel: View>: View {
                 Button {
                     onSelect(item)
                 } label: {
-                    itemLabel(item)
-                        .labelStyle(.titleAndIcon)
-                        .font(theme.typography.subheadlineMedium)
-                        .designPillMetrics()
-                        .fixedSize(horizontal: false, vertical: true)
-                        .designCapsuleSurface()
+                    FloatingActionItemLabel(showsTitle: showsItemTitles, label: itemLabel(item))
                         .frame(maxWidth: viewport.width, alignment: .trailing)
                 }
                 .buttonStyle(FloatingActionPressStyle())
@@ -241,6 +247,27 @@ private struct FloatingActionItems<Item: Identifiable, ItemLabel: View>: View {
             minHeight: direction.isHorizontal ? viewport.height : nil,
             alignment: .trailing
         )
+    }
+}
+
+private struct FloatingActionItemLabel<Content: View>: View {
+    let showsTitle: Bool
+    let label: Content
+    @Environment(\.designTheme) private var theme
+
+    var body: some View {
+        Group {
+            if showsTitle {
+                label.labelStyle(.titleAndIcon)
+            } else {
+                label.labelStyle(.iconOnly)
+            }
+        }
+        .font(theme.typography.subheadlineMedium)
+        .designPillMetrics(horizontalPadding: showsTitle ? nil : theme.spacing.oneUnit)
+        .frame(minWidth: theme.motion.minimumHitTarget)
+        .fixedSize(horizontal: false, vertical: true)
+        .designCapsuleSurface()
     }
 }
 

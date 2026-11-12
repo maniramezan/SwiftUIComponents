@@ -3,12 +3,11 @@ import DesignSystem
 import SwiftUI
 
 struct ExpandableFloatingActionButtonDetailView: View {
-    @State private var title = "Actions"
-    @State private var collapsedSymbol = "plus"
-    @State private var expandedSymbol = "xmark"
+    @State private var trigger = FloatingActionShowcaseTrigger()
     @State private var direction = FloatingActionButtonDirection.up
     @State private var isExpanded = false
     @State private var showsTitle = false
+    @State private var showsItemTitles = true
     @State private var disabled = false
     @State private var disableFirstItem = false
     @State private var collapsesOnSelection = true
@@ -17,23 +16,27 @@ struct ExpandableFloatingActionButtonDetailView: View {
     @State private var rightToLeft = false
     @State private var width: Double = 320
     @State private var height: Double = 280
-    @State private var lastSelection = "None"
     @Environment(\.designTheme) private var theme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
+        let triggerLabel = trigger.label
         VStack(alignment: .leading, spacing: theme.spacing.twoUnits) {
             ShowcaseSection("Playground") {
+                Text("Tap the trigger to open the menu, then select an action.")
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
                 ExpandableFloatingActionButton(
                     items: Array(FloatingActionShowcaseItem.samples.prefix(itemCount)),
                     isExpanded: $isExpanded,
                     direction: direction,
                     showsTitle: showsTitle,
+                    showsItemTitles: showsItemTitles,
                     collapsesOnSelection: collapsesOnSelection,
                     isItemDisabled: { disableFirstItem && $0.id == 0 },
-                    onSelect: { lastSelection = $0.title }
-                ) { expanded in
-                    Label(title, systemImage: expanded ? expandedSymbol : collapsedSymbol)
+                    onSelect: { trigger.selection = ($0.title, $0.symbol) }
+                ) { _ in
+                    Label(triggerLabel.title, systemImage: triggerLabel.symbol)
                 } itemLabel: { item in
                     Label(
                         longLabels ? "\(item.title) with a longer descriptive label" : item.title,
@@ -44,13 +47,20 @@ struct ExpandableFloatingActionButtonDetailView: View {
                 .frame(height: height)
                 .environment(\.layoutDirection, rightToLeft ? .rightToLeft : .leftToRight)
                 .disabled(disabled)
-                Text("Last selection: \(lastSelection)")
+                Text("Last selection: \(trigger.selection?.title ?? "None")")
             }
 
-            ShowcaseSection("Controls") {
-                TextField("Trigger title", text: $title)
-                TextField("Collapsed system image", text: $collapsedSymbol)
-                TextField("Expanded system image", text: $expandedSymbol)
+            ShowcaseSection("Preview settings") {
+                LabeledContent("Trigger title") {
+                    TextField("Trigger title", text: $trigger.title)
+                        .labelsHidden()
+                }
+                FloatingActionIconPicker(title: "Trigger icon", selection: $trigger.icon)
+                Toggle("Show selected action on trigger", isOn: $trigger.showsSelectedAction)
+                    .toggleStyle(ThemeToggleStyle())
+                Text("Off keeps the configured title and icon. On shows the last selected menu item.")
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
                 Picker("Direction", selection: $direction) {
                     Text("Up").tag(FloatingActionButtonDirection.up)
                     Text("Down").tag(FloatingActionButtonDirection.down)
@@ -59,6 +69,7 @@ struct ExpandableFloatingActionButtonDetailView: View {
                 }
                 Toggle("Expanded", isOn: $isExpanded).toggleStyle(ThemeToggleStyle())
                 Toggle("Show trigger title", isOn: $showsTitle).toggleStyle(ThemeToggleStyle())
+                Toggle("Show menu item titles", isOn: $showsItemTitles).toggleStyle(ThemeToggleStyle())
                 Toggle("Collapse on selection", isOn: $collapsesOnSelection).toggleStyle(ThemeToggleStyle())
                 Toggle("Disabled", isOn: $disabled).toggleStyle(ThemeToggleStyle())
                 Toggle("Disable first action", isOn: $disableFirstItem).toggleStyle(ThemeToggleStyle())
@@ -66,7 +77,9 @@ struct ExpandableFloatingActionButtonDetailView: View {
                 Toggle("Right-to-left layout", isOn: $rightToLeft).toggleStyle(ThemeToggleStyle())
                 Text("System Reduce Motion: \(reduceMotion ? "On" : "Off")")
                 Text("Change Reduce Motion in system Accessibility settings to preview opacity-only transitions.")
-                Stepper("Actions: \(itemCount)", value: $itemCount, in: 0...8)
+                Stepper("Menu item count: \(itemCount)", value: $itemCount, in: 0...8)
+                Text("Sets the number of demo menu buttons. At zero, the main button is disabled.")
+                    .foregroundStyle(.secondary)
                 Text("Presentation width: \(Int(width))")
                 Slider(value: $width, in: 180...600)
                 Text("Presentation height: \(Int(height))")

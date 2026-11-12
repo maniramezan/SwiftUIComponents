@@ -14,6 +14,9 @@ Clone the repository and open the package in Xcode to interact with every compon
 open Package.swift   # Opens in Xcode
 ```
 
+Use `showsItemTitles: false` on ``ExpandableFloatingActionButton`` for an icon-only
+expanded menu. Supply each action as a SwiftUI `Label` to retain its accessible title.
+
 ## Topics
 
 ### Essentials
