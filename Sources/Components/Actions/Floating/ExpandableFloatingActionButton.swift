@@ -234,7 +234,7 @@ private struct FloatingActionItems<Item: Identifiable, ItemLabel: View>: View {
                     onSelect(item)
                 } label: {
                     FloatingActionItemLabel(showsTitle: showsItemTitles, label: itemLabel(item))
-                        .frame(maxWidth: viewport.width, alignment: .trailing)
+                        .frame(maxWidth: direction.isHorizontal ? viewport.width : .infinity, alignment: .trailing)
                 }
                 .buttonStyle(FloatingActionPressStyle())
                 .disabled(isItemDisabled(item))
@@ -243,7 +243,7 @@ private struct FloatingActionItems<Item: Identifiable, ItemLabel: View>: View {
             }
         }
         .frame(
-            minWidth: direction.isHorizontal ? nil : viewport.width,
+            maxWidth: direction.isHorizontal ? nil : .infinity,
             minHeight: direction.isHorizontal ? viewport.height : nil,
             alignment: .trailing
         )

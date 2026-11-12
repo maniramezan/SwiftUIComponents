@@ -272,6 +272,27 @@ struct ExpandableFloatingActionButtonTests {
     }
 
     @Test(
+        "vertical actions respect the scroll content width",
+        arguments: [FloatingActionButtonDirection.up, .down], [false, true])
+    func scrollContentWidth(direction: FloatingActionButtonDirection, rightToLeft: Bool) throws {
+        let state = FloatingActionTestState()
+        state.expanded = true
+        state.direction = direction
+        state.rightToLeft = rightToLeft
+        state.scrollContentMargin = 17
+        state.items = (0..<8).map { FloatingActionTestItem(id: $0, title: "Action \($0)") }
+        let host = HostedView(FloatingActionTestView(state: state), size: CGSize(width: 300, height: 240))
+        defer { host.close() }
+        _ = host.waitForStableRender()
+        let first = try #require(state.itemFrames[0])
+        let contentBounds = CGRect(x: 17, y: 0, width: 266, height: 240)
+        #expect(contentBounds.contains(first))
+        state.rightToLeft.toggle()
+        _ = host.waitForStableRender()
+        #expect(contentBounds.contains(try #require(state.itemFrames[0])))
+    }
+
+    @Test(
         "rendered custom layouts mirror exactly once", arguments: FloatingActionButtonDirection.allCases, [false, true])
     func renderedPlacement(direction: FloatingActionButtonDirection, rightToLeft: Bool) {
         let state = FloatingActionTestState()
@@ -434,6 +455,7 @@ private final class FloatingActionTestState {
     var showsTitle = false
     var showsItemTitles = true
     var triggerFrame = CGRect.zero
+    var scrollContentMargin: CGFloat = 0
     var rightToLeft = false
     var itemFrames: [Int: CGRect] = [:]
     var itemAppearances: [Int: Int] = [:]
@@ -468,6 +490,7 @@ private struct FloatingActionTestView: View {
                 }
                 .onAppear { state.itemAppearances[item.id, default: 0] += 1 }
         }
+        .contentMargins(.horizontal, state.scrollContentMargin, for: .scrollContent)
         .coordinateSpace(name: "fabActions")
         .environment(\.layoutDirection, state.rightToLeft ? .rightToLeft : .leftToRight)
         .disabled(state.disabled)
