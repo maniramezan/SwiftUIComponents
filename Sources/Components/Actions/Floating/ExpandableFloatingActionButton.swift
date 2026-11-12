@@ -211,13 +211,14 @@ private struct FloatingActionItems<Item: Identifiable, ItemLabel: View>: View {
     @Environment(\.designTheme) private var theme
 
     var body: some View {
-        let orderedItems = direction.reversesItems ? Array(items.reversed()) : items
+        let indexedItems = Array(items.enumerated())
+        let orderedItems = direction.reversesItems ? Array(indexedItems.reversed()) : indexedItems
         let layout =
             direction.isHorizontal
             ? AnyLayout(HStackLayout(spacing: theme.spacing.oneUnit))
             : AnyLayout(VStackLayout(alignment: .trailing, spacing: theme.spacing.oneUnit))
         layout {
-            ForEach(orderedItems) { item in
+            ForEach(orderedItems, id: \.element.id) { index, item in
                 Button {
                     onSelect(item)
                 } label: {
@@ -232,7 +233,7 @@ private struct FloatingActionItems<Item: Identifiable, ItemLabel: View>: View {
                 .buttonStyle(FloatingActionPressStyle())
                 .disabled(isItemDisabled(item))
                 .id(item.id)
-                .accessibilitySortPriority(Double(items.count - (items.firstIndex { $0.id == item.id } ?? 0)))
+                .accessibilitySortPriority(Double(items.count - index))
             }
         }
         .frame(
