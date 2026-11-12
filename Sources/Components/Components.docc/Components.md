@@ -32,6 +32,11 @@ open Package.swift   # Opens in Xcode
 - ``SearchBar``
 - ``TextInputField``
 - ``ThemeToggleStyle``
+- ``QuestionnaireView``
+- ``QuestionnaireQuestion``
+- ``QuestionnaireQuestionKind``
+- ``QuestionnaireOption``
+- ``QuestionnaireAnswer``
 
 ### Selection
 

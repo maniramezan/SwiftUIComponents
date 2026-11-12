@@ -69,7 +69,7 @@ elements, Reduce Motion handling, and adjustable/scroll actions on the paged and
 segmented controls. The package localizes its **own** chrome (the dismiss button,
 loading/typing announcements, chat speaker names, the default search and chat-composer
 placeholders, chat-composer field name and send/voice button labels, error prefixes, paginator and
-clear-search labels)
+clear-search labels, questionnaire navigation and progress labels)
 through a String Catalog resolved from `Bundle.module`; supported locales are
 translated in `Sources/Components/Resources/Localizable.xcstrings` and validated
 in CI.
