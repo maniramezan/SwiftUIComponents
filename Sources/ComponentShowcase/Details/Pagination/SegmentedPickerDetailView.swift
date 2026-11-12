@@ -57,10 +57,10 @@ struct SegmentedPickerDetailView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: theme.spacing.twoUnits) {
             ShowcaseSection("Configuration") {
-                Picker("Sizing", selection: $sizing) {
+                ShowcasePicker("Sizing", selection: $sizing) {
                     ForEach(SegmentSizing.allCases, id: \.self) { Text(String(describing: $0)).tag($0) }
                 }
-                Picker("Density", selection: $density) {
+                ShowcasePicker("Density", selection: $density) {
                     ForEach(SegmentDensity.allCases, id: \.self) { Text(String(describing: $0)).tag($0) }
                 }
                 Toggle("Badges", isOn: $showsBadges)

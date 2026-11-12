@@ -16,8 +16,10 @@ import SwiftUI
 /// main screen itself reads as a real, full-page chat experience rather than
 /// a form.
 struct ChatPlaygroundDetailView: View {
+    var isShowingSettingsInitially = false
+
     var body: some View {
-        ChatPlayground()
+        ChatPlayground(isShowingSettings: isShowingSettingsInitially)
     }
 }
 
@@ -210,6 +212,10 @@ private struct ChatPlayground: View {
     @State private var isShowingConversationLog = false
     @Environment(\.designTheme) private var theme
     @Environment(\.layoutDirection) private var ambientLayoutDirection
+
+    init(isShowingSettings: Bool) {
+        self._isShowingSettings = State(initialValue: isShowingSettings)
+    }
 
     /// Four neutrally-named actions, all selectable. Per-action states are
     /// set explicitly from the settings sheet rather than seeded here, so
@@ -649,7 +655,7 @@ private struct SurfaceSettings: View {
     var body: some View {
         VStack(alignment: .leading, spacing: theme.spacing.oneUnit) {
             LabeledContent("Composer") {
-                Picker("Composer", selection: $composerMode) {
+                ShowcasePicker("Composer", selection: $composerMode) {
                     ForEach(ComposerMode.allCases) { mode in
                         Text(mode.rawValue).tag(mode)
                     }
@@ -658,7 +664,7 @@ private struct SurfaceSettings: View {
             }
 
             if composerMode.showsTextField {
-                Picker("Next message role", selection: $composerRole) {
+                ShowcasePicker("Next message role", selection: $composerRole) {
                     Text("User").tag(ChatMessageRole.user)
                     Text("Assistant").tag(ChatMessageRole.assistant)
                     Text("System").tag(ChatMessageRole.system)
@@ -667,7 +673,7 @@ private struct SurfaceSettings: View {
             }
 
             LabeledContent("Context card") {
-                Picker("Context card", selection: $contextCardMode) {
+                ShowcasePicker("Context card", selection: $contextCardMode) {
                     ForEach(ContextCardMode.allCases) { mode in
                         Text(mode.rawValue).tag(mode)
                     }
@@ -676,7 +682,7 @@ private struct SurfaceSettings: View {
             }
 
             LabeledContent("Notice") {
-                Picker("Notice", selection: $noticeKind) {
+                ShowcasePicker("Notice", selection: $noticeKind) {
                     ForEach(NoticeKind.allCases) { kind in
                         Text(kind.rawValue).tag(kind)
                     }
@@ -741,10 +747,9 @@ private struct QuickActionRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: theme.spacing.halfUnit) {
             HStack(spacing: theme.spacing.oneUnit) {
-                TextField("Title", text: $action.title)
-                    .textFieldStyle(.roundedBorder)
+                ShowcaseTextField("Title", text: $action.title)
 
-                Picker("Icon", selection: $action.systemImage) {
+                ShowcasePicker("Icon", selection: $action.systemImage) {
                     ForEach(demoActionSymbols, id: \.self) { symbol in
                         Label(symbol, systemImage: symbol).tag(symbol)
                     }
@@ -759,7 +764,7 @@ private struct QuickActionRow: View {
                 .accessibilityLabel(Text("Remove \(action.title)"))
             }
 
-            Picker("State", selection: $action.state) {
+            ShowcasePicker("State", selection: $action.state) {
                 Text("Available").tag(AssistantQuickActionState.available)
                 Text("Used").tag(AssistantQuickActionState.used)
                 Text("Disabled").tag(AssistantQuickActionState.disabled)
@@ -782,7 +787,7 @@ private struct ResponseSettings: View {
     var body: some View {
         VStack(alignment: .leading, spacing: theme.spacing.oneUnit) {
             LabeledContent("Response style") {
-                Picker("Response style", selection: $responseStyle) {
+                ShowcasePicker("Response style", selection: $responseStyle) {
                     ForEach(ResponseStyle.allCases) { style in
                         Text(style.rawValue).tag(style)
                     }
@@ -791,7 +796,7 @@ private struct ResponseSettings: View {
             }
 
             LabeledContent("Typing indicator") {
-                Picker("Typing indicator", selection: $typingIndicatorStyle) {
+                ShowcasePicker("Typing indicator", selection: $typingIndicatorStyle) {
                     ForEach(TypingIndicatorStyle.allCases) { style in
                         Text(style.rawValue).tag(style)
                     }
@@ -820,7 +825,7 @@ private struct LayoutDirectionSettings: View {
     var body: some View {
         VStack(alignment: .leading, spacing: theme.spacing.oneUnit) {
             LabeledContent("Content direction") {
-                Picker("Content direction", selection: $contentDirectionMode) {
+                ShowcasePicker("Content direction", selection: $contentDirectionMode) {
                     ForEach(ContentDirectionMode.allCases) { mode in
                         Text(mode.rawValue).tag(mode)
                     }

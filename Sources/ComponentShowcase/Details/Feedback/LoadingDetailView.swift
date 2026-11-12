@@ -10,7 +10,7 @@ struct LoadingDetailView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: theme.spacing.twoUnits) {
             ShowcaseSection("Playground") {
-                TextField("Message", text: $message)
+                ShowcaseTextField("Message", text: $message)
                 Toggle("Message", isOn: $showsMessage)
                 LoadingView(showsMessage ? message : nil)
             }

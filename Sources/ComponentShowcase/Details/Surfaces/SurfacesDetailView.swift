@@ -11,7 +11,7 @@ struct SurfacesDetailView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: theme.spacing.twoUnits) {
             ShowcaseSection("Playground") {
-                TextField("Content", text: $text)
+                ShowcaseTextField("Content", text: $text)
                 Toggle("Card border", isOn: $stroke)
                 Toggle("Selected capsule", isOn: $selected)
                 Text(text).padding().designCardSurface(showStroke: stroke)

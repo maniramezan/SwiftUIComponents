@@ -12,7 +12,7 @@ struct SearchBarDetailView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: theme.spacing.twoUnits) {
             ShowcaseSection("Controls") {
-                TextField("Placeholder", text: $placeholder)
+                ShowcaseTextField("Placeholder", text: $placeholder)
                 Toggle("Focus search", isOn: $focused)
                 Text("Submissions: \(submits)")
             }

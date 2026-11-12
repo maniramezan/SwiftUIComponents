@@ -62,20 +62,18 @@ struct ListRowDetailView: View {
             }
 
             ShowcaseSection("Controls") {
-                TextField("Title", text: $title)
-                    .textFieldStyle(.roundedBorder)
+                ShowcaseTextField("Title", text: $title)
                 Toggle("Subtitle", isOn: $showsSubtitle)
                     .toggleStyle(ThemeToggleStyle())
                 if showsSubtitle {
-                    TextField("Subtitle", text: $subtitle)
-                        .textFieldStyle(.roundedBorder)
+                    ShowcaseTextField("Subtitle", text: $subtitle)
                 }
                 Toggle("Leading icon", isOn: $showsIcon)
                     .toggleStyle(ThemeToggleStyle())
                 Toggle("Custom icon tint", isOn: $usesCustomTint)
                     .toggleStyle(ThemeToggleStyle())
                     .disabled(!showsIcon)
-                Picker("Accessory", selection: $accessory) {
+                ShowcasePicker("Accessory", selection: $accessory) {
                     ForEach(AccessoryKind.allCases) { kind in
                         Text(kind.rawValue).tag(kind)
                     }

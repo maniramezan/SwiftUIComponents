@@ -10,7 +10,7 @@ struct BadgesDetailView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: theme.spacing.twoUnits) {
             ShowcaseSection("Playground") {
-                TextField("Label", text: $label)
+                ShowcaseTextField("Label", text: $label)
                 Toggle("Prominent", isOn: $prominent)
                 Badge(label, isProminent: prominent)
             }

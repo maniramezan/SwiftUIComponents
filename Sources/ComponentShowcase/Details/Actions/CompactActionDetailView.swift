@@ -12,8 +12,8 @@ struct CompactActionDetailView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: theme.spacing.twoUnits) {
             ShowcaseSection("Playground") {
-                TextField("Title", text: $title)
-                TextField("System image", text: $icon)
+                ShowcaseTextField("Title", text: $title)
+                ShowcaseTextField("System image", text: $icon)
                 Toggle("Disabled", isOn: $disabled)
                 CompactActionButton(title: title, icon: icon, isDisabled: disabled) { taps += 1 }
                 Text("Actions: \(taps)")
@@ -24,7 +24,7 @@ struct CompactActionDetailView: View {
             }
 
             ShowcaseSection("Action row") {
-                HStack(spacing: theme.spacing.oneUnit) {
+                FlowLayout(spacing: theme.spacing.oneUnit, lineSpacing: theme.spacing.oneUnit) {
                     CompactActionButton(title: "Share", icon: "square.and.arrow.up") {}
                     CompactActionButton(title: "Simplify", icon: "wand.and.stars") {}
                     CompactActionButton(title: "Details", icon: "info.circle") {}

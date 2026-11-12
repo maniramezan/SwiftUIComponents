@@ -15,9 +15,9 @@ struct EmptyStateDetailView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: theme.spacing.twoUnits) {
             ShowcaseSection("Playground") {
-                TextField("Title", text: $title)
-                TextField("Message", text: $message)
-                TextField("Symbol", text: $symbol)
+                ShowcaseTextField("Title", text: $title)
+                ShowcaseTextField("Message", text: $message)
+                ShowcaseTextField("Symbol", text: $symbol)
                 Toggle("Message", isOn: $showsMessage)
                 Toggle("Symbol", isOn: $showsSymbol)
                 Toggle("Action", isOn: $showsAction)

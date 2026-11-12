@@ -14,11 +14,10 @@ struct AvatarDetailView: View {
             ShowcaseSection("Configurable avatar") {
                 AvatarView(name: name, image: showsImage ? Image(systemName: "photo") : nil, size: size)
 
-                TextField("Name", text: $name)
-                    .textFieldStyle(.roundedBorder)
+                ShowcaseTextField("Name", text: $name)
                 Toggle("Image", isOn: $showsImage)
                     .toggleStyle(ThemeToggleStyle())
-                Picker("Size", selection: $size) {
+                ShowcasePicker("Size", selection: $size) {
                     ForEach(AvatarView.Size.allCases, id: \.self) { size in
                         Text(String(describing: size).capitalized).tag(size)
                     }
