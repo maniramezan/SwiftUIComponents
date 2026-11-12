@@ -1199,7 +1199,7 @@
       }
     },
     "Collapsed" : {
-      "comment" : "Accessibility value announced on an expandable selection-sheet row when its children are hidden.",
+      "comment" : "Accessibility value for an expandable selection row or floating action button hiding its actions.",
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {
@@ -2519,7 +2519,7 @@
       }
     },
     "Expanded" : {
-      "comment" : "Accessibility value announced on an expandable selection-sheet row when its children are visible.",
+      "comment" : "Accessibility value for an expandable selection row or floating action button showing its actions.",
       "extractionState" : "manual",
       "localizations" : {
         "ar" : {

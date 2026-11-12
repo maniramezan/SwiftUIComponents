@@ -6,6 +6,8 @@ enum ShowcaseComponent: String, CaseIterable, Identifiable {
     // MARK: - Actions
     case buttons = "Buttons"
     case compactAction = "Compact Action Button"
+    case floatingAction = "Floating Action Button"
+    case expandableFloatingAction = "Expandable Floating Action Button"
 
     // MARK: - Controls
     case searchBar = "Search Bar"
@@ -60,6 +62,8 @@ enum ShowcaseComponent: String, CaseIterable, Identifiable {
         switch self {
         case .buttons: return "button.programmable"
         case .compactAction: return "circle.grid.2x1.fill"
+        case .floatingAction: return "plus.circle.fill"
+        case .expandableFloatingAction: return "plus.circle.on.circle.fill"
         case .searchBar: return "magnifyingglass"
         case .toggle: return "switch.2"
         case .menuPicker: return "list.bullet"
@@ -99,7 +103,7 @@ enum ShowcaseComponent: String, CaseIterable, Identifiable {
     /// Logical grouping label used as a section header in the sidebar.
     var group: String {
         switch self {
-        case .buttons, .compactAction:
+        case .buttons, .compactAction, .floatingAction, .expandableFloatingAction:
             return "Actions"
         case .searchBar, .toggle, .menuPicker, .selectionList, .pillChips, .textInputField, .questionnaire:
             return "Controls"

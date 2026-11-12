@@ -42,6 +42,8 @@ private struct ShowcaseDetailContent: View {
         switch component {
         case .buttons: ButtonsDetailView()
         case .compactAction: CompactActionDetailView()
+        case .floatingAction: FloatingActionButtonDetailView()
+        case .expandableFloatingAction: ExpandableFloatingActionButtonDetailView()
         case .searchBar: SearchBarDetailView()
         case .toggle: ToggleDetailView()
         case .menuPicker: MenuPickerDetailView()

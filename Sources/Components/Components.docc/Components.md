@@ -26,6 +26,9 @@ open Package.swift   # Opens in Xcode
 - ``ThemeButtonRole``
 - ``ThemeButtonStyle``
 - ``CompactActionButton``
+- ``FloatingActionButton``
+- ``ExpandableFloatingActionButton``
+- ``FloatingActionButtonDirection``
 
 ### Controls
 
