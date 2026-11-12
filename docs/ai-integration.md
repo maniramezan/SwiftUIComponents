@@ -231,6 +231,35 @@ Buttons:
     ThemeButton(role: .secondary, action: { }) { Label("Share", systemImage: "square.and.arrow.up") }
     Button("Label") { }.buttonStyle(ThemeButtonStyle(role: .primary))
 
+Floating action buttons:
+    FloatingActionButton(showsTitle: false, action: { addItem() }) {
+        Label("Add item", systemImage: "plus")
+    }
+    ExpandableFloatingActionButton(
+        items: actions,
+        isExpanded: $isExpanded,
+        direction: .up,
+        showsTitle: false,
+        showsItemTitles: true,
+        collapsesOnSelection: true,
+        isItemDisabled: { $0.isDisabled },
+        onSelect: { performAction($0) }
+    ) { expanded in
+        Label("Actions", systemImage: expanded ? "xmark" : "plus")
+    } itemLabel: { item in
+        Label(item.title, systemImage: item.symbol)
+    }
+    .frame(width: 280, height: 320)
+    Items are caller-owned Identifiable values with unique stable IDs. Directions: .up (default),
+    .down, .leading, .trailing; horizontal directions mirror in right-to-left layouts.
+    Supply a finite presentation frame, normally in an overlay. Only the action strip scrolls.
+    The trigger remains fixed and the first item is nearest it. Both trigger labels are measured
+    together to keep its size stable. All labels are caller-localized SwiftUI content.
+    Set showsItemTitles to false for icon-only menu actions; SwiftUI Label titles remain accessible.
+    .disabled() disables the whole component. Empty items log a fault, disable the trigger,
+    and reset expansion. Selection collapses before onSelect unless collapsesOnSelection is false.
+    Escape and accessibility escape dismiss the strip; outside-tap dismissal is caller-managed.
+
 Compact action:
     CompactActionButton(title: "Action", icon: "star", isDisabled: false) { performAction() }
 
@@ -637,7 +666,7 @@ Use the showcase for reference, not reuse:
 
 - Components include VoiceOver support out of the box (labels, traits, hidden decorations, Reduce Motion, adjustable/scroll actions on paged + segmented controls).
 - `ConfirmToolbarButton` pins to the trailing edge on iOS 27+ (`.topBarPinnedTrailing`, falling back to `.topBarTrailing`) and uses `.confirmationAction` elsewhere; `DismissToolbarButton` uses `.cancellationAction` on every platform.
-- The package localizes only its own chrome (dismiss button, loading/typing announcements, error prefix, paginator + clear-search labels, questionnaire Back/Next/Done/Skip/Optional/progress labels, chat-composer placeholder, field name + send/voice button labels) via a String Catalog in `Bundle.module`; supported locales are translated and validated in CI.
+- The package localizes only its own chrome (dismiss button, loading/typing announcements, error prefix, paginator + clear-search labels, questionnaire Back/Next/Done/Skip/Optional/progress labels, chat-composer placeholder, field name + send/voice button labels, floating action expanded/collapsed states) via a String Catalog in `Bundle.module`; supported locales are translated and validated in CI.
 - Content you pass in is rendered verbatim and is your app's responsibility to localize: `ThemeButton` titles, `SearchBar` and `ChatComposer` placeholders, `SelectionNode` titles, `TextInputField` titles and messages, `QuestionnaireQuestion` prompts/details/option titles/unit labels, `ListRow` text, `AvatarView` names, `ConfirmToolbarButton` accessibility label. Pass already-localized values (e.g. `String(localized:)`).
 
 ### Do Not
@@ -650,6 +679,7 @@ Use the showcase for reference, not reuse:
 - Don't hand-roll a title-above-field form input or a settings row — use `TextInputField` and `ListRow`.
 - Don't nest `QuestionnaireView` inside another vertical `ScrollView` — it owns its scroll; give it a fixed-height slot such as a navigation destination.
 - Don't put reusable shipping components in the showcase target — promote them into `Components` first.
+- Don't give ExpandableFloatingActionButton an unbounded presentation area — give it a finite frame so overflowing actions can scroll.
 - Don't pass a String literal to ThemeButton's @ViewBuilder init — use the String convenience init.
 - Don't pass unlocalized literals as component content (titles, placeholders, accessibility labels) — these are rendered verbatim, so localize them on your side.
 - Don't nest `CarouselRow` inside another horizontal `ScrollView` — it measures its own finite width to size items, which an unbounded horizontal proposal can't provide. It works in any finite-width slot, including a flexible `HStack` slot next to fixed siblings.
