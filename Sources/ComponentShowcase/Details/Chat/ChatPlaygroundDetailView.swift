@@ -16,8 +16,10 @@ import SwiftUI
 /// main screen itself reads as a real, full-page chat experience rather than
 /// a form.
 struct ChatPlaygroundDetailView: View {
+    var isShowingSettingsInitially = false
+
     var body: some View {
-        ChatPlayground()
+        ChatPlayground(isShowingSettings: isShowingSettingsInitially)
     }
 }
 
@@ -210,6 +212,10 @@ private struct ChatPlayground: View {
     @State private var isShowingConversationLog = false
     @Environment(\.designTheme) private var theme
     @Environment(\.layoutDirection) private var ambientLayoutDirection
+
+    init(isShowingSettings: Bool) {
+        self._isShowingSettings = State(initialValue: isShowingSettings)
+    }
 
     /// Four neutrally-named actions, all selectable. Per-action states are
     /// set explicitly from the settings sheet rather than seeded here, so
