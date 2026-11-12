@@ -18,8 +18,9 @@ import SwiftUI
 /// ```
 ///
 /// The composer never clears `text` itself; clear it in `onSend`. `prompt` is rendered verbatim,
-/// so pass an already-localized string. The button's accessibility labels come from the
-/// package's String Catalog.
+/// so pass an already-localized string. The field is always named "Message" for assistive
+/// technology, independent of `prompt`, which is only the visible placeholder. The button's
+/// accessibility labels come from the package's String Catalog.
 public struct ChatComposer: View {
     @Binding private var text: String
     private let prompt: String
@@ -93,17 +94,20 @@ private struct ChatComposerField: View {
     @Environment(\.designTheme) private var theme
 
     var body: some View {
-        TextField(prompt, text: $text, axis: .vertical)
-            .lineLimit(lineLimit)
-            .font(theme.typography.field)
-            .foregroundStyle(theme.colors.textPrimary)
-            .submitLabel(.send)
-            .onSubmit(onSubmit)
-            .disabled(!isEditable)
-            .padding(.horizontal, theme.spacing.oneAndHalfUnits)
-            .padding(.vertical, theme.spacing.oneUnit)
-            .frame(minHeight: theme.motion.minimumHitTarget)
-            .designInputSurface()
+        TextField(text: $text, prompt: Text(prompt), axis: .vertical) {
+            Text(Strings.ChatComposer.fieldLabel)
+        }
+        .accessibilityLabel(Text(Strings.ChatComposer.fieldLabel))
+        .lineLimit(lineLimit)
+        .font(theme.typography.field)
+        .foregroundStyle(theme.colors.textPrimary)
+        .submitLabel(.send)
+        .onSubmit(onSubmit)
+        .disabled(!isEditable)
+        .padding(.horizontal, theme.spacing.oneAndHalfUnits)
+        .padding(.vertical, theme.spacing.oneUnit)
+        .frame(minHeight: theme.motion.minimumHitTarget)
+        .designInputSurface()
     }
 }
 

@@ -343,6 +343,50 @@ struct ComponentSnapshotTests {
 
         assertComponentSnapshot(view, size: CGSize(width: 390, height: 360))
     }
+
+    // MARK: - Questionnaire
+
+    @Test
+    @MainActor func designQuestionnaireChoice() {
+        let view = QuestionnaireView(
+            questions: [
+                QuestionnaireQuestion(
+                    id: "level",
+                    prompt: "How experienced are you?",
+                    detail: "Pick the closest match.",
+                    isRequired: true,
+                    kind: .singleChoice(options: [
+                        QuestionnaireOption("New"), QuestionnaireOption("Some"), QuestionnaireOption("Lots"),
+                    ])
+                ),
+                QuestionnaireQuestion(id: "notes", prompt: "Anything else?", kind: .text(placeholder: "Notes")),
+            ],
+            answers: .constant(["level": .choices(["Some"])]),
+            onSubmit: { _ in },
+            onSkip: {}
+        )
+        .frame(width: 390)
+
+        assertComponentSnapshot(view, size: CGSize(width: 390, height: 420))
+    }
+
+    @Test
+    @MainActor func designQuestionnaireNumber() {
+        let view = QuestionnaireView(
+            questions: [
+                QuestionnaireQuestion(
+                    id: "minutes",
+                    prompt: "How many minutes a day?",
+                    kind: .number(unitLabel: "min", range: 5...120, step: 5)
+                )
+            ],
+            answers: .constant(["minutes": .number(20)]),
+            onSubmit: { _ in }
+        )
+        .frame(width: 390)
+
+        assertComponentSnapshot(view, size: CGSize(width: 390, height: 320))
+    }
 }
 
 // MARK: - Helpers

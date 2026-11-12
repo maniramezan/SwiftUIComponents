@@ -9,9 +9,10 @@ struct ShowcaseDetailView: View {
 
     var body: some View {
         Group {
-            if component.fillsDetailPane {
-                // A full-page experience (e.g. the chat playground) needs the
-                // whole detail pane, not the padded ScrollView every other
+            if component.ownsScrollView {
+                // A full-page experience (e.g. the chat playground) or a page
+                // that anchors overlays to the visible pane (e.g. toast) needs
+                // the whole detail pane, not the padded ScrollView every other
                 // component's static reference content uses below.
                 ShowcaseDetailContent(component: component)
             } else {
@@ -47,6 +48,7 @@ private struct ShowcaseDetailContent: View {
         case .selectionList: SelectionListDetailView()
         case .pillChips: PillChipsDetailView()
         case .textInputField: TextInputFieldDetailView()
+        case .questionnaire: QuestionnaireDetailView()
         case .segmentedPicker: SegmentedPickerDetailView()
         case .badges: BadgesDetailView()
         case .textStyles: TextStylesDetailView()

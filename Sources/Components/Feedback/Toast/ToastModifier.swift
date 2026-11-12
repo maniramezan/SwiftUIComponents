@@ -113,8 +113,10 @@ public extension View {
 
     /// Presents a role-tinted toast with an optional trailing action.
     ///
-    /// The toast is anchored to `edge`, inset from that edge's safe area,
-    /// animates in with a slide-and-fade (a plain fade under Reduce Motion), and
+    /// The toast is anchored to `edge` of the view it modifies, inset from that
+    /// edge's safe area. Apply it to a view that fills the visible area, outside
+    /// any enclosing `ScrollView`; inside one, a bottom toast anchors to the end
+    /// of the full scroll content and can be off-screen. It animates in with a slide-and-fade (a plain fade under Reduce Motion), and
     /// can always be swiped away. Pass a `duration` to auto-dismiss after it, or
     /// `nil` to keep the toast until the user taps the action or swipes it away.
     /// Toasts with actions ignore `duration` and remain visible until explicit

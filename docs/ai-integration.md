@@ -266,6 +266,28 @@ Labeled text field (title above, helper or error text below; error wins and is r
 Toggle:
     Toggle("Label", isOn: $isOn).toggleStyle(ThemeToggleStyle())
 
+Questionnaire (one question per page; progress bar, Back / Next / Done, optional Skip; owns its scroll view):
+    @State var answers: [QuestionnaireQuestion.ID: QuestionnaireAnswer] = [:]
+    QuestionnaireView(
+        questions: [
+            QuestionnaireQuestion(id: "level", prompt: "How experienced are you?", isRequired: true,
+                                  kind: .singleChoice(options: [QuestionnaireOption("New"), QuestionnaireOption("Some")])),
+            QuestionnaireQuestion(id: "days", prompt: "Which days?", kind: .multipleChoice(options: dayOptions)),
+            QuestionnaireQuestion(id: "minutes", prompt: "Minutes a day?",
+                                  kind: .number(unitLabel: "min", range: 5...120, step: 5)),
+            QuestionnaireQuestion(id: "start", prompt: "Start date?", kind: .date(range: today...limit)),
+            QuestionnaireQuestion(id: "notes", prompt: "Anything else?", kind: .text(placeholder: "Notes")),
+        ],
+        answers: $answers,
+        // submitTitle: String? (nil = localized "Done")
+        onSubmit: { submitted in save(submitted) },
+        onSkip: { skip() }
+    )
+    // Answers: .choices([optionID]) | .number(Double) | .date(Date) | .text(String).
+    // Required questions block Next until answered; on submit, answers are normalized
+    // (choices filtered to known ids, numbers clamped + snapped to step, dates clamped, text trimmed).
+    // Duplicate question ids, empty option lists and non-finite number ranges are dropped with a logged fault.
+
 Badge:
     // standard
     Badge("New")
@@ -614,8 +636,9 @@ Use the showcase for reference, not reuse:
 ### Accessibility & Localization
 
 - Components include VoiceOver support out of the box (labels, traits, hidden decorations, Reduce Motion, adjustable/scroll actions on paged + segmented controls).
-- The package localizes only its own chrome (dismiss button, loading/typing announcements, error prefix, paginator + clear-search labels, chat-composer placeholder + send/voice button labels) via a String Catalog in `Bundle.module`; supported locales are translated and validated in CI.
-- Content you pass in is rendered verbatim and is your app's responsibility to localize: `ThemeButton` titles, `SearchBar` and `ChatComposer` placeholders, `SelectionNode` titles, `TextInputField` titles and messages, `ListRow` text, `AvatarView` names, `ConfirmToolbarButton` accessibility label. Pass already-localized values (e.g. `String(localized:)`).
+- `ConfirmToolbarButton` pins to the trailing edge on iOS 27+ (`.topBarPinnedTrailing`, falling back to `.topBarTrailing`) and uses `.confirmationAction` elsewhere; `DismissToolbarButton` uses `.cancellationAction` on every platform.
+- The package localizes only its own chrome (dismiss button, loading/typing announcements, error prefix, paginator + clear-search labels, questionnaire Back/Next/Done/Skip/Optional/progress labels, chat-composer placeholder, field name + send/voice button labels) via a String Catalog in `Bundle.module`; supported locales are translated and validated in CI.
+- Content you pass in is rendered verbatim and is your app's responsibility to localize: `ThemeButton` titles, `SearchBar` and `ChatComposer` placeholders, `SelectionNode` titles, `TextInputField` titles and messages, `QuestionnaireQuestion` prompts/details/option titles/unit labels, `ListRow` text, `AvatarView` names, `ConfirmToolbarButton` accessibility label. Pass already-localized values (e.g. `String(localized:)`).
 
 ### Do Not
 
@@ -625,6 +648,7 @@ Use the showcase for reference, not reuse:
 - Don't skip `.designTheme()` — a default exists but won't match your brand.
 - Don't conform `MenuPickerItem` items with only `Identifiable` — `Hashable` is also required.
 - Don't hand-roll a title-above-field form input or a settings row — use `TextInputField` and `ListRow`.
+- Don't nest `QuestionnaireView` inside another vertical `ScrollView` — it owns its scroll; give it a fixed-height slot such as a navigation destination.
 - Don't put reusable shipping components in the showcase target — promote them into `Components` first.
 - Don't pass a String literal to ThemeButton's @ViewBuilder init — use the String convenience init.
 - Don't pass unlocalized literals as component content (titles, placeholders, accessibility labels) — these are rendered verbatim, so localize them on your side.

@@ -142,3 +142,86 @@ private struct ToastTestHost: View {
             .onAppear { model.appeared = true }
     }
 }
+
+@MainActor
+@Suite("Toast anchoring", .serialized)
+struct ToastAnchorTests {
+
+    private static let viewport = CGSize(width: 320, height: 300)
+    private static let tallContentHeight: CGFloat = 900
+
+    @Test("a bottom toast sits inside the bottom half of a view that fills the viewport")
+    func bottomEdgeFillsViewport() async throws {
+        let probe = ToastFrameProbe()
+        let frame = try await measure(
+            probe,
+            Color.clear.toast(isPresented: .constant(true), edge: .bottom, duration: nil) { probe.content }
+        )
+        #expect(frame.maxY <= Self.viewport.height)
+        #expect(frame.minY >= Self.viewport.height / 2)
+    }
+
+    @Test("a top toast sits inside the top half of a view that fills the viewport")
+    func topEdgeFillsViewport() async throws {
+        let probe = ToastFrameProbe()
+        let frame = try await measure(
+            probe,
+            Color.clear.toast(isPresented: .constant(true), edge: .top, duration: nil) { probe.content }
+        )
+        #expect(frame.minY >= 0)
+        #expect(frame.maxY <= Self.viewport.height / 2)
+    }
+
+    @Test("a bottom toast applied inside a ScrollView anchors to the end of its content, off-screen")
+    func bottomEdgeInsideScrollViewIsOffScreen() async throws {
+        let probe = ToastFrameProbe()
+        let frame = try await measure(
+            probe,
+            ScrollView {
+                Color.clear
+                    .frame(height: Self.tallContentHeight)
+                    .toast(isPresented: .constant(true), edge: .bottom, duration: nil) { probe.content }
+            }
+        )
+        #expect(frame.minY > Self.viewport.height)
+    }
+
+    @Test("a bottom toast applied outside a ScrollView stays within the visible viewport")
+    func bottomEdgeOutsideScrollViewIsVisible() async throws {
+        let probe = ToastFrameProbe()
+        let frame = try await measure(
+            probe,
+            ScrollView { Color.clear.frame(height: Self.tallContentHeight) }
+                .toast(isPresented: .constant(true), edge: .bottom, duration: nil) { probe.content }
+        )
+        #expect(frame.maxY <= Self.viewport.height)
+        #expect(frame.minY >= Self.viewport.height / 2)
+    }
+
+    private func measure<V: View>(_ probe: ToastFrameProbe, _ view: V) async throws -> CGRect {
+        let host = HostedView(view, size: Self.viewport)
+        defer { host.close() }
+        for _ in 0..<100 {
+            if probe.frame != nil { break }
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        try await Task.sleep(for: .milliseconds(200))
+        return try #require(probe.frame)
+    }
+}
+
+/// Records the window-space frame of the toast content it produces.
+@MainActor
+private final class ToastFrameProbe {
+    var frame: CGRect?
+
+    var content: some View {
+        Color.red
+            .frame(height: 40)
+            .onGeometryChange(for: CGRect.self) {
+                $0.frame(in: .global)
+            } action: { [weak self] in
+                self?.frame = $0
+            }
+    }
+}

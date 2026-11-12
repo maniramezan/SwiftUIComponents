@@ -14,6 +14,7 @@ enum ShowcaseComponent: String, CaseIterable, Identifiable {
     case selectionList = "Selection List"
     case pillChips = "Pill Chips"
     case textInputField = "Text Input Field"
+    case questionnaire = "Questionnaire"
 
     // MARK: - Display
     case badges = "Badges"
@@ -65,6 +66,7 @@ enum ShowcaseComponent: String, CaseIterable, Identifiable {
         case .selectionList: return "checklist"
         case .pillChips: return "capsule.fill"
         case .textInputField: return "character.cursor.ibeam"
+        case .questionnaire: return "list.number"
         case .segmentedPicker: return "rectangle.split.3x1.fill"
         case .badges: return "seal.fill"
         case .textStyles: return "textformat"
@@ -99,7 +101,7 @@ enum ShowcaseComponent: String, CaseIterable, Identifiable {
         switch self {
         case .buttons, .compactAction:
             return "Actions"
-        case .searchBar, .toggle, .menuPicker, .selectionList, .pillChips, .textInputField:
+        case .searchBar, .toggle, .menuPicker, .selectionList, .pillChips, .textInputField, .questionnaire:
             return "Controls"
         case .badges, .textStyles, .listRow, .avatar, .sectionHeader, .cachedAsyncImage:
             return "Display"
@@ -121,5 +123,15 @@ enum ShowcaseComponent: String, CaseIterable, Identifiable {
     /// `ScrollView` every other component's static reference content uses.
     var fillsDetailPane: Bool {
         self == .chat
+    }
+
+    /// `true` when the page supplies its own `ScrollView` instead of being
+    /// wrapped in the shared one.
+    ///
+    /// Pages that attach overlays to the visible pane (e.g. `.toast`) need this:
+    /// inside the shared scroll content an edge-anchored overlay lands at the
+    /// edge of the full content height, which can be off-screen.
+    var ownsScrollView: Bool {
+        fillsDetailPane || self == .toast
     }
 }

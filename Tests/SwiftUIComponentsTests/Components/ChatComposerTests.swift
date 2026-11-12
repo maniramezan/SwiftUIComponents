@@ -69,6 +69,13 @@ struct ChatComposerTests {
         #expect(ChatComposerAction.ringScale(for: 0.5) < ChatComposerAction.ringScale(for: 0.9))
     }
 
+    @Test("renders with a custom placeholder that differs from the field name")
+    func rendersCustomPrompt() {
+        renderForCoverage(
+            ChatComposer(text: .constant(""), prompt: "Ask anything") {},
+            size: CGSize(width: 320, height: 120))
+    }
+
     @Test(
         "renders every state",
         arguments: [
