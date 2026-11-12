@@ -4,6 +4,12 @@ import Testing
 
 @testable import ComponentShowcase
 
+#if canImport(AppKit)
+    import AppKit
+#elseif canImport(UIKit)
+    import UIKit
+#endif
+
 @Suite("ShowcaseComponent routing")
 struct ShowcaseComponentTests {
 
@@ -34,6 +40,16 @@ struct ShowcaseComponentTests {
             #expect(!component.systemImage.isEmpty)
             #expect(groups.contains(component.group))
         }
+    }
+
+    @Test("every sidebar icon resolves to a system image", arguments: ShowcaseComponent.allCases)
+    func systemImagesResolve(component: ShowcaseComponent) {
+        #if canImport(AppKit)
+            #expect(
+                NSImage(systemSymbolName: component.systemImage, accessibilityDescription: component.rawValue) != nil)
+        #elseif canImport(UIKit)
+            #expect(UIImage(systemName: component.systemImage) != nil)
+        #endif
     }
 }
 

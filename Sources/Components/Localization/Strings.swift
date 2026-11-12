@@ -3,6 +3,21 @@ import Foundation
 /// Typed access to localized strings stored in the package string catalog.
 @usableFromInline
 enum Strings {
+    enum FloatingAction {
+        static let expanded = LocalizedStringResource(
+            "Expanded",
+            bundle: .atURL(Bundle.module.bundleURL),
+            comment:
+                "Accessibility value for an expandable selection row or floating action button showing its actions."
+        )
+
+        static let collapsed = LocalizedStringResource(
+            "Collapsed",
+            bundle: .atURL(Bundle.module.bundleURL),
+            comment: "Accessibility value for an expandable selection row or floating action button hiding its actions."
+        )
+    }
+
     enum Toolbar {
         static let close = LocalizedStringResource(
             "Close",

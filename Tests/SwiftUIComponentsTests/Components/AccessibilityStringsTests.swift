@@ -11,6 +11,12 @@ import Testing
 @Suite("Accessibility strings")
 struct AccessibilityStringsTests {
 
+    @Test("floating action expansion states resolve in the package bundle")
+    func floatingActionExpansionStates() {
+        #expect(String(localized: Strings.FloatingAction.expanded) == "Expanded")
+        #expect(String(localized: Strings.FloatingAction.collapsed) == "Collapsed")
+    }
+
     @Test("error banner accessibility label prefixes the message with \"Error:\"")
     func errorBannerLabel() {
         let resolved = String(localized: Strings.ErrorView.accessibilityLabel("Network unavailable"))
