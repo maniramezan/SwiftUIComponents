@@ -26,8 +26,8 @@ struct ToastDetailView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: theme.spacing.twoUnits) {
                 ShowcaseSection("Playground") {
-                    TextField("Message", text: $message)
-                    Picker("Role", selection: $role) {
+                    ShowcaseTextField("Message", text: $message)
+                    ShowcasePicker("Role", selection: $role) {
                         Text("Information").tag(0)
                         Text("Success").tag(1)
                         Text("Warning").tag(2)

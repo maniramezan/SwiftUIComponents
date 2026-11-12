@@ -12,8 +12,8 @@ struct ContainersDetailView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: theme.spacing.twoUnits) {
             ShowcaseSection("Playground") {
-                TextField("Content", text: $content)
-                Picker("Style", selection: $style) {
+                ShowcaseTextField("Content", text: $content)
+                ShowcasePicker("Style", selection: $style) {
                     Text("Plain").tag(0)
                     Text("Card").tag(1)
                     Text("Elevated").tag(2)

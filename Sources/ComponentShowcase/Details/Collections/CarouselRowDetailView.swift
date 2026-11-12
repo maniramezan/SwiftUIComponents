@@ -42,9 +42,9 @@ struct CarouselRowDetailView: View {
                     spacing: spacing, snapping: snaps ? .viewAligned : .free,
                     rows: rows, rowHeight: rowHeight
                 ) { item in
-                    Text(item.title).padding().frame(height: rowHeight).designCardSurface()
+                    Text(item.title).padding().frame(maxWidth: .infinity).frame(height: rowHeight).designCardSurface()
                 }
-                Picker("Sizing", selection: $sizing) {
+                ShowcasePicker("Sizing", selection: $sizing) {
                     Text("Peek").tag(0)
                     Text("Fixed width").tag(1)
                     Text("Intrinsic").tag(2)

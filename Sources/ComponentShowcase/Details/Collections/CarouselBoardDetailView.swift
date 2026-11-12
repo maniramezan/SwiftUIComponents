@@ -34,7 +34,7 @@ struct CarouselBoardDetailView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: theme.spacing.twoUnits) {
             ShowcaseSection("Controls") {
-                TextField("Shelf title", text: $title)
+                ShowcaseTextField("Shelf title", text: $title)
                 Stepper("Shelves: \(shelfCount)", value: $shelfCount, in: 0...4)
                 Stepper("Items: \(itemCount)", value: $itemCount, in: 0...6)
                 Stepper("Rows: \(rows)", value: $rows, in: 1...3)
@@ -52,7 +52,8 @@ struct CarouselBoardDetailView: View {
                             onSeeAll: { actionCount += 1 }, rows: rows, rowHeight: rowHeight,
                             titleFont: largeTitle ? theme.typography.title : nil
                         ) { item in
-                            Text(item.name).padding().frame(height: rowHeight).designCardSurface()
+                            Text(item.name).padding().frame(maxWidth: .infinity).frame(height: rowHeight)
+                                .designCardSurface()
                         }
                     }
                 }

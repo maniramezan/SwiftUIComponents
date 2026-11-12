@@ -14,7 +14,7 @@ struct AdaptiveSurfaceDetailView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: theme.spacing.twoUnits) {
             ShowcaseSection("Appearance") {
-                Picker("Shape", selection: $shape) {
+                ShowcasePicker("Shape", selection: $shape) {
                     ForEach(AdaptiveSurfaceShape.allCases, id: \.self) { shape in
                         Text(shape.rawValue).tag(shape)
                     }

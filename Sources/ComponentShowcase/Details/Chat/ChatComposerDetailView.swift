@@ -40,15 +40,14 @@ struct ChatComposerDetailView: View {
 
             ShowcaseSection("Controls") {
                 VStack(alignment: .leading, spacing: theme.spacing.oneUnit) {
-                    TextField("Prompt", text: $prompt)
-                        .textFieldStyle(.roundedBorder)
+                    ShowcaseTextField("Prompt", text: $prompt)
                     Toggle("Enabled", isOn: $isEnabled)
                         .toggleStyle(ThemeToggleStyle())
                     Stepper("Max lines: \(maximumLines)", value: $maximumLines, in: 1...8)
                     Toggle("Voice input", isOn: $showsVoiceInput)
                         .toggleStyle(ThemeToggleStyle())
                     if showsVoiceInput {
-                        Picker("Voice state", selection: $voiceMode) {
+                        ShowcasePicker("Voice state", selection: $voiceMode) {
                             ForEach(VoiceMode.allCases) { mode in
                                 Text(mode.rawValue).tag(mode)
                             }

@@ -37,7 +37,7 @@ struct AsyncContentDetailView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: theme.spacing.twoUnits) {
             ShowcaseSection("Async content") {
-                Picker("State", selection: $phase) {
+                ShowcasePicker("State", selection: $phase) {
                     ForEach(Phase.allCases) { phase in
                         Text(phase.rawValue).tag(phase)
                     }
