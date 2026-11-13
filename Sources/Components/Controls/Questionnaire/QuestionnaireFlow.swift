@@ -13,10 +13,14 @@ enum QuestionnaireFlow {
     /// Removes questions the view cannot render and repairs ones it can.
     ///
     /// Drops a question whose identifier repeats an earlier one, a choice question with
-    /// no options, and a number question with non-finite bounds. Repeated option
+    /// no options, a number or date question with non-finite bounds, and a custom question
+    /// without a renderer. Repeated option
     /// identifiers inside a choice question keep only their first occurrence. Every
     /// repair logs a fault, since it signals caller misuse.
-    nonisolated static func validQuestions(_ questions: [QuestionnaireQuestion]) -> [QuestionnaireQuestion] {
+    nonisolated static func validQuestions(
+        _ questions: [QuestionnaireQuestion],
+        supportsCustomInput: Bool = false
+    ) -> [QuestionnaireQuestion] {
         var seenIDs = Set<String>()
         var result: [QuestionnaireQuestion] = []
         for question in questions {
@@ -46,7 +50,8 @@ enum QuestionnaireFlow {
                         prompt: question.prompt,
                         detail: question.detail,
                         isRequired: question.isRequired,
-                        kind: kind
+                        kind: kind,
+                        choiceStyle: question.choiceStyle
                     )
                 )
             case .number(_, let range, _):
@@ -55,7 +60,21 @@ enum QuestionnaireFlow {
                     continue
                 }
                 result.append(question)
-            case .date, .text:
+            case .date(let range):
+                guard range.lowerBound.timeIntervalSinceReferenceDate.isFinite,
+                    range.upperBound.timeIntervalSinceReferenceDate.isFinite
+                else {
+                    logger.fault("Questionnaire dropped a date question with a non-finite range")
+                    continue
+                }
+                result.append(question)
+            case .custom:
+                guard supportsCustomInput else {
+                    logger.fault("Questionnaire dropped a custom question without an input builder")
+                    continue
+                }
+                result.append(question)
+            case .boolean, .text:
                 result.append(question)
             }
         }
@@ -98,13 +117,13 @@ enum QuestionnaireFlow {
         return .date(clamp(now, to: range))
     }
 
-    /// The stored answer, or the question's default when nothing is stored.
+    /// The normalized stored answer, or the question's default when nothing valid is stored.
     nonisolated static func effectiveAnswer(
         _ answer: QuestionnaireAnswer?,
         for question: QuestionnaireQuestion,
         now: Date
     ) -> QuestionnaireAnswer? {
-        answer ?? defaultAnswer(for: question, now: now)
+        answer.flatMap { normalized($0, for: question) } ?? defaultAnswer(for: question, now: now)
     }
 
     /// Whether `answer` is a valid, non-empty answer to `question`.
@@ -121,6 +140,15 @@ enum QuestionnaireFlow {
         now: Date
     ) -> Bool {
         !question.isRequired || isAnswered(effectiveAnswer(answer, for: question, now: now), for: question)
+    }
+
+    /// The first required question that needs attention before the questionnaire can submit.
+    nonisolated static func firstUnansweredRequiredIndex(
+        answers: [String: QuestionnaireAnswer],
+        questions: [QuestionnaireQuestion],
+        now: Date
+    ) -> Int? {
+        questions.firstIndex { !canAdvance(from: $0, answer: answers[$0.id], now: now) }
     }
 
     /// Cleans an answer for `question`, or returns `nil` when nothing valid remains.
@@ -144,29 +172,53 @@ enum QuestionnaireFlow {
             let selected = Set(ids)
             let kept = options.map(\.id).filter(selected.contains)
             return kept.isEmpty ? nil : .choices(kept)
+        case (.boolean, .boolean):
+            return answer
         case (.number(_, let range, let step), .number(let value)):
             guard value.isFinite else { return nil }
             return .number(snapped(value, range: range, step: step))
         case (.date(let range), .date(let date)):
+            guard date.timeIntervalSinceReferenceDate.isFinite else { return nil }
             return .date(clamp(date, to: range))
         case (.text, .text(let text)):
             let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
             return trimmed.isEmpty ? nil : .text(trimmed)
+        case (.custom, _):
+            return normalizedCustomAnswer(answer)
         default:
             return nil
         }
     }
 
-    /// The answers to hand back on submit: every stored answer normalized for its
-    /// question, with invalid answers and answers to unknown questions removed.
+    nonisolated private static func normalizedCustomAnswer(_ answer: QuestionnaireAnswer) -> QuestionnaireAnswer? {
+        switch answer {
+        case .text(let text):
+            let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+            return trimmed.isEmpty ? nil : .text(trimmed)
+        case .number(let number):
+            return number.isFinite ? answer : nil
+        case .date(let date):
+            return date.timeIntervalSinceReferenceDate.isFinite ? answer : nil
+        case .choices(let ids):
+            var seen = Set<String>()
+            let unique = ids.filter { seen.insert($0).inserted }
+            return unique.isEmpty ? nil : .choices(unique)
+        case .boolean:
+            return answer
+        }
+    }
+
+    /// The answers to hand back on submit: normalized stored answers and the displayed
+    /// defaults for date questions, with invalid and unknown answers removed.
     nonisolated static func submission(
         answers: [String: QuestionnaireAnswer],
-        questions: [QuestionnaireQuestion]
+        questions: [QuestionnaireQuestion],
+        now: Date
     ) -> [String: QuestionnaireAnswer] {
         var result: [String: QuestionnaireAnswer] = [:]
         for question in questions {
-            guard let answer = answers[question.id], let clean = normalized(answer, for: question) else { continue }
-            result[question.id] = clean
+            guard let answer = effectiveAnswer(answers[question.id], for: question, now: now) else { continue }
+            result[question.id] = answer
         }
         return result
     }
@@ -190,6 +242,7 @@ enum QuestionnaireFlow {
         options: [QuestionnaireOption],
         allowsMultiple: Bool
     ) -> QuestionnaireAnswer? {
+        guard options.contains(where: { $0.id == optionID }) else { return answer }
         var selected = selectedIDs(in: answer)
         if allowsMultiple {
             if selected.contains(optionID) {
@@ -203,10 +256,26 @@ enum QuestionnaireFlow {
         return selected == [optionID] ? nil : .choices([optionID])
     }
 
+    /// Resolves the default indicators without changing selection semantics.
+    nonisolated static func resolvedChoiceStyle(
+        _ style: QuestionnaireChoiceStyle,
+        allowsMultiple: Bool
+    ) -> QuestionnaireChoiceStyle {
+        style == .automatic ? (allowsMultiple ? .checkmarks : .bullets) : style
+    }
+
+    /// The decorative symbol used by an option row.
+    nonisolated static func choiceSymbol(style: QuestionnaireChoiceStyle, isSelected: Bool) -> String {
+        switch style {
+        case .checkmarks: isSelected ? "checkmark.square.fill" : "square"
+        case .automatic, .bullets, .chips: isSelected ? "largecircle.fill.circle" : "circle"
+        }
+    }
+
     // MARK: - Number input
 
     /// The value after one stepper press, clamped into `range`. An empty field starts
-    /// from the lower bound. A non-positive `step` steps by `1`.
+    /// from the lower bound. A non-positive or non-finite `step` steps by `1`.
     nonisolated static func stepped(
         _ value: Double?,
         increment: Bool,
@@ -214,17 +283,18 @@ enum QuestionnaireFlow {
         step: Double
     ) -> Double {
         guard let value, value.isFinite else { return range.lowerBound }
-        let delta = step > 0 ? step : 1
+        let delta = step.isFinite && step > 0 ? step : 1
         return clamp(value + (increment ? delta : -delta), to: range)
     }
 
     /// Clamps `value` into `range` and snaps it to the nearest `step` from the lower
-    /// bound. A non-positive `step` only clamps.
+    /// bound. A non-positive or non-finite `step` only clamps.
     nonisolated static func snapped(_ value: Double, range: ClosedRange<Double>, step: Double) -> Double {
         let clamped = clamp(value, to: range)
-        guard step > 0 else { return clamped }
+        guard step.isFinite, step > 0 else { return clamped }
         let steps = ((clamped - range.lowerBound) / step).rounded()
-        return clamp(range.lowerBound + steps * step, to: range)
+        let snapped = range.lowerBound + steps * step
+        return snapped.isFinite ? clamp(snapped, to: range) : clamped
     }
 
     /// Parses typed text as a number using `locale`'s separators. Empty or unparseable
@@ -238,7 +308,7 @@ enum QuestionnaireFlow {
 
     /// Formats a number for the field without grouping separators, so it parses back.
     nonisolated static func formatNumber(_ value: Double, locale: Locale) -> String {
-        value.formatted(.number.locale(locale).grouping(.never).precision(.fractionLength(0...3)))
+        value.formatted(.number.locale(locale).grouping(.never).precision(.significantDigits(1...17)))
     }
 
     // MARK: - Helpers

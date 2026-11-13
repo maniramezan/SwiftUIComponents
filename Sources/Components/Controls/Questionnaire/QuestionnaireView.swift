@@ -1,12 +1,16 @@
 import DesignSystem
 import SwiftUI
 
+private typealias QuestionnaireCustomInput = (QuestionnaireQuestion, Binding<QuestionnaireAnswer?>) -> AnyView
+
 /// A paged, one-question-at-a-time questionnaire with a progress bar and Back, Next, and
 /// Skip controls.
 ///
-/// Each ``QuestionnaireQuestion`` gets its own page: wrapping chips for choice questions,
-/// a field with a stepper for numbers, a calendar for dates, and a multi-line field for
-/// text. Next stays disabled on a required question until it has a valid answer; the last
+/// Each ``QuestionnaireQuestion`` gets its own page: separate option rows for choices,
+/// explicit true/false choices, a field with a stepper for numbers, a calendar for dates,
+/// and a multi-line field for text. Choice questions can opt into wrapping chips with
+/// ``QuestionnaireQuestion/choiceStyle``. Use the `customInput` initializer for a caller-owned input.
+/// Next stays disabled on a required question until it has a valid answer; the last
 /// page shows Done instead, which normalizes the answers (see ``QuestionnaireAnswer``),
 /// writes them back to `answers`, and passes them to `onSubmit`.
 ///
@@ -16,15 +20,15 @@ import SwiftUI
 /// QuestionnaireView(
 ///     questions: [
 ///         QuestionnaireQuestion(
-///             id: "level",
-///             prompt: "How experienced are you?",
+///             id: "option",
+///             prompt: "Which option do you prefer?",
 ///             isRequired: true,
-///             kind: .singleChoice(options: [QuestionnaireOption("New"), QuestionnaireOption("Some")])
+///             kind: .singleChoice(options: [QuestionnaireOption("Option A"), QuestionnaireOption("Option B")])
 ///         ),
 ///         QuestionnaireQuestion(
-///             id: "minutes",
-///             prompt: "How many minutes a day?",
-///             kind: .number(unitLabel: "min", range: 5...120, step: 5)
+///             id: "count",
+///             prompt: "How many items?",
+///             kind: .number(unitLabel: nil, range: 0...100, step: 1)
 ///         ),
 ///     ],
 ///     answers: $answers,
@@ -37,8 +41,9 @@ import SwiftUI
 /// )
 /// ```
 ///
-/// Questions with a repeated identifier, choice questions without options, and number
-/// questions with non-finite bounds are dropped with a logged fault. The view owns its
+/// Questions with a repeated identifier, choice questions without options, number/date
+/// questions with non-finite bounds, and custom questions without a builder are dropped
+/// with a logged fault. The view owns its
 /// scroll view, so place it in a fixed-height slot such as a navigation destination rather
 /// than inside another vertical `ScrollView`. The progress label, buttons, and "Optional"
 /// caption are localized by the package; question text is rendered verbatim.
@@ -48,6 +53,7 @@ public struct QuestionnaireView: View {
     private let submitTitle: String?
     private let onSubmit: ([QuestionnaireQuestion.ID: QuestionnaireAnswer]) -> Void
     private let onSkip: (() -> Void)?
+    private let customInput: QuestionnaireCustomInput?
 
     @State private var currentIndex = 0
     @State private var movesForward = true
@@ -79,6 +85,34 @@ public struct QuestionnaireView: View {
         self.submitTitle = submitTitle
         self.onSubmit = onSubmit
         self.onSkip = onSkip
+        self.customInput = nil
+    }
+
+    /// Creates a questionnaire that can include caller-supplied input views.
+    ///
+    /// - Parameters:
+    ///   - questions: Questions in display order. Invalid entries are dropped with a logged fault.
+    ///   - answers: Two-way binding to answers keyed by question identifier; normalized on submit.
+    ///   - submitTitle: Last-page button title. `nil` uses the package's localized "Done".
+    ///   - customInput: Builds the input for each ``QuestionnaireQuestionKind/custom`` question.
+    ///     Write a supported answer case through its binding when valid, or `nil` while incomplete.
+    ///     The caller owns custom validation, labels, and accessibility. Built-in kinds use their normal inputs.
+    ///   - onSubmit: Called with normalized answers once all required questions are answered.
+    ///   - onSkip: Optional action that shows a Skip button on every page.
+    public init<CustomInput: View>(
+        questions: [QuestionnaireQuestion],
+        answers: Binding<[QuestionnaireQuestion.ID: QuestionnaireAnswer]>,
+        submitTitle: String? = nil,
+        @ViewBuilder customInput: @escaping (QuestionnaireQuestion, Binding<QuestionnaireAnswer?>) -> CustomInput,
+        onSubmit: @escaping ([QuestionnaireQuestion.ID: QuestionnaireAnswer]) -> Void,
+        onSkip: (() -> Void)? = nil
+    ) {
+        self.questions = QuestionnaireFlow.validQuestions(questions, supportsCustomInput: true)
+        self._answers = answers
+        self.submitTitle = submitTitle
+        self.customInput = { AnyView(customInput($0, $1)) }
+        self.onSubmit = onSubmit
+        self.onSkip = onSkip
     }
 
     /// The progress header, the current question page, and the navigation controls.
@@ -98,10 +132,14 @@ public struct QuestionnaireView: View {
 
             ScrollView {
                 if let question {
-                    QuestionnairePage(question: question, answer: answerBinding(for: question))
-                        .id(question.id)
-                        .transition(pageTransition)
-                        .padding(.horizontal, theme.spacing.twoUnits)
+                    QuestionnairePage(
+                        question: question,
+                        answer: answerBinding(for: question),
+                        customInput: customInput
+                    )
+                    .id(question.id)
+                    .transition(pageTransition)
+                    .padding(.horizontal, theme.spacing.twoUnits)
                 }
             }
             .scrollDismissesKeyboard(.interactively)
@@ -146,6 +184,9 @@ public struct QuestionnaireView: View {
     private func advance(from index: Int) {
         if questions.indices.contains(index) {
             let question = questions[index]
+            guard QuestionnaireFlow.canAdvance(from: question, answer: answers[question.id], now: Date()) else {
+                return
+            }
             if answers[question.id] == nil, let fallback = QuestionnaireFlow.defaultAnswer(for: question, now: Date()) {
                 answers[question.id] = fallback
             }
@@ -155,7 +196,14 @@ public struct QuestionnaireView: View {
             currentIndex = next
             return
         }
-        let submitted = QuestionnaireFlow.submission(answers: answers, questions: questions)
+        if let unanswered = QuestionnaireFlow.firstUnansweredRequiredIndex(
+            answers: answers, questions: questions, now: Date()
+        ) {
+            movesForward = false
+            currentIndex = unanswered
+            return
+        }
+        let submitted = QuestionnaireFlow.submission(answers: answers, questions: questions, now: Date())
         answers = submitted
         onSubmit(submitted)
     }
@@ -182,6 +230,7 @@ private struct QuestionnaireProgressHeader: View {
 private struct QuestionnairePage: View {
     let question: QuestionnaireQuestion
     @Binding var answer: QuestionnaireAnswer?
+    let customInput: QuestionnaireCustomInput?
 
     @Environment(\.designTheme) private var theme
     @AccessibilityFocusState private var promptIsFocused: Bool
@@ -207,7 +256,7 @@ private struct QuestionnairePage: View {
                         .foregroundStyle(theme.colors.textTertiary)
                 }
             }
-            QuestionnaireInput(question: question, answer: $answer)
+            QuestionnaireInput(question: question, answer: $answer, customInput: customInput)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .onAppear { promptIsFocused = true }
@@ -218,13 +267,19 @@ private struct QuestionnairePage: View {
 private struct QuestionnaireInput: View {
     let question: QuestionnaireQuestion
     @Binding var answer: QuestionnaireAnswer?
+    let customInput: QuestionnaireCustomInput?
 
     var body: some View {
         switch question.kind {
         case .singleChoice(let options):
-            QuestionnaireChoiceInput(options: options, allowsMultiple: false, answer: $answer)
+            QuestionnaireChoiceInput(
+                options: options, allowsMultiple: false, style: question.choiceStyle, answer: $answer)
         case .multipleChoice(let options):
-            QuestionnaireChoiceInput(options: options, allowsMultiple: true, answer: $answer)
+            QuestionnaireChoiceInput(
+                options: options, allowsMultiple: true, style: question.choiceStyle, answer: $answer)
+        case .boolean(let trueTitle, let falseTitle):
+            QuestionnaireBooleanInput(
+                trueTitle: trueTitle, falseTitle: falseTitle, style: question.choiceStyle, answer: $answer)
         case .number(let unitLabel, let range, let step):
             QuestionnaireNumberInput(
                 label: question.prompt,
@@ -237,33 +292,112 @@ private struct QuestionnaireInput: View {
             QuestionnaireDateInput(label: question.prompt, range: range, question: question, answer: $answer)
         case .text(let placeholder):
             QuestionnaireTextInput(label: question.prompt, placeholder: placeholder, answer: $answer)
+        case .custom:
+            if let customInput {
+                customInput(question, $answer)
+            }
         }
     }
 }
 
 // MARK: - Inputs
 
-/// Wrapping option chips for single- and multiple-choice questions.
+/// Separate option rows, or wrapping chips when requested.
 private struct QuestionnaireChoiceInput: View {
     let options: [QuestionnaireOption]
     let allowsMultiple: Bool
+    let style: QuestionnaireChoiceStyle
     @Binding var answer: QuestionnaireAnswer?
 
     @Environment(\.designTheme) private var theme
 
     var body: some View {
         let selected = QuestionnaireFlow.selectedIDs(in: answer)
-        FlowLayout(spacing: theme.spacing.oneUnit, lineSpacing: theme.spacing.oneUnit) {
+        let resolvedStyle = QuestionnaireFlow.resolvedChoiceStyle(style, allowsMultiple: allowsMultiple)
+        let layout: AnyLayout =
+            resolvedStyle == .chips
+            ? AnyLayout(FlowLayout(spacing: theme.spacing.oneUnit, lineSpacing: theme.spacing.oneUnit))
+            : AnyLayout(VStackLayout(alignment: .leading, spacing: theme.spacing.oneUnit))
+        layout {
             ForEach(options) { option in
-                PillChip(option.title, isSelected: selected.contains(option.id)) {
+                QuestionnaireOptionButton(
+                    title: option.title,
+                    style: resolvedStyle,
+                    isSelected: selected.contains(option.id)
+                ) {
                     answer = QuestionnaireFlow.toggling(
-                        option.id,
-                        in: answer,
-                        options: options,
-                        allowsMultiple: allowsMultiple
-                    )
+                        option.id, in: answer, options: options, allowsMultiple: allowsMultiple)
                 }
             }
+        }
+    }
+}
+
+/// Uses explicit choices so an unanswered boolean is distinct from `false`.
+private struct QuestionnaireBooleanInput: View {
+    let trueTitle: String
+    let falseTitle: String
+    let style: QuestionnaireChoiceStyle
+    @Binding var answer: QuestionnaireAnswer?
+
+    var body: some View {
+        QuestionnaireChoiceInput(
+            options: [
+                QuestionnaireOption(id: "true", title: trueTitle),
+                QuestionnaireOption(id: "false", title: falseTitle),
+            ],
+            allowsMultiple: false,
+            style: style,
+            answer: Binding(
+                get: {
+                    guard case .boolean(let value) = answer else { return nil }
+                    return .choices([value ? "true" : "false"])
+                },
+                set: { selection in
+                    guard case .choices(let ids) = selection, let id = ids.first else {
+                        answer = nil
+                        return
+                    }
+                    answer = .boolean(id == "true")
+                }
+            )
+        )
+    }
+}
+
+/// A full-width option with a decorative indicator, or a compact chip.
+private struct QuestionnaireOptionButton: View {
+    let title: String
+    let style: QuestionnaireChoiceStyle
+    let isSelected: Bool
+    let action: () -> Void
+
+    @Environment(\.designTheme) private var theme
+
+    var body: some View {
+        if style == .chips {
+            PillChip(title, isSelected: isSelected, action: action)
+        } else {
+            Button(action: action) {
+                ListRow(
+                    title,
+                    systemImage: QuestionnaireFlow.choiceSymbol(style: style, isSelected: isSelected),
+                    iconTint: isSelected ? theme.colors.primary : theme.colors.textSecondary
+                )
+                .padding(.horizontal, theme.spacing.oneAndHalfUnits)
+                .padding(.vertical, theme.spacing.halfUnit)
+                .designInputSurface()
+                .overlay {
+                    if isSelected {
+                        RoundedRectangle(cornerRadius: theme.radius.oneAndHalfUnits, style: .continuous)
+                            .strokeBorder(theme.colors.primary, lineWidth: theme.stroke.regular)
+                    }
+                }
+            }
+            .buttonStyle(.plain)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(Text(verbatim: title))
+            .accessibilityAddTraits(isSelected ? .isSelected : [])
         }
     }
 }
@@ -307,10 +441,11 @@ private struct QuestionnaireNumberInput: View {
             }
             .labelsHidden()
         }
-        .onAppear {
-            if case .number(let value) = answer {
-                text = QuestionnaireFlow.formatNumber(value, locale: locale)
-            }
+        .onChange(of: answer, initial: true) { _, newAnswer in
+            synchronizeText(with: newAnswer)
+        }
+        .onChange(of: locale) { _, _ in
+            synchronizeText(with: answer, force: true)
         }
         .onChange(of: text) { _, newText in
             let parsed = QuestionnaireFlow.parseNumber(newText, locale: locale)
@@ -329,6 +464,12 @@ private struct QuestionnaireNumberInput: View {
     private func setValue(_ value: Double) {
         answer = .number(value)
         text = QuestionnaireFlow.formatNumber(value, locale: locale)
+    }
+
+    private func synchronizeText(with answer: QuestionnaireAnswer?, force: Bool = false) {
+        let value: Double? = if case .number(let value) = answer { value } else { nil }
+        guard force || QuestionnaireFlow.parseNumber(text, locale: locale) != value else { return }
+        text = value.map { QuestionnaireFlow.formatNumber($0, locale: locale) } ?? ""
     }
 }
 
@@ -442,22 +583,23 @@ private struct QuestionnaireControls: View {
         QuestionnaireView(
             questions: [
                 QuestionnaireQuestion(
-                    id: "level",
-                    prompt: "How experienced are you?",
+                    id: "option",
+                    prompt: "Which option do you prefer?",
                     detail: "Pick the closest match.",
                     isRequired: true,
                     kind: .singleChoice(options: [
-                        QuestionnaireOption("New"), QuestionnaireOption("Some"), QuestionnaireOption("Lots"),
+                        QuestionnaireOption("Option A"), QuestionnaireOption("Option B"),
+                        QuestionnaireOption("Option C"),
                     ])
                 ),
                 QuestionnaireQuestion(
-                    id: "minutes",
-                    prompt: "How many minutes a day?",
-                    kind: .number(unitLabel: "min", range: 5...120, step: 5)
+                    id: "count",
+                    prompt: "How many items?",
+                    kind: .number(unitLabel: nil, range: 0...100, step: 1)
                 ),
                 QuestionnaireQuestion(
-                    id: "start",
-                    prompt: "When do you want to start?",
+                    id: "date",
+                    prompt: "Which date do you prefer?",
                     kind: .date(range: Date()...Date().addingTimeInterval(60 * 60 * 24 * 90))
                 ),
                 QuestionnaireQuestion(id: "notes", prompt: "Anything else?", kind: .text(placeholder: "Notes")),

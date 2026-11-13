@@ -4,20 +4,27 @@ import Foundation
 ///
 /// Each kind maps to one answer case: choice kinds produce
 /// ``QuestionnaireAnswer/choices(_:)``, `number` produces ``QuestionnaireAnswer/number(_:)``,
-/// `date` produces ``QuestionnaireAnswer/date(_:)``, and `text` produces
-/// ``QuestionnaireAnswer/text(_:)``.
+/// `date` produces ``QuestionnaireAnswer/date(_:)``, `text` produces
+/// ``QuestionnaireAnswer/text(_:)``, and `boolean` produces ``QuestionnaireAnswer/boolean(_:)``.
+/// Custom inputs can record any answer case.
 public enum QuestionnaireQuestionKind: Hashable, Sendable {
-    /// Pick exactly one of `options`, shown as wrapping chips.
+    /// Pick exactly one of `options`, shown using ``QuestionnaireQuestion/choiceStyle``.
     case singleChoice(options: [QuestionnaireOption])
 
-    /// Pick any number of `options`, shown as wrapping chips.
+    /// Pick any number of `options`, shown using ``QuestionnaireQuestion/choiceStyle``.
     case multipleChoice(options: [QuestionnaireOption])
+
+    /// An explicit true or false answer, initially unanswered.
+    ///
+    /// Both titles are rendered verbatim; supply localized values such as "Yes" and "No".
+    /// Selecting the false option is a valid answer to a required question.
+    case boolean(trueTitle: String, falseTitle: String)
 
     /// A numeric value inside `range`, entered by typing or stepping by `step`.
     ///
     /// `unitLabel` is shown after the field (for example "km" or "min") and is rendered
     /// verbatim. Values are clamped into `range` and snapped to `step` when the
-    /// questionnaire submits. A non-positive `step` is treated as no snapping.
+    /// questionnaire submits. A non-positive or non-finite `step` is treated as no snapping.
     case number(unitLabel: String?, range: ClosedRange<Double>, step: Double)
 
     /// A calendar day inside `range`. Until the person changes it, the picker shows today
@@ -27,4 +34,12 @@ public enum QuestionnaireQuestionKind: Hashable, Sendable {
     /// Free-form text. `placeholder` is shown while the field is empty and is rendered
     /// verbatim. Answers are trimmed of surrounding whitespace on submit.
     case text(placeholder: String?)
+
+    /// Caller-supplied content built by the questionnaire's `customInput` closure.
+    ///
+    /// Write an answer through the supplied binding when the input is valid, or `nil`
+    /// while incomplete. Text is trimmed, numbers and dates must be finite, and choice
+    /// identifiers are deduplicated in their supplied order. No default answer is assumed.
+    /// Without a custom input builder, these questions are dropped with a logged fault.
+    case custom
 }
