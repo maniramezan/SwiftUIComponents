@@ -23,7 +23,7 @@ expanded menu. Supply each action as a SwiftUI `Label` to retain its accessible 
 use bullet rows; multiple-choice inputs use checkmark rows. Set
 ``QuestionnaireQuestion/choiceStyle`` to choose bullets, checkmarks, or wrapping chips.
 The question kind determines selection cardinality independently of its presentation.
-Free-form text, bounded numbers, and calendar dates are built in. Boolean questions
+Free-form text, bounded numbers, and compact date fields are built in. Boolean questions
 start unanswered, and both `true` and `false` satisfy a required question.
 
 For a caller-owned calendar or another specialized control, use

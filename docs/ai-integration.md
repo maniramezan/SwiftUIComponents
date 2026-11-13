@@ -309,6 +309,8 @@ Numeric input (reuse the field's binding; digits only by default):
 
 Questionnaire (one question per page; progress bar, Back / Next / Done, optional Skip; owns its scroll view):
     Numeric questions preserve existing negative answers until submission clamps them into range.
+    Date questions use a compact date field; the custom calendar showcase uses an expanded month grid.
+    The custom calendar records its displayed date immediately; Next or Done is the only confirmation.
     @State var answers: [QuestionnaireQuestion.ID: QuestionnaireAnswer] = [:]
     let options = [QuestionnaireOption(id: "a", title: "Option A"), QuestionnaireOption(id: "b", title: "Option B")]
     QuestionnaireView(

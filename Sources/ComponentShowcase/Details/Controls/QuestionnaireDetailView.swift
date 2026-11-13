@@ -83,11 +83,11 @@ struct QuestionnaireDetailView: View {
             case .date:
                 kind = .date(range: dateRange)
                 defaultPrompt = "Which date do you prefer?"
-                detail = "The built-in date question starts with today's date."
+                detail = "A compact date field that starts with today's date. Open it to choose another day."
             case .customComponent:
                 kind = .custom
                 defaultPrompt = "Which calendar date should be recorded?"
-                detail = "This caller-supplied calendar records an answer only after you select or confirm a date."
+                detail = "An inline calendar. Choose a date, then use Next or Done to continue."
             case .ratingScale:
                 kind = .singleChoice(options: [
                     QuestionnaireOption(id: "1", title: "1 — Very low"),
@@ -209,19 +209,23 @@ struct QuestionnaireShowcaseCalendar: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: theme.spacing.oneUnit) {
-            DatePicker(
-                label,
-                selection: Binding(get: { selectedDate }, set: { answer = .date($0) }),
-                in: range,
-                displayedComponents: .date
-            )
-            .datePickerStyle(.graphical)
-            .labelsHidden()
-            .tint(theme.colors.primary)
-            ThemeButton("Use selected date", role: .secondary) {
-                answer = .date(selectedDate)
-            }
+        DatePicker(
+            label,
+            selection: Binding(get: { selectedDate }, set: { answer = .date($0) }),
+            in: range,
+            displayedComponents: .date
+        )
+        .datePickerStyle(.graphical)
+        .labelsHidden()
+        .tint(theme.colors.primary)
+        .onChange(of: answer, initial: true) { _, _ in synchronizeAnswer() }
+        .onChange(of: range) { _, _ in synchronizeAnswer() }
+    }
+
+    private func synchronizeAnswer() {
+        let selectedAnswer = QuestionnaireAnswer.date(selectedDate)
+        if answer != selectedAnswer {
+            answer = selectedAnswer
         }
     }
 }

@@ -7,7 +7,7 @@ private typealias QuestionnaireCustomInput = (QuestionnaireQuestion, Binding<Que
 /// Skip controls.
 ///
 /// Each ``QuestionnaireQuestion`` gets its own page: separate option rows for choices,
-/// explicit true/false choices, a field with a stepper for numbers, a calendar for dates,
+/// explicit true/false choices, a field with a stepper for numbers, a compact date field,
 /// and a multi-line field for text. Choice questions can opt into wrapping chips with
 /// ``QuestionnaireQuestion/choiceStyle``. Use the `customInput` initializer for a caller-owned input.
 /// Next stays disabled on a required question until it has a valid answer; the last
@@ -481,7 +481,7 @@ private struct QuestionnaireNumberInput: View {
     }
 }
 
-/// A calendar picker for a date question.
+/// A compact date field that opens the system date editor.
 private struct QuestionnaireDateInput: View {
     let label: String
     let range: ClosedRange<Date>
@@ -504,7 +504,7 @@ private struct QuestionnaireDateInput: View {
             in: range,
             displayedComponents: .date
         )
-        .datePickerStyle(.graphical)
+        .datePickerStyle(.compact)
         .labelsHidden()
         .tint(theme.colors.primary)
     }

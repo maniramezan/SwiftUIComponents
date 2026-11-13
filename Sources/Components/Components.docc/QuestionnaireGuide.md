@@ -28,9 +28,12 @@ including when the range is nonnegative.
 
 ## Custom component example
 
-The showcase's **Custom component example** embeds a caller-owned graphical `DatePicker`
-in the same prompt, progress, and navigation shell. The ordinary date kind remains
-available when the built-in calendar behavior is sufficient.
+The built-in date kind uses a compact date field, initially showing today clamped to
+the allowed range. Advancing records that date even when the field has not been edited.
+The showcase's **Custom component example** instead embeds an expanded, graphical
+`DatePicker` in the same prompt, progress, and navigation shell. This inline calendar
+records its displayed date immediately and updates the answer when the selection changes.
+Use the questionnaire's Next or Done button to continue; no extra confirmation is needed.
 
 ```swift
 QuestionnaireView(
@@ -51,8 +54,9 @@ QuestionnaireView(
 ```
 
 `CustomCalendarInput` is a caller-defined view accepting `Binding<QuestionnaireAnswer?>`.
-It records `.date(selectedDate)` when a valid date is selected or confirmed, and `nil`
-while incomplete. Custom inputs can use any answer case. The questionnaire trims text,
+It records `.date(selectedDate)` when a valid date is available, and `nil`
+while incomplete. A calendar can initialize the binding with its displayed date, as the
+showcase does. Custom inputs can use any answer case. The questionnaire trims text,
 deduplicates choice identifiers in supplied order, and rejects non-finite numbers and
 dates. Domain-specific constraints and accessibility belong to the custom input.
 
@@ -86,5 +90,6 @@ the question list does not implement dependency tracking or conditional routing.
 - [Typeform question types](https://help.typeform.com/hc/en-us/articles/360051789692-Question-types)
 - [Apple: Picker](https://developer.apple.com/documentation/swiftui/picker)
 - [Apple: DatePicker](https://developer.apple.com/documentation/swiftui/datepicker)
+- [Apple: CompactDatePickerStyle](https://developer.apple.com/documentation/swiftui/compactdatepickerstyle)
 - [Apple: multiline TextField](https://developer.apple.com/documentation/swiftui/textfield/init(_:text:axis:))
 - [Swift Forums: separating validation from UI](https://forums.swift.org/t/validator-a-modular-type-safe-validation-framework-for-swiftui-and-uikit/84074)

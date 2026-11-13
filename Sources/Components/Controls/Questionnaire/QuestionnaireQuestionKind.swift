@@ -30,8 +30,9 @@ public enum QuestionnaireQuestionKind: Hashable, Sendable {
     /// An existing negative answer retains its sign until submission clamps it into `range`.
     case number(unitLabel: String?, range: ClosedRange<Double>, step: Double)
 
-    /// A calendar day inside `range`. Until the person changes it, the picker shows today
-    /// clamped into `range`; moving past the page records that day as the answer.
+    /// A calendar day inside `range`, selected using a compact date field.
+    /// Until the person changes it, the field shows today clamped into `range`;
+    /// moving past the page records that day as the answer.
     case date(range: ClosedRange<Date>)
 
     /// Free-form text. `placeholder` is shown while the field is empty and is rendered
