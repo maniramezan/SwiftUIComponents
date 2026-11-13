@@ -19,6 +19,13 @@ Use ``QuestionnaireQuestionKind/boolean(trueTitle:falseTitle:)`` for explicit bi
 responses. Unlike a switch that starts off, this input starts unanswered. Selecting
 `false` is a complete response, including for required questions.
 
+Numeric answers use the shared ``NumericInput`` filter: typed and pasted text keeps decimal
+digits and one separator from the environment locale. A leading minus is allowed when the
+question's range includes negative values. Letters, grouping separators, and unrelated symbols
+are removed. Clearing the field leaves the answer absent; range clamping and step snapping
+still happen on submission. Existing negative answers retain their sign until submission,
+including when the range is nonnegative.
+
 ## Custom component example
 
 The showcase's **Custom component example** embeds a caller-owned graphical `DatePicker`

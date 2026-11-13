@@ -420,7 +420,7 @@ private struct QuestionnaireNumberInput: View {
                 TextField(label, text: $text, prompt: Text(verbatim: ""))
                     .font(theme.typography.field)
                     .foregroundStyle(theme.colors.textPrimary)
-                    .modifier(QuestionnaireDecimalKeyboard())
+                    .numericInput(text: $text, allowsDecimal: true, allowsNegative: allowsNegativeInput)
                 if let unitLabel, !unitLabel.isEmpty {
                     Text(unitLabel)
                         .font(theme.typography.body)
@@ -448,7 +448,9 @@ private struct QuestionnaireNumberInput: View {
             synchronizeText(with: answer, force: true)
         }
         .onChange(of: text) { _, newText in
-            let parsed = QuestionnaireFlow.parseNumber(newText, locale: locale)
+            let filtered = NumericInputFilter.sanitize(
+                newText, locale: locale, allowsDecimal: true, allowsNegative: allowsNegativeInput)
+            let parsed = QuestionnaireFlow.parseNumber(filtered, locale: locale)
             let current: Double? = if case .number(let value) = answer { value } else { nil }
             if parsed != current {
                 answer = parsed.map { .number($0) }
@@ -461,6 +463,12 @@ private struct QuestionnaireNumberInput: View {
         return QuestionnaireFlow.parseNumber(text, locale: locale)
     }
 
+    private var allowsNegativeInput: Bool {
+        if range.lowerBound < 0 { return true }
+        if case .number(let value) = answer { return value < 0 }
+        return false
+    }
+
     private func setValue(_ value: Double) {
         answer = .number(value)
         text = QuestionnaireFlow.formatNumber(value, locale: locale)
@@ -470,17 +478,6 @@ private struct QuestionnaireNumberInput: View {
         let value: Double? = if case .number(let value) = answer { value } else { nil }
         guard force || QuestionnaireFlow.parseNumber(text, locale: locale) != value else { return }
         text = value.map { QuestionnaireFlow.formatNumber($0, locale: locale) } ?? ""
-    }
-}
-
-/// Shows a decimal keyboard where the platform has one.
-private struct QuestionnaireDecimalKeyboard: ViewModifier {
-    func body(content: Content) -> some View {
-        #if os(iOS)
-            content.keyboardType(.decimalPad)
-        #else
-            content
-        #endif
     }
 }
 

@@ -5,6 +5,10 @@ import Testing
 
 @testable import Components
 
+#if canImport(AppKit)
+    import AppKit
+#endif
+
 @MainActor
 @Suite("QuestionnaireView", .serialized)
 struct QuestionnaireViewTests {
@@ -392,5 +396,122 @@ struct QuestionnaireViewTests {
         host.hosting.rootView = makeView(40.7654321)
         #expect(host.waitForStableRender(timeout: .seconds(2), minimumFrames: 3, requiredStableFrames: 2))
         #expect(host.rendersDifferently(from: before))
+    }
+
+    #if canImport(AppKit)
+        @Test("negative caller-provided answers keep their sign until submission clamps them")
+        func preservesNegativeAnswersOutsideNonnegativeRange() throws {
+            let model = QuestionnaireNumericTestModel()
+            let question = number(step: 0)
+            model.answers[question.id] = .number(-40)
+            let host = HostedView(
+                QuestionnaireNumericTestView(question: question, model: model),
+                size: CGSize(width: 360, height: 300))
+            defer { host.close() }
+            #expect(host.waitForStableRender(minimumFrames: 3, requiredStableFrames: 2))
+            let field = try #require(editableTextField(in: host.hosting))
+            #expect(field.stringValue == "-40")
+            #expect(model.answers[question.id] == .number(-40))
+            let answer = try #require(model.answers[question.id])
+            #expect(QuestionnaireFlow.normalized(answer, for: question) == .number(10))
+
+            model.answers[question.id] = .number(-30)
+            #expect(host.waitForStableRender(minimumFrames: 3, requiredStableFrames: 2))
+            #expect(field.stringValue == "-30")
+            #expect(model.answers[question.id] == .number(-30))
+
+            try replaceText("", in: field, window: host.window)
+            #expect(host.waitForStableRender(minimumFrames: 3, requiredStableFrames: 2))
+            try replaceText("-20", in: field, window: host.window)
+            #expect(host.waitForStableRender(minimumFrames: 3, requiredStableFrames: 2))
+            #expect(field.stringValue == "20")
+            #expect(model.answers[question.id] == .number(20))
+        }
+
+        @Test(
+            "numeric questions filter mixed input before parsing without losing localized decimals",
+            arguments: [
+                ("en_US", "-1a2.5!", "-12.5"),
+                ("de_DE", "-1a2,5!", "-12,5"),
+                ("ar_EG", "؜-١a٢٫٥!", "-١٢٫٥"),
+            ])
+        func filtersNumberInput(localeIdentifier: String, input: String, expectedText: String) throws {
+            let model = QuestionnaireNumericTestModel()
+            model.locale = Locale(identifier: localeIdentifier)
+            let question = QuestionnaireQuestion(
+                id: "number", prompt: "Value", isRequired: true,
+                kind: .number(unitLabel: nil, range: -100...100, step: 0))
+            let host = HostedView(
+                QuestionnaireNumericTestView(question: question, model: model),
+                size: CGSize(width: 360, height: 300))
+            defer { host.close() }
+            #expect(host.waitForStableRender(minimumFrames: 3, requiredStableFrames: 2))
+            let field = try #require(editableTextField(in: host.hosting))
+
+            try replaceText(input, in: field, window: host.window)
+            #expect(host.waitForStableRender(minimumFrames: 3, requiredStableFrames: 2))
+            #expect(field.stringValue == expectedText)
+            #expect(model.answers[question.id] == .number(-12.5))
+
+            try replaceText(expectedText + "x", in: field, window: host.window)
+            #expect(host.waitForStableRender(minimumFrames: 3, requiredStableFrames: 2))
+            #expect(field.stringValue == expectedText)
+            #expect(model.answers[question.id] == .number(-12.5))
+
+            try replaceText("abc", in: field, window: host.window)
+            #expect(host.waitForStableRender(minimumFrames: 3, requiredStableFrames: 2))
+            #expect(field.stringValue.isEmpty)
+            #expect(model.answers[question.id] == nil)
+            #expect(!QuestionnaireFlow.canAdvance(from: question, answer: model.answers[question.id], now: start))
+        }
+
+        @Test("nonnegative numeric questions remove minus signs and preserve values across locale changes")
+        func filtersNonnegativeInputAndPreservesLocaleChanges() throws {
+            let model = QuestionnaireNumericTestModel()
+            let question = QuestionnaireQuestion(
+                id: "number", prompt: "Value", kind: .number(unitLabel: nil, range: 0...100, step: 0))
+            let host = HostedView(
+                QuestionnaireNumericTestView(question: question, model: model),
+                size: CGSize(width: 360, height: 300))
+            defer { host.close() }
+            #expect(host.waitForStableRender(minimumFrames: 3, requiredStableFrames: 2))
+            let field = try #require(editableTextField(in: host.hosting))
+
+            try replaceText("-12a.5", in: field, window: host.window)
+            #expect(host.waitForStableRender(minimumFrames: 3, requiredStableFrames: 2))
+            #expect(field.stringValue == "12.5")
+            #expect(model.answers[question.id] == .number(12.5))
+
+            model.locale = Locale(identifier: "de_DE")
+            #expect(host.waitForStableRender(minimumFrames: 3, requiredStableFrames: 2))
+            #expect(field.stringValue == "12,5")
+            #expect(model.answers[question.id] == .number(12.5))
+
+            model.answers[question.id] = .number(40.7654321)
+            #expect(host.waitForStableRender(minimumFrames: 3, requiredStableFrames: 2))
+            #expect(field.stringValue == "40,7654321")
+
+            model.locale = Locale(identifier: "en_US")
+            #expect(host.waitForStableRender(minimumFrames: 3, requiredStableFrames: 2))
+            #expect(field.stringValue == "40.7654321")
+            #expect(model.answers[question.id] == .number(40.7654321))
+        }
+    #endif
+}
+
+@MainActor
+@Observable
+private final class QuestionnaireNumericTestModel {
+    var answers: [QuestionnaireQuestion.ID: QuestionnaireAnswer] = [:]
+    var locale = Locale(identifier: "en_US")
+}
+
+private struct QuestionnaireNumericTestView: View {
+    let question: QuestionnaireQuestion
+    @Bindable var model: QuestionnaireNumericTestModel
+
+    var body: some View {
+        QuestionnaireView(questions: [question], answers: $model.answers, onSubmit: { _ in })
+            .environment(\.locale, model.locale)
     }
 }

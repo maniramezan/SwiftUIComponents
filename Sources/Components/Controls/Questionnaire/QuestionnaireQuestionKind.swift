@@ -25,6 +25,9 @@ public enum QuestionnaireQuestionKind: Hashable, Sendable {
     /// `unitLabel` is shown after the field (for example "km" or "min") and is rendered
     /// verbatim. Values are clamped into `range` and snapped to `step` when the
     /// questionnaire submits. A non-positive or non-finite `step` is treated as no snapping.
+    /// Typed and pasted text keeps only decimal digits and one locale-specific decimal
+    /// separator, with a leading minus sign allowed when `range` includes negative values.
+    /// An existing negative answer retains its sign until submission clamps it into `range`.
     case number(unitLabel: String?, range: ClosedRange<Double>, step: Double)
 
     /// A calendar day inside `range`. Until the person changes it, the picker shows today

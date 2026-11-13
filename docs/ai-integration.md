@@ -295,7 +295,20 @@ Labeled text field (title above, helper or error text below; error wins and is r
 Toggle:
     Toggle("Label", isOn: $isOn).toggleStyle(ThemeToggleStyle())
 
+Numeric input (reuse the field's binding; digits only by default):
+    TextInputField("Count", text: $count)
+        .numericInput(text: $count)
+    TextField("Value", text: $value)
+        .numericInput(text: $value, allowsDecimal: true, allowsNegative: true)
+    NumericInput(text:allowsDecimal:allowsNegative:) is also available as a ViewModifier.
+    Filters initial text and typed, pasted, or programmatic changes to decimal digits.
+    Optional decimals keep one environment-locale separator; optional negatives keep one leading minus.
+    Grouping separators and other characters are removed. Empty and incomplete numbers stay editable.
+    Locale and option changes reapply filtering. Callers own parsing, range validation, and rounding.
+    iOS and Mac Catalyst select a number pad, decimal pad, or punctuation keyboard as appropriate.
+
 Questionnaire (one question per page; progress bar, Back / Next / Done, optional Skip; owns its scroll view):
+    Numeric questions preserve existing negative answers until submission clamps them into range.
     @State var answers: [QuestionnaireQuestion.ID: QuestionnaireAnswer] = [:]
     let options = [QuestionnaireOption(id: "a", title: "Option A"), QuestionnaireOption(id: "b", title: "Option B")]
     QuestionnaireView(
@@ -703,6 +716,7 @@ Use the showcase for reference, not reuse:
 - Don't skip `.designTheme()` — a default exists but won't match your brand.
 - Don't conform `MenuPickerItem` items with only `Identifiable` — `Hashable` is also required.
 - Don't hand-roll a title-above-field form input or a settings row — use `TextInputField` and `ListRow`.
+- Don't rely on a numeric keyboard to filter text — apply `.numericInput(text:)` with the field's binding.
 - Don't use a default-off switch as a required boolean answer — use `.boolean(trueTitle:falseTitle:)` so unanswered remains distinct from false.
 - Don't nest `QuestionnaireView` inside another vertical `ScrollView` — it owns its scroll; give it a fixed-height slot such as a navigation destination.
 - Don't put reusable shipping components in the showcase target — promote them into `Components` first.

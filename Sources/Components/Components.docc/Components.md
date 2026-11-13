@@ -58,6 +58,7 @@ See <doc:QuestionnaireGuide> for composition guidance and additional survey form
 
 - ``SearchBar``
 - ``TextInputField``
+- ``NumericInput``
 - ``ThemeToggleStyle``
 - ``QuestionnaireView``
 - ``QuestionnaireQuestion``
