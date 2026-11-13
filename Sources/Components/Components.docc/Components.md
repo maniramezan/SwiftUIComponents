@@ -17,6 +17,27 @@ open Package.swift   # Opens in Xcode
 Use `showsItemTitles: false` on ``ExpandableFloatingActionButton`` for an icon-only
 expanded menu. Supply each action as a SwiftUI `Label` to retain its accessible title.
 
+### Questionnaires
+
+``QuestionnaireView`` presents one question per page. Single-choice and boolean inputs
+use bullet rows; multiple-choice inputs use checkmark rows. Set
+``QuestionnaireQuestion/choiceStyle`` to choose bullets, checkmarks, or wrapping chips.
+The question kind determines selection cardinality independently of its presentation.
+Free-form text, bounded numbers, and compact date fields are built in. Boolean questions
+start unanswered, and both `true` and `false` satisfy a required question.
+
+For a caller-owned calendar or another specialized control, use
+``QuestionnaireQuestionKind/custom`` and the view's `customInput` initializer.
+Write a supported ``QuestionnaireAnswer`` through the builder's binding only when valid;
+write `nil` while incomplete. The caller owns custom validation and accessibility.
+Custom inputs have no implicit answer. Questions without a custom builder are dropped
+with a logged fault. Every required question is checked again before submission.
+
+The showcase provides directly selectable examples for every kind, a labeled rating
+scale composed from single choice, and a **Custom component example** using a calendar.
+
+See <doc:QuestionnaireGuide> for composition guidance and additional survey formats.
+
 ## Topics
 
 ### Essentials
@@ -37,12 +58,15 @@ expanded menu. Supply each action as a SwiftUI `Label` to retain its accessible 
 
 - ``SearchBar``
 - ``TextInputField``
+- ``NumericInput``
 - ``ThemeToggleStyle``
 - ``QuestionnaireView``
 - ``QuestionnaireQuestion``
 - ``QuestionnaireQuestionKind``
+- ``QuestionnaireChoiceStyle``
 - ``QuestionnaireOption``
 - ``QuestionnaireAnswer``
+- <doc:QuestionnaireGuide>
 
 ### Selection
 

@@ -351,17 +351,18 @@ struct ComponentSnapshotTests {
         let view = QuestionnaireView(
             questions: [
                 QuestionnaireQuestion(
-                    id: "level",
-                    prompt: "How experienced are you?",
-                    detail: "Pick the closest match.",
+                    id: "option",
+                    prompt: "Which option do you prefer?",
+                    detail: "Choose one option.",
                     isRequired: true,
                     kind: .singleChoice(options: [
-                        QuestionnaireOption("New"), QuestionnaireOption("Some"), QuestionnaireOption("Lots"),
+                        QuestionnaireOption("Option A"), QuestionnaireOption("Option B"),
+                        QuestionnaireOption("Option C"),
                     ])
                 ),
                 QuestionnaireQuestion(id: "notes", prompt: "Anything else?", kind: .text(placeholder: "Notes")),
             ],
-            answers: .constant(["level": .choices(["Some"])]),
+            answers: .constant(["option": .choices(["Option B"])]),
             onSubmit: { _ in },
             onSkip: {}
         )
@@ -375,12 +376,12 @@ struct ComponentSnapshotTests {
         let view = QuestionnaireView(
             questions: [
                 QuestionnaireQuestion(
-                    id: "minutes",
-                    prompt: "How many minutes a day?",
-                    kind: .number(unitLabel: "min", range: 5...120, step: 5)
+                    id: "count",
+                    prompt: "How many items?",
+                    kind: .number(unitLabel: nil, range: 0...100, step: 1)
                 )
             ],
-            answers: .constant(["minutes": .number(20)]),
+            answers: .constant(["count": .number(20)]),
             onSubmit: { _ in }
         )
         .frame(width: 390)

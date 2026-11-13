@@ -56,6 +56,25 @@ Text("Offline")
   height, and a capsule content shape. Pair with `designCapsuleSurface(...)`
   rather than hand-rolling chip backgrounds. See ``PillMetrics``.
 
+## Numeric input
+
+- term `numericInput(text: Binding<String>, allowsDecimal: Bool = false, allowsNegative: Bool = false)`:
+  Filters the initial text and subsequent typed, pasted, or programmatic changes to decimal
+  digits. Apply it using the field's own binding. Enable decimals to keep one separator from
+  the environment locale, or negatives to keep one leading minus sign. Grouping separators
+  and other characters are removed. Empty text and incomplete numbers remain editable;
+  callers own parsing, range validation, and rounding. Option and locale changes reapply
+  filtering. On iOS and Mac Catalyst the modifier also selects a suitable numeric keyboard.
+  See ``NumericInput``.
+
+```swift
+TextInputField("Count", text: $count)
+    .numericInput(text: $count)
+
+TextInputField("Value", text: $value)
+    .numericInput(text: $value, allowsDecimal: true, allowsNegative: true)
+```
+
 ## Typography
 
 - term `designTextStyle(_ role: TextRole)`:
@@ -146,6 +165,7 @@ is `theme.spacing.sixUnits * 6`; automatic radius follows the shorter side of th
 ### Supporting types
 
 - ``TextRole``
+- ``NumericInput``
 - ``TypeStyle``
 - ``PillMetrics``
 - ``NoticeCard``

@@ -16,6 +16,7 @@ enum ShowcaseComponent: String, CaseIterable, Identifiable {
     case selectionList = "Selection List"
     case pillChips = "Pill Chips"
     case textInputField = "Text Input Field"
+    case numericInput = "Numeric Input"
     case questionnaire = "Questionnaire"
 
     // MARK: - Display
@@ -58,6 +59,22 @@ enum ShowcaseComponent: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
+    /// Filters component and group names while preserving sidebar section and item order.
+    nonisolated static func groups(matching searchText: String) -> [(title: String, items: [ShowcaseComponent])] {
+        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        let matches = allCases.filter { component in
+            query.isEmpty
+                || component.rawValue.localizedStandardContains(query)
+                || component.group.localizedStandardContains(query)
+        }
+        let groupedMatches = Dictionary(grouping: matches, by: \.group)
+        let order = ["Actions", "Controls", "Display", "Surfaces", "Feedback", "Pagination", "Chat", "Collections"]
+        return order.compactMap { title in
+            guard let items = groupedMatches[title] else { return nil }
+            return (title: title, items: items)
+        }
+    }
+
     var systemImage: String {
         switch self {
         case .buttons: return "button.programmable"
@@ -70,6 +87,7 @@ enum ShowcaseComponent: String, CaseIterable, Identifiable {
         case .selectionList: return "checklist"
         case .pillChips: return "capsule.fill"
         case .textInputField: return "character.cursor.ibeam"
+        case .numericInput: return "number"
         case .questionnaire: return "list.number"
         case .segmentedPicker: return "rectangle.split.3x1.fill"
         case .badges: return "seal.fill"
@@ -105,7 +123,8 @@ enum ShowcaseComponent: String, CaseIterable, Identifiable {
         switch self {
         case .buttons, .compactAction, .floatingAction, .expandableFloatingAction:
             return "Actions"
-        case .searchBar, .toggle, .menuPicker, .selectionList, .pillChips, .textInputField, .questionnaire:
+        case .searchBar, .toggle, .menuPicker, .selectionList, .pillChips, .textInputField, .numericInput,
+            .questionnaire:
             return "Controls"
         case .badges, .textStyles, .listRow, .avatar, .sectionHeader, .cachedAsyncImage:
             return "Display"

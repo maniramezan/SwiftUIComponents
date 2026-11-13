@@ -20,24 +20,17 @@ import SwiftUI
 public struct ShowcaseRootView: View {
 
     @State private var selection: ShowcaseComponent?
+    @State private var searchText = ""
     @Environment(\.designTheme) private var theme
     @ScaledMetric(relativeTo: .body) private var sidebarIdealWidth: CGFloat = 280
 
     /// Creates the showcase browser.
     public init() {}
 
-    /// Components grouped for sidebar sections.
-    private var groups: [(title: String, items: [ShowcaseComponent])] {
-        let allGroups = Dictionary(grouping: ShowcaseComponent.allCases, by: \.group)
-        let order = ["Actions", "Controls", "Display", "Surfaces", "Feedback", "Pagination", "Chat", "Collections"]
-        return order.compactMap { key in
-            guard let items = allGroups[key] else { return nil }
-            return (title: key, items: items)
-        }
-    }
-
     /// The sidebar of component groups and the selected component's detail page.
     public var body: some View {
+        let groups = ShowcaseComponent.groups(matching: searchText)
+
         NavigationSplitView {
             List(selection: $selection) {
                 ForEach(groups, id: \.title) { group in
@@ -50,6 +43,12 @@ public struct ShowcaseRootView: View {
                 }
             }
             .navigationTitle("Components")
+            .searchable(text: $searchText)
+            .overlay {
+                if groups.isEmpty {
+                    ContentUnavailableView.search(text: searchText)
+                }
+            }
             // Grows with Dynamic Type so labels wrap at word boundaries instead of
             // breaking mid-word in a fixed-width column at accessibility sizes.
             .navigationSplitViewColumnWidth(min: 280, ideal: sidebarIdealWidth, max: 560)

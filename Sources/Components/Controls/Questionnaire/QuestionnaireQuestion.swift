@@ -4,10 +4,10 @@ import Foundation
 ///
 /// ```swift
 /// QuestionnaireQuestion(
-///     id: "frequency",
-///     prompt: "How often do you want to do this?",
-///     detail: "You can change it later.",
-///     kind: .singleChoice(options: [QuestionnaireOption("Daily"), QuestionnaireOption("Weekly")])
+///     id: "option",
+///     prompt: "Which option do you prefer?",
+///     detail: "Choose one option.",
+///     kind: .singleChoice(options: [QuestionnaireOption("Option A"), QuestionnaireOption("Option B")])
 /// )
 /// ```
 ///
@@ -30,6 +30,11 @@ public struct QuestionnaireQuestion: Identifiable, Hashable, Sendable {
     /// The kind of input the question collects.
     public let kind: QuestionnaireQuestionKind
 
+    /// How choice and boolean options are presented. Defaults to separate rows with
+    /// bullets for single and boolean choices, or checkmarks for multiple choices.
+    /// Ignored by number, date, text, and custom inputs.
+    public let choiceStyle: QuestionnaireChoiceStyle
+
     /// Creates a question.
     ///
     /// - Parameters:
@@ -38,17 +43,20 @@ public struct QuestionnaireQuestion: Identifiable, Hashable, Sendable {
     ///   - detail: Optional supporting text below the prompt. Defaults to `nil`.
     ///   - isRequired: Whether a valid answer is needed to continue. Defaults to `false`.
     ///   - kind: The input the question collects.
+    ///   - choiceStyle: Option presentation. Defaults to ``QuestionnaireChoiceStyle/automatic``.
     public init(
         id: String,
         prompt: String,
         detail: String? = nil,
         isRequired: Bool = false,
-        kind: QuestionnaireQuestionKind
+        kind: QuestionnaireQuestionKind,
+        choiceStyle: QuestionnaireChoiceStyle = .automatic
     ) {
         self.id = id
         self.prompt = prompt
         self.detail = detail
         self.isRequired = isRequired
         self.kind = kind
+        self.choiceStyle = choiceStyle
     }
 }
