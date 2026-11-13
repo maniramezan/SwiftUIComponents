@@ -59,6 +59,22 @@ enum ShowcaseComponent: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
+    /// Filters component and group names while preserving sidebar section and item order.
+    nonisolated static func groups(matching searchText: String) -> [(title: String, items: [ShowcaseComponent])] {
+        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        let matches = allCases.filter { component in
+            query.isEmpty
+                || component.rawValue.localizedStandardContains(query)
+                || component.group.localizedStandardContains(query)
+        }
+        let groupedMatches = Dictionary(grouping: matches, by: \.group)
+        let order = ["Actions", "Controls", "Display", "Surfaces", "Feedback", "Pagination", "Chat", "Collections"]
+        return order.compactMap { title in
+            guard let items = groupedMatches[title] else { return nil }
+            return (title: title, items: items)
+        }
+    }
+
     var systemImage: String {
         switch self {
         case .buttons: return "button.programmable"
