@@ -50,6 +50,7 @@ private struct ShowcaseDetailContent: View {
         case .selectionList: SelectionListDetailView()
         case .pillChips: PillChipsDetailView()
         case .textInputField: TextInputFieldDetailView()
+        case .numericInput: NumericInputDetailView()
         case .questionnaire: QuestionnaireDetailView()
         case .segmentedPicker: SegmentedPickerDetailView()
         case .badges: BadgesDetailView()

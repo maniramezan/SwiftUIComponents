@@ -13,6 +13,42 @@ import Testing
 @Suite("ShowcaseComponent routing")
 struct ShowcaseComponentTests {
 
+    @Test("empty and whitespace searches include every component in sidebar order", arguments: ["", " \n\t "])
+    func emptySearchIncludesEveryComponent(query: String) {
+        let groups = ShowcaseComponent.groups(matching: query)
+
+        #expect(
+            groups.map(\.title) == [
+                "Actions", "Controls", "Display", "Surfaces", "Feedback", "Pagination", "Chat", "Collections",
+            ])
+        #expect(groups.flatMap(\.items) == ShowcaseComponent.allCases)
+    }
+
+    @Test("search matches partial component names regardless of case and surrounding whitespace")
+    func searchMatchesComponentNames() {
+        let groups = ShowcaseComponent.groups(matching: "  PiCkEr \n")
+
+        #expect(groups.map(\.title) == ["Controls", "Pagination"])
+        #expect(groups.flatMap(\.items) == [.menuPicker, .segmentedPicker])
+    }
+
+    @Test("search matches group names and preserves the group's component order")
+    func searchMatchesGroupNames() {
+        let groups = ShowcaseComponent.groups(matching: "feedBACK")
+
+        #expect(groups.map(\.title) == ["Feedback"])
+        #expect(
+            groups.flatMap(\.items) == [
+                .errorBanner, .errorSection, .loading, .ghostLoading, .emptyState, .toast, .progress, .asyncContent,
+            ])
+    }
+
+    @Test("unmatched searches return no sections and clearing restores the list")
+    func unmatchedAndClearedSearches() {
+        #expect(ShowcaseComponent.groups(matching: "no matching component").isEmpty)
+        #expect(ShowcaseComponent.groups(matching: "").flatMap(\.items) == ShowcaseComponent.allCases)
+    }
+
     @Test("only full-page and overlay-anchoring pages own their ScrollView")
     func ownsScrollViewSet() {
         let owners = Set(ShowcaseComponent.allCases.filter(\.ownsScrollView))
