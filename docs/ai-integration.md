@@ -295,27 +295,68 @@ Labeled text field (title above, helper or error text below; error wins and is r
 Toggle:
     Toggle("Label", isOn: $isOn).toggleStyle(ThemeToggleStyle())
 
+Numeric input (reuse the field's binding; digits only by default):
+    TextInputField("Count", text: $count)
+        .numericInput(text: $count)
+    TextField("Value", text: $value)
+        .numericInput(text: $value, allowsDecimal: true, allowsNegative: true)
+    NumericInput(text:allowsDecimal:allowsNegative:) is also available as a ViewModifier.
+    Filters initial text and typed, pasted, or programmatic changes to decimal digits.
+    Optional decimals keep one environment-locale separator; optional negatives keep one leading minus.
+    Grouping separators and other characters are removed. Empty and incomplete numbers stay editable.
+    Locale and option changes reapply filtering. Callers own parsing, range validation, and rounding.
+    iOS and Mac Catalyst select a number pad, decimal pad, or punctuation keyboard as appropriate.
+
 Questionnaire (one question per page; progress bar, Back / Next / Done, optional Skip; owns its scroll view):
+    Numeric questions preserve existing negative answers until submission clamps them into range.
+    Date questions use a compact date field; the custom calendar showcase uses an expanded month grid.
+    The custom calendar records its displayed date immediately; Next or Done is the only confirmation.
     @State var answers: [QuestionnaireQuestion.ID: QuestionnaireAnswer] = [:]
+    let options = [QuestionnaireOption(id: "a", title: "Option A"), QuestionnaireOption(id: "b", title: "Option B")]
     QuestionnaireView(
         questions: [
-            QuestionnaireQuestion(id: "level", prompt: "How experienced are you?", isRequired: true,
-                                  kind: .singleChoice(options: [QuestionnaireOption("New"), QuestionnaireOption("Some")])),
-            QuestionnaireQuestion(id: "days", prompt: "Which days?", kind: .multipleChoice(options: dayOptions)),
-            QuestionnaireQuestion(id: "minutes", prompt: "Minutes a day?",
-                                  kind: .number(unitLabel: "min", range: 5...120, step: 5)),
-            QuestionnaireQuestion(id: "start", prompt: "Start date?", kind: .date(range: today...limit)),
-            QuestionnaireQuestion(id: "notes", prompt: "Anything else?", kind: .text(placeholder: "Notes")),
+            QuestionnaireQuestion(id: "single", prompt: "Which option do you prefer?", isRequired: true,
+                                  kind: .singleChoice(options: options)),
+            QuestionnaireQuestion(id: "multiple", prompt: "Which options apply?",
+                                  kind: .multipleChoice(options: options), choiceStyle: .checkmarks),
+            QuestionnaireQuestion(id: "boolean", prompt: "Include this option?", isRequired: true,
+                                  kind: .boolean(trueTitle: "Yes", falseTitle: "No")),
+            QuestionnaireQuestion(id: "count", prompt: "How many items?",
+                                  kind: .number(unitLabel: nil, range: 0...100, step: 1)),
+            QuestionnaireQuestion(id: "date", prompt: "Which date?", kind: .date(range: today...limit)),
+            QuestionnaireQuestion(id: "text", prompt: "What would you like to add?",
+                                  kind: .text(placeholder: "Write your answer")),
         ],
         answers: $answers,
         // submitTitle: String? (nil = localized "Done")
         onSubmit: { submitted in save(submitted) },
         onSkip: { skip() }
     )
-    // Answers: .choices([optionID]) | .number(Double) | .date(Date) | .text(String).
-    // Required questions block Next until answered; on submit, answers are normalized
-    // (choices filtered to known ids, numbers clamped + snapped to step, dates clamped, text trimmed).
-    // Duplicate question ids, empty option lists and non-finite number ranges are dropped with a logged fault.
+    // choiceStyle: .automatic (default) | .bullets | .checkmarks | .chips.
+    // Automatic uses separate bullet rows for single/boolean and checkmark rows for multiple choice.
+    // Styles change presentation; kind determines single versus multiple selection.
+    // Answers: .choices([optionID]) | .boolean(Bool) | .number(Double) | .date(Date) | .text(String).
+    // Booleans start unanswered; both true and false satisfy a required question.
+    // Text supports multiple lines and is trimmed on submission; whitespace alone is unanswered.
+    // Required questions block Next and are all checked again before submission.
+    // Duplicate question ids, empty option lists and non-finite number/date ranges are dropped with a logged fault.
+
+Custom questionnaire input (caller-supplied calendar, slider, picker, or other control):
+    QuestionnaireView(
+        questions: [QuestionnaireQuestion(id: "custom", prompt: "Which date?", isRequired: true, kind: .custom)],
+        answers: $answers,
+        customInput: { question, answer in
+            CustomCalendarInput(title: question.prompt, answer: answer)
+        },
+        onSubmit: { submitted in save(submitted) }
+    )
+    // CustomCalendarInput is your own View accepting Binding<QuestionnaireAnswer?>.
+    // Write .date(selectedDate) when valid or nil while incomplete; custom inputs have no implicit default.
+    // The builder runs only for .custom questions. Without it, custom questions are dropped with a logged fault.
+    // The caller owns custom validation/accessibility; custom answers reject non-finite numbers/dates,
+    // trim text, and deduplicate choices in supplied order (suitable for ranking).
+    // Labeled rating/Likert scales compose single choice; the showcase includes a live example.
+    // Ranking, matrices, attachments, selection limits, and branching have no built-in implementation.
 
 Badge:
     // standard
@@ -667,7 +708,7 @@ Use the showcase for reference, not reuse:
 - Components include VoiceOver support out of the box (labels, traits, hidden decorations, Reduce Motion, adjustable/scroll actions on paged + segmented controls).
 - `ConfirmToolbarButton` pins to the trailing edge on iOS 27+ (`.topBarPinnedTrailing`, falling back to `.topBarTrailing`) and uses `.confirmationAction` elsewhere; `DismissToolbarButton` uses `.cancellationAction` on every platform.
 - The package localizes only its own chrome (dismiss button, loading/typing announcements, error prefix, paginator + clear-search labels, questionnaire Back/Next/Done/Skip/Optional/progress labels, chat-composer placeholder, field name + send/voice button labels, floating action expanded/collapsed states) via a String Catalog in `Bundle.module`; supported locales are translated and validated in CI.
-- Content you pass in is rendered verbatim and is your app's responsibility to localize: `ThemeButton` titles, `SearchBar` and `ChatComposer` placeholders, `SelectionNode` titles, `TextInputField` titles and messages, `QuestionnaireQuestion` prompts/details/option titles/unit labels, `ListRow` text, `AvatarView` names, `ConfirmToolbarButton` accessibility label. Pass already-localized values (e.g. `String(localized:)`).
+- Content you pass in is rendered verbatim and is your app's responsibility to localize: `ThemeButton` titles, `SearchBar` and `ChatComposer` placeholders, `SelectionNode` titles, `TextInputField` titles and messages, `QuestionnaireQuestion` prompts/details/option titles/unit labels/boolean titles, `ListRow` text, `AvatarView` names, `ConfirmToolbarButton` accessibility label. Pass already-localized values (e.g. `String(localized:)`).
 
 ### Do Not
 
@@ -677,6 +718,8 @@ Use the showcase for reference, not reuse:
 - Don't skip `.designTheme()` — a default exists but won't match your brand.
 - Don't conform `MenuPickerItem` items with only `Identifiable` — `Hashable` is also required.
 - Don't hand-roll a title-above-field form input or a settings row — use `TextInputField` and `ListRow`.
+- Don't rely on a numeric keyboard to filter text — apply `.numericInput(text:)` with the field's binding.
+- Don't use a default-off switch as a required boolean answer — use `.boolean(trueTitle:falseTitle:)` so unanswered remains distinct from false.
 - Don't nest `QuestionnaireView` inside another vertical `ScrollView` — it owns its scroll; give it a fixed-height slot such as a navigation destination.
 - Don't put reusable shipping components in the showcase target — promote them into `Components` first.
 - Don't give ExpandableFloatingActionButton an unbounded presentation area — give it a finite frame so overflowing actions can scroll.
