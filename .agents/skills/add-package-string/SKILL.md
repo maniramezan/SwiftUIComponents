@@ -18,8 +18,8 @@ verbatim and is the app's job to localize.
    the app's bundle, not the package's.
 3. **Add the key to `Sources/Components/Resources/Localizable.xcstrings`** with the same
    `comment`, `"extractionState" : "manual"`, and a `translated` `stringUnit` for **every**
-   locale in `REQUIRED_LOCALES` in `Scripts/check-localizations.py` (43 today, including the
-   `en-*` variants). Keep keys in the file's alphabetical order. Edit the JSON with a small
+   locale in `REQUIRED_LOCALES` in `Scripts/check-localizations.py`, including the `en-*`
+   variants. Keep keys in the file's alphabetical order. Edit the JSON with a small
    script (load, insert, validate with `json.loads`) rather than by hand.
 4. **Validate** with `python3 Scripts/check-localizations.py`.
 5. **Test** that the English value resolves, in
