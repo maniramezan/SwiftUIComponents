@@ -34,6 +34,7 @@ public struct AssistantConversationList<Turn: Identifiable & Equatable>: View {
     private let onRetry: (Turn) -> Void
     private let autoPromotingHeadings: [String]
     private let contentLayoutDirection: LayoutDirection?
+    private(set) var retryAccessibility: ControlAccessibility
 
     /// Creates an assistant conversation list.
     ///
@@ -48,6 +49,9 @@ public struct AssistantConversationList<Turn: Identifiable & Equatable>: View {
     ///     (e.g. the tapped quick action's display name).
     ///   - responseState: Resolves a turn's current response lifecycle.
     ///   - retryTitle: Button title shown on error turns.
+    ///   - retryAccessibilityIdentifier: Optional identifier for UI automation on every error
+    ///     turn's retry button. `nil` keeps the system default. See also
+    ///     ``retryAccessibilityIdentifier(_:)`` and ``retryAccessibilityHint(_:)``.
     ///   - onRetry: Called when the caller taps retry on an error turn.
     ///   - autoPromotingHeadings: Literal phrases promoted into `## `
     ///     headings so completed responses can render as structured
@@ -66,6 +70,7 @@ public struct AssistantConversationList<Turn: Identifiable & Equatable>: View {
         userLabel: @escaping (Turn) -> String,
         responseState: @escaping (Turn) -> AssistantConversationState,
         retryTitle: String,
+        retryAccessibilityIdentifier: String? = nil,
         onRetry: @escaping (Turn) -> Void,
         autoPromotingHeadings: [String] = [],
         contentLayoutDirection: LayoutDirection? = nil
@@ -79,6 +84,23 @@ public struct AssistantConversationList<Turn: Identifiable & Equatable>: View {
         self.onRetry = onRetry
         self.autoPromotingHeadings = autoPromotingHeadings
         self.contentLayoutDirection = contentLayoutDirection
+        self.retryAccessibility = ControlAccessibility(identifier: retryAccessibilityIdentifier)
+    }
+
+    /// Returns a copy whose error-turn retry buttons carry `identifier` for UI automation;
+    /// `nil` removes it.
+    public func retryAccessibilityIdentifier(_ identifier: String?) -> Self {
+        var copy = self
+        copy.retryAccessibility.identifier = identifier
+        return copy
+    }
+
+    /// Returns a copy whose error-turn retry buttons speak `hint` after their title; `nil`
+    /// removes it.
+    public func retryAccessibilityHint(_ hint: String?) -> Self {
+        var copy = self
+        copy.retryAccessibility.hint = hint
+        return copy
     }
 
     @Environment(\.designTheme) private var theme
@@ -100,6 +122,7 @@ public struct AssistantConversationList<Turn: Identifiable & Equatable>: View {
                         state: responseState(turn),
                         isRetryEnabled: isInteractionEnabled,
                         retryTitle: retryTitle,
+                        retryAccessibility: retryAccessibility,
                         autoPromotingHeadings: autoPromotingHeadings,
                         contentLayoutDirection: contentLayoutDirection,
                         onRetry: { onRetry(turn) }
@@ -121,6 +144,7 @@ private struct AssistantConversationTurnView: View {
     let state: AssistantConversationState
     let isRetryEnabled: Bool
     let retryTitle: String
+    let retryAccessibility: ControlAccessibility
     let autoPromotingHeadings: [String]
     let contentLayoutDirection: LayoutDirection?
     let onRetry: () -> Void
@@ -152,6 +176,7 @@ private struct AssistantConversationTurnView: View {
                     message: message,
                     isRetryEnabled: isRetryEnabled,
                     retryTitle: retryTitle,
+                    retryAccessibility: retryAccessibility,
                     contentLayoutDirection: contentLayoutDirection,
                     onRetry: onRetry
                 )
@@ -168,6 +193,7 @@ private struct AssistantConversationErrorTurnBubble: View {
     let message: String
     let isRetryEnabled: Bool
     let retryTitle: String
+    let retryAccessibility: ControlAccessibility
     let contentLayoutDirection: LayoutDirection?
     let onRetry: () -> Void
 
@@ -183,6 +209,7 @@ private struct AssistantConversationErrorTurnBubble: View {
                     .buttonStyle(.bordered)
                     .controlSize(.small)
                     .disabled(!isRetryEnabled)
+                    .modifier(ControlAccessibilityModifier(accessibility: retryAccessibility))
             }
         }
     }
