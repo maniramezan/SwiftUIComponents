@@ -562,7 +562,10 @@ Assistant conversation UI (streaming chat feature: quick-action chips + turn log
         turns: turns, isInteractionEnabled: !isBusy, idleHint: "Tap an action to get started.",
         // state: .idle | .streaming(String) | .complete(String) | .error(String)
         userLabel: { $0.actionLabel }, responseState: { $0.state },
-        retryTitle: "Retry", onRetry: { retry($0.id) },
+        retryTitle: "Retry",
+        // optional, identifies every error turn's retry button for UI automation
+        retryAccessibilityIdentifier: "chat.retry",
+        onRetry: { retry($0.id) },
         // optional, for structured completed responses
         autoPromotingHeadings: ["Summary", "Details"],
         // optional, RTL message text in an LTR app
@@ -707,6 +710,7 @@ Use the showcase for reference, not reuse:
 
 - Components include VoiceOver support out of the box (labels, traits, hidden decorations, Reduce Motion, adjustable/scroll actions on paged + segmented controls).
 - `ConfirmToolbarButton` pins to the trailing edge on iOS 27+ (`.topBarPinnedTrailing`, falling back to `.topBarTrailing`) and uses `.confirmationAction` elsewhere; `DismissToolbarButton` uses `.cancellationAction` on every platform.
+- Buttons a component renders internally take optional automation identifiers and hints, since you cannot apply modifiers to them: `DismissToolbarButton(accessibilityIdentifier:action:)`, `ConfirmToolbarButton(…, accessibilityIdentifier:, …)` and `AssistantConversationList(…, retryAccessibilityIdentifier:, …)`, or the builder form `DismissToolbarButton { … }.accessibilityIdentifier("sheet.close").accessibilityHint("Discards changes")` (`.retryAccessibilityIdentifier(_:)` / `.retryAccessibilityHint(_:)` on the list). `nil` (the default) keeps the system's own identifier. Hints are rendered verbatim, so pass localized text.
 - The package localizes only its own chrome (dismiss button, loading/typing announcements, error prefix, paginator + clear-search labels, questionnaire Back/Next/Done/Skip/Optional/progress labels, chat-composer placeholder, field name + send/voice button labels, floating action expanded/collapsed states) via a String Catalog in `Bundle.module`; supported locales are translated and validated in CI.
 - Content you pass in is rendered verbatim and is your app's responsibility to localize: `ThemeButton` titles, `SearchBar` and `ChatComposer` placeholders, `SelectionNode` titles, `TextInputField` titles and messages, `QuestionnaireQuestion` prompts/details/option titles/unit labels/boolean titles, `ListRow` text, `AvatarView` names, `ConfirmToolbarButton` accessibility label. Pass already-localized values (e.g. `String(localized:)`).
 
