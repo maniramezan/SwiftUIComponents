@@ -239,23 +239,32 @@ Floating action buttons:
         items: actions,
         isExpanded: $isExpanded,
         direction: .up,
+        edge: .trailing,
         showsTitle: false,
         showsItemTitles: true,
         collapsesOnSelection: true,
         isItemDisabled: { $0.isDisabled },
+        isItemSelected: { $0.isOn },
         onSelect: { performAction($0) }
     ) { expanded in
         Label("Actions", systemImage: expanded ? "xmark" : "plus")
     } itemLabel: { item in
         Label(item.title, systemImage: item.symbol)
     }
+    .triggerAccessibilityIdentifier("actions.trigger")
+    .itemAccessibilityIdentifier { "actions.item.\($0.id)" }
     .frame(width: 280, height: 320)
     Items are caller-owned Identifiable values with unique stable IDs. Directions: .up (default),
     .down, .leading, .trailing; horizontal directions mirror in right-to-left layouts.
+    edge (.trailing default, or .leading) pins the trigger and actions for .up and .down,
+    mirroring with layout direction; horizontal directions ignore it.
     Supply a finite presentation frame, normally in an overlay. Only the action strip scrolls.
     The trigger remains fixed and the first item is nearest it. Both trigger labels are measured
     together to keep its size stable. All labels are caller-localized SwiftUI content.
     Set showsItemTitles to false for icon-only menu actions; SwiftUI Label titles remain accessible.
+    isItemSelected marks toggle-style actions: selected surface plus the selected trait.
+    triggerAccessibilityIdentifier(_:) and itemAccessibilityIdentifier(_:) return copies whose
+    internally rendered buttons carry UI automation identifiers; nil keeps the system default.
     .disabled() disables the whole component. Empty items log a fault, disable the trigger,
     and reset expansion. Selection collapses before onSelect unless collapsesOnSelection is false.
     Escape and accessibility escape dismiss the strip; outside-tap dismissal is caller-managed.

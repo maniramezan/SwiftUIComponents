@@ -11,14 +11,16 @@ enum FloatingActionButtonLayoutMath {
         trigger: CGSize,
         direction: FloatingActionButtonDirection,
         layoutDirection: LayoutDirection,
-        gap: CGFloat
+        gap: CGFloat,
+        edge: HorizontalEdge = .trailing
     ) -> Frames {
         let width = max(0, container.width)
         let height = max(0, container.height)
         let triggerWidth = max(0, trigger.width)
         let triggerHeight = max(0, trigger.height)
         let isRightToLeft = layoutDirection == .rightToLeft
-        let trailingX = isRightToLeft ? 0 : max(0, width - triggerWidth)
+        let pinsToPhysicalLeft = (edge == .leading) != isRightToLeft
+        let edgeX = pinsToPhysicalLeft ? 0 : max(0, width - triggerWidth)
         let centeredY = max(0, (height - triggerHeight) / 2)
         let verticalSpace = max(0, height - triggerHeight - gap)
         let horizontalSpace = max(0, width - triggerWidth - gap)
@@ -27,13 +29,13 @@ enum FloatingActionButtonLayoutMath {
         case .up:
             return Frames(
                 trigger: CGRect(
-                    x: trailingX, y: max(0, height - triggerHeight),
+                    x: edgeX, y: max(0, height - triggerHeight),
                     width: triggerWidth, height: triggerHeight),
                 actions: CGRect(x: 0, y: 0, width: width, height: verticalSpace)
             )
         case .down:
             return Frames(
-                trigger: CGRect(x: trailingX, y: 0, width: triggerWidth, height: triggerHeight),
+                trigger: CGRect(x: edgeX, y: 0, width: triggerWidth, height: triggerHeight),
                 actions: CGRect(x: 0, y: min(height, triggerHeight + gap), width: width, height: verticalSpace)
             )
         case .leading, .trailing:
@@ -69,6 +71,7 @@ struct FloatingActionButtonLayout: Layout {
     let direction: FloatingActionButtonDirection
     let layoutDirection: LayoutDirection
     let gap: CGFloat
+    var edge: HorizontalEdge = .trailing
 
     func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
         let trigger = subviews[0].sizeThatFits(.unspecified)
@@ -86,7 +89,8 @@ struct FloatingActionButtonLayout: Layout {
             trigger: subviews[0].sizeThatFits(.unspecified),
             direction: direction,
             layoutDirection: layoutDirection,
-            gap: gap
+            gap: gap,
+            edge: edge
         )
         for (subview, frame) in zip(subviews, [frames.trigger, frames.actions]) {
             let placementX = layoutDirection == .rightToLeft ? bounds.width - frame.maxX : frame.minX

@@ -5,11 +5,13 @@ import SwiftUI
 struct ExpandableFloatingActionButtonDetailView: View {
     @State private var trigger = FloatingActionShowcaseTrigger()
     @State private var direction = FloatingActionButtonDirection.up
+    @State private var edge = HorizontalEdge.trailing
     @State private var isExpanded = false
     @State private var showsTitle = false
     @State private var showsItemTitles = true
     @State private var disabled = false
     @State private var disableFirstItem = false
+    @State private var selectFirstItem = false
     @State private var collapsesOnSelection = true
     @State private var itemCount = 3
     @State private var longLabels = false
@@ -30,10 +32,12 @@ struct ExpandableFloatingActionButtonDetailView: View {
                     items: Array(FloatingActionShowcaseItem.samples.prefix(itemCount)),
                     isExpanded: $isExpanded,
                     direction: direction,
+                    edge: edge,
                     showsTitle: showsTitle,
                     showsItemTitles: showsItemTitles,
                     collapsesOnSelection: collapsesOnSelection,
                     isItemDisabled: { disableFirstItem && $0.id == 0 },
+                    isItemSelected: { selectFirstItem && $0.id == 0 },
                     onSelect: { trigger.selection = ($0.title, $0.symbol) }
                 ) { _ in
                     Label(triggerLabel.title, systemImage: triggerLabel.symbol)
@@ -67,12 +71,20 @@ struct ExpandableFloatingActionButtonDetailView: View {
                     Text("Leading").tag(FloatingActionButtonDirection.leading)
                     Text("Trailing").tag(FloatingActionButtonDirection.trailing)
                 }
+                Picker("Edge", selection: $edge) {
+                    Text("Leading").tag(HorizontalEdge.leading)
+                    Text("Trailing").tag(HorizontalEdge.trailing)
+                }
+                Text("Edge pins the main button for up and down. Leading and trailing directions ignore it.")
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
                 Toggle("Expanded", isOn: $isExpanded).toggleStyle(ThemeToggleStyle())
                 Toggle("Show trigger title", isOn: $showsTitle).toggleStyle(ThemeToggleStyle())
                 Toggle("Show menu item titles", isOn: $showsItemTitles).toggleStyle(ThemeToggleStyle())
                 Toggle("Collapse on selection", isOn: $collapsesOnSelection).toggleStyle(ThemeToggleStyle())
                 Toggle("Disabled", isOn: $disabled).toggleStyle(ThemeToggleStyle())
                 Toggle("Disable first action", isOn: $disableFirstItem).toggleStyle(ThemeToggleStyle())
+                Toggle("Select first action", isOn: $selectFirstItem).toggleStyle(ThemeToggleStyle())
                 Toggle("Long action labels", isOn: $longLabels).toggleStyle(ThemeToggleStyle())
                 Toggle("Right-to-left layout", isOn: $rightToLeft).toggleStyle(ThemeToggleStyle())
                 Text("System Reduce Motion: \(reduceMotion ? "On" : "Off")")
