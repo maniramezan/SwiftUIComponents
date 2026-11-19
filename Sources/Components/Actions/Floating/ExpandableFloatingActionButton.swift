@@ -7,11 +7,16 @@ import SwiftUI
 /// Use a finite frame to define the presentation area, normally inside an overlay.
 /// The trigger remains at the opposite end of the expansion direction: bottom
 /// trailing for `.up`, top trailing for `.down`, and centered vertically for
-/// horizontal expansion. The first item is nearest the trigger. Leading and
+/// horizontal expansion. Pass `edge: .leading` to pin vertical expansion to the
+/// leading edge instead. The first item is nearest the trigger. Leading and
 /// trailing mirror with the layout direction. Empty items log a fault and render
 /// a disabled, collapsed trigger.
 /// Set `showsItemTitles` to `false` to display only action icons. SwiftUI `Label`
-/// titles remain available to assistive technologies in this mode.
+/// titles remain available to assistive technologies in this mode. Use
+/// `isItemSelected` for toggle-style actions: selected items render with the
+/// selected surface and expose the selected trait. Attach UI automation identifiers
+/// to the internally rendered buttons with ``triggerAccessibilityIdentifier(_:)``
+/// and ``itemAccessibilityIdentifier(_:)``.
 ///
 /// ```swift
 /// ExpandableFloatingActionButton(
@@ -27,11 +32,15 @@ public struct ExpandableFloatingActionButton<Item: Identifiable, TriggerLabel: V
     private let items: [Item]
     @Binding private var isExpanded: Bool
     private let direction: FloatingActionButtonDirection
+    private let edge: HorizontalEdge
     private let showsTitle: Bool
     private let showsItemTitles: Bool
     private let collapsesOnSelection: Bool
     private let isItemDisabled: (Item) -> Bool
+    private let isItemSelected: (Item) -> Bool
     private let onSelect: (Item) -> Void
+    private(set) var triggerIdentifier: String?
+    private(set) var itemIdentifier: (Item) -> String? = { _ in nil }
     private let collapsedLabel: TriggerLabel
     private let expandedLabel: TriggerLabel
     private let itemLabel: (Item) -> ItemLabel
@@ -47,11 +56,16 @@ public struct ExpandableFloatingActionButton<Item: Identifiable, TriggerLabel: V
     ///   - items: Actions with unique, stable identities, ordered nearest the trigger first.
     ///   - isExpanded: Two-way expansion state. Empty items reset this binding to `false`.
     ///   - direction: Expansion direction. Defaults to `.up`.
+    ///   - edge: The horizontal edge that the trigger and actions align to when `direction`
+    ///     is `.up` or `.down`. Mirrors with the layout direction. Ignored for horizontal
+    ///     directions, which place the trigger opposite their expansion. Defaults to `.trailing`.
     ///   - showsTitle: Whether the trigger shows its title in an extended capsule.
     ///   - showsItemTitles: Whether menu actions display titles beside their icons.
     ///     Defaults to `true`. When `false`, SwiftUI `Label` titles remain accessible.
     ///   - collapsesOnSelection: Whether to collapse before invoking `onSelect`. Defaults to `true`.
     ///   - isItemDisabled: Returns whether an item is disabled. Defaults to all items enabled.
+    ///   - isItemSelected: Returns whether a toggle-style item is currently on. Selected items
+    ///     use the selected surface and the selected accessibility trait. Defaults to none.
     ///   - onSelect: Invoked once when an enabled action is activated while expanded.
     ///   - label: Trigger content for collapsed and expanded states, normally a SwiftUI
     ///     `Label`. Both states are measured together to keep the trigger's dimensions stable.
@@ -61,10 +75,12 @@ public struct ExpandableFloatingActionButton<Item: Identifiable, TriggerLabel: V
         items: [Item],
         isExpanded: Binding<Bool>,
         direction: FloatingActionButtonDirection = .up,
+        edge: HorizontalEdge = .trailing,
         showsTitle: Bool = false,
         showsItemTitles: Bool = true,
         collapsesOnSelection: Bool = true,
         isItemDisabled: @escaping (Item) -> Bool = { _ in false },
+        isItemSelected: @escaping (Item) -> Bool = { _ in false },
         onSelect: @escaping (Item) -> Void,
         @ViewBuilder label: (Bool) -> TriggerLabel,
         @ViewBuilder itemLabel: @escaping (Item) -> ItemLabel
@@ -72,10 +88,12 @@ public struct ExpandableFloatingActionButton<Item: Identifiable, TriggerLabel: V
         self.items = items
         self._isExpanded = isExpanded
         self.direction = direction
+        self.edge = edge
         self.showsTitle = showsTitle
         self.showsItemTitles = showsItemTitles
         self.collapsesOnSelection = collapsesOnSelection
         self.isItemDisabled = isItemDisabled
+        self.isItemSelected = isItemSelected
         self.onSelect = onSelect
         self.collapsedLabel = label(false)
         self.expandedLabel = label(true)
@@ -90,7 +108,7 @@ public struct ExpandableFloatingActionButton<Item: Identifiable, TriggerLabel: V
             reducingMotion: reduceMotion
         )
         FloatingActionButtonLayout(
-            direction: direction, layoutDirection: layoutDirection, gap: theme.spacing.oneUnit
+            direction: direction, layoutDirection: layoutDirection, gap: theme.spacing.oneUnit, edge: edge
         ) {
             FloatingActionButton(showsTitle: showsTitle) {
                 FloatingActionButtonInteraction.toggle(
@@ -113,14 +131,18 @@ public struct ExpandableFloatingActionButton<Item: Identifiable, TriggerLabel: V
             .focusable()
             .focused($isTriggerFocused)
             .accessibilityValue(Text(expanded ? Strings.FloatingAction.expanded : Strings.FloatingAction.collapsed))
+            .modifier(ControlAccessibilityModifier(accessibility: ControlAccessibility(identifier: triggerIdentifier)))
             .layoutPriority(1)
             .zIndex(1)
 
             FloatingActionStrip(
                 items: items,
                 direction: direction,
+                edge: edge,
                 showsItemTitles: showsItemTitles,
                 isItemDisabled: isItemDisabled,
+                isItemSelected: isItemSelected,
+                itemIdentifier: itemIdentifier,
                 onSelect: { item in
                     FloatingActionButtonInteraction.select(
                         item,
@@ -164,11 +186,36 @@ public struct ExpandableFloatingActionButton<Item: Identifiable, TriggerLabel: V
     }
 }
 
+extension ExpandableFloatingActionButton {
+    /// Returns a copy whose trigger button carries the given UI automation identifier.
+    ///
+    /// - Parameter identifier: A stable identifier independent of localized text. `nil`
+    ///   (the default) keeps the system identifier.
+    public func triggerAccessibilityIdentifier(_ identifier: String?) -> Self {
+        var copy = self
+        copy.triggerIdentifier = identifier
+        return copy
+    }
+
+    /// Returns a copy whose action buttons carry the identifiers that `identifier` returns.
+    ///
+    /// - Parameter identifier: Returns a stable identifier for each item, or `nil` to keep
+    ///   the system identifier for that item.
+    public func itemAccessibilityIdentifier(_ identifier: @escaping (Item) -> String?) -> Self {
+        var copy = self
+        copy.itemIdentifier = identifier
+        return copy
+    }
+}
+
 private struct FloatingActionStrip<Item: Identifiable, ItemLabel: View>: View {
     let items: [Item]
     let direction: FloatingActionButtonDirection
+    let edge: HorizontalEdge
     let showsItemTitles: Bool
     let isItemDisabled: (Item) -> Bool
+    let isItemSelected: (Item) -> Bool
+    let itemIdentifier: (Item) -> String?
     let onSelect: (Item) -> Void
     let itemLabel: (Item) -> ItemLabel
     @Environment(\.layoutDirection) private var layoutDirection
@@ -179,13 +226,14 @@ private struct FloatingActionStrip<Item: Identifiable, ItemLabel: View>: View {
             ScrollViewReader { proxy in
                 ScrollView(direction.isHorizontal ? .horizontal : .vertical) {
                     FloatingActionItems(
-                        items: items, direction: direction, viewport: geometry.size,
-                        showsItemTitles: showsItemTitles,
-                        isItemDisabled: isItemDisabled, onSelect: onSelect, itemLabel: itemLabel
+                        items: items, direction: direction, edge: edge, viewport: geometry.size,
+                        showsItemTitles: showsItemTitles, isItemDisabled: isItemDisabled,
+                        isItemSelected: isItemSelected, itemIdentifier: itemIdentifier,
+                        onSelect: onSelect, itemLabel: itemLabel
                     )
                 }
                 .scrollIndicators(.hidden)
-                .defaultScrollAnchor(direction.scrollAnchor)
+                .defaultScrollAnchor(direction.scrollAnchor(edge: edge))
                 .onScrollGeometryChange(for: ScrollGeometrySnapshot.self) { value in
                     ScrollGeometrySnapshot(
                         offsetX: value.contentOffset.x + value.contentInsets.leading,
@@ -198,12 +246,17 @@ private struct FloatingActionStrip<Item: Identifiable, ItemLabel: View>: View {
                 .modifier(FloatingActionScrollVeil(isHorizontal: direction.isHorizontal, geometry: scrollGeometry))
                 .onChange(of: direction) {
                     if let first = items.first {
-                        proxy.scrollTo(first.id, anchor: direction.scrollAnchor)
+                        proxy.scrollTo(first.id, anchor: direction.scrollAnchor(edge: edge))
+                    }
+                }
+                .onChange(of: edge) {
+                    if let first = items.first {
+                        proxy.scrollTo(first.id, anchor: direction.scrollAnchor(edge: edge))
                     }
                 }
                 .onChange(of: layoutDirection) {
                     if let first = items.first {
-                        proxy.scrollTo(first.id, anchor: direction.scrollAnchor)
+                        proxy.scrollTo(first.id, anchor: direction.scrollAnchor(edge: edge))
                     }
                 }
             }
@@ -214,9 +267,12 @@ private struct FloatingActionStrip<Item: Identifiable, ItemLabel: View>: View {
 private struct FloatingActionItems<Item: Identifiable, ItemLabel: View>: View {
     let items: [Item]
     let direction: FloatingActionButtonDirection
+    let edge: HorizontalEdge
     let viewport: CGSize
     let showsItemTitles: Bool
     let isItemDisabled: (Item) -> Bool
+    let isItemSelected: (Item) -> Bool
+    let itemIdentifier: (Item) -> String?
     let onSelect: (Item) -> Void
     let itemLabel: (Item) -> ItemLabel
     @Environment(\.designTheme) private var theme
@@ -224,20 +280,29 @@ private struct FloatingActionItems<Item: Identifiable, ItemLabel: View>: View {
     var body: some View {
         let indexedItems = Array(items.enumerated())
         let orderedItems = direction.reversesItems ? Array(indexedItems.reversed()) : indexedItems
+        let alignsLeading = edge == .leading && !direction.isHorizontal
+        let horizontalAlignment: HorizontalAlignment = alignsLeading ? .leading : .trailing
+        let frameAlignment: Alignment = alignsLeading ? .leading : .trailing
         let layout =
             direction.isHorizontal
             ? AnyLayout(HStackLayout(spacing: theme.spacing.oneUnit))
-            : AnyLayout(VStackLayout(alignment: .trailing, spacing: theme.spacing.oneUnit))
+            : AnyLayout(VStackLayout(alignment: horizontalAlignment, spacing: theme.spacing.oneUnit))
         layout {
             ForEach(orderedItems, id: \.element.id) { index, item in
                 Button {
                     onSelect(item)
                 } label: {
-                    FloatingActionItemLabel(showsTitle: showsItemTitles, label: itemLabel(item))
-                        .frame(maxWidth: direction.isHorizontal ? viewport.width : .infinity, alignment: .trailing)
+                    FloatingActionItemLabel(
+                        showsTitle: showsItemTitles, isSelected: isItemSelected(item), label: itemLabel(item)
+                    )
+                    .frame(maxWidth: direction.isHorizontal ? viewport.width : .infinity, alignment: frameAlignment)
                 }
                 .buttonStyle(FloatingActionPressStyle())
                 .disabled(isItemDisabled(item))
+                .accessibilityAddTraits(isItemSelected(item) ? .isSelected : [])
+                .modifier(
+                    ControlAccessibilityModifier(accessibility: ControlAccessibility(identifier: itemIdentifier(item)))
+                )
                 .id(item.id)
                 .accessibilitySortPriority(Double(items.count - index))
             }
@@ -245,13 +310,14 @@ private struct FloatingActionItems<Item: Identifiable, ItemLabel: View>: View {
         .frame(
             maxWidth: direction.isHorizontal ? nil : .infinity,
             minHeight: direction.isHorizontal ? viewport.height : nil,
-            alignment: .trailing
+            alignment: frameAlignment
         )
     }
 }
 
 private struct FloatingActionItemLabel<Content: View>: View {
     let showsTitle: Bool
+    let isSelected: Bool
     let label: Content
     @Environment(\.designTheme) private var theme
 
@@ -267,7 +333,7 @@ private struct FloatingActionItemLabel<Content: View>: View {
         .designPillMetrics(horizontalPadding: showsTitle ? nil : theme.spacing.oneUnit)
         .frame(minWidth: theme.motion.minimumHitTarget)
         .fixedSize(horizontal: false, vertical: true)
-        .designCapsuleSurface()
+        .designCapsuleSurface(isSelected: isSelected)
     }
 }
 

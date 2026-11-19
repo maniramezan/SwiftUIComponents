@@ -40,6 +40,37 @@ struct FloatingActionButtonGeometryTests {
         #expect(trailing.actions == CGRect(x: rightToLeft ? 0 : 56, y: 0, width: 244, height: 120))
     }
 
+    @Test(
+        "leading-edge vertical triggers pin to the logical leading edge",
+        arguments: [FloatingActionButtonDirection.up, .down], [false, true])
+    func verticalLeadingEdgeFrames(direction: FloatingActionButtonDirection, rightToLeft: Bool) {
+        let frames = FloatingActionButtonLayoutMath.frames(
+            container: CGSize(width: 300, height: 240), trigger: CGSize(width: 48, height: 48),
+            direction: direction, layoutDirection: rightToLeft ? .rightToLeft : .leftToRight, gap: 8,
+            edge: .leading
+        )
+        #expect(frames.trigger.minX == (rightToLeft ? 252 : 0))
+        #expect(frames.trigger.minY == (direction == .up ? 192 : 0))
+        #expect(frames.actions == CGRect(x: 0, y: direction == .up ? 0 : 56, width: 300, height: 184))
+    }
+
+    @Test(
+        "horizontal directions ignore the requested edge",
+        arguments: [FloatingActionButtonDirection.leading, .trailing], [false, true])
+    func horizontalIgnoresEdge(direction: FloatingActionButtonDirection, rightToLeft: Bool) {
+        let layoutDirection: LayoutDirection = rightToLeft ? .rightToLeft : .leftToRight
+        let size = CGSize(width: 300, height: 120)
+        let trigger = CGSize(width: 48, height: 48)
+        let trailing = FloatingActionButtonLayoutMath.frames(
+            container: size, trigger: trigger, direction: direction, layoutDirection: layoutDirection, gap: 8
+        )
+        let leading = FloatingActionButtonLayoutMath.frames(
+            container: size, trigger: trigger, direction: direction, layoutDirection: layoutDirection, gap: 8,
+            edge: .leading
+        )
+        #expect(leading == trailing)
+    }
+
     @Test("vertical triggers use the logical trailing edge in right-to-left layouts")
     func verticalRightToLeft() {
         let frames = FloatingActionButtonLayoutMath.frames(
@@ -87,10 +118,14 @@ struct FloatingActionButtonGeometryTests {
         #expect(FloatingActionButtonDirection.leading.reversesItems)
         #expect(!FloatingActionButtonDirection.down.reversesItems)
         #expect(!FloatingActionButtonDirection.trailing.reversesItems)
-        #expect(FloatingActionButtonDirection.up.scrollAnchor == .bottomTrailing)
-        #expect(FloatingActionButtonDirection.down.scrollAnchor == .topTrailing)
-        #expect(FloatingActionButtonDirection.leading.scrollAnchor == .trailing)
-        #expect(FloatingActionButtonDirection.trailing.scrollAnchor == .leading)
+        #expect(FloatingActionButtonDirection.up.scrollAnchor() == .bottomTrailing)
+        #expect(FloatingActionButtonDirection.down.scrollAnchor() == .topTrailing)
+        #expect(FloatingActionButtonDirection.leading.scrollAnchor() == .trailing)
+        #expect(FloatingActionButtonDirection.trailing.scrollAnchor() == .leading)
+        #expect(FloatingActionButtonDirection.up.scrollAnchor(edge: .leading) == .bottomLeading)
+        #expect(FloatingActionButtonDirection.down.scrollAnchor(edge: .leading) == .topLeading)
+        #expect(FloatingActionButtonDirection.leading.scrollAnchor(edge: .leading) == .trailing)
+        #expect(FloatingActionButtonDirection.trailing.scrollAnchor(edge: .leading) == .leading)
     }
 
     private func offset(
@@ -184,6 +219,43 @@ struct ExpandableFloatingActionButtonTests {
         state.showsItemTitles = true
         _ = host.waitForStableRender()
         #expect(host.renderPNG() != iconsOnly)
+    }
+
+    @Test("selected actions use the selected surface")
+    func selectedItemsRenderSelected() throws {
+        let state = FloatingActionTestState()
+        state.expanded = true
+        state.showsItemTitles = false
+        let host = HostedView(FloatingActionTestView(state: state), size: CGSize(width: 300, height: 240))
+        defer { host.close() }
+        _ = host.waitForStableRender()
+        let unselected = try #require(host.renderPNG())
+        state.selectedIDs = [0]
+        _ = host.waitForStableRender()
+        #expect(host.renderPNG() != unselected)
+        state.selectedIDs = []
+        _ = host.waitForStableRender()
+        #expect(host.renderPNG() == unselected)
+    }
+
+    @Test(
+        "leading-edge vertical actions align to the logical leading edge",
+        arguments: [FloatingActionButtonDirection.up, .down], [false, true])
+    func leadingEdgeActionAlignment(direction: FloatingActionButtonDirection, rightToLeft: Bool) throws {
+        let state = FloatingActionTestState()
+        state.expanded = true
+        state.direction = direction
+        state.edge = .leading
+        state.rightToLeft = rightToLeft
+        let host = HostedView(FloatingActionTestView(state: state), size: CGSize(width: 300, height: 240))
+        defer { host.close() }
+        _ = host.waitForStableRender()
+        let first = try #require(state.itemFrames[0])
+        #expect(rightToLeft ? first.midX > 150 : first.midX < 150)
+        state.edge = .trailing
+        _ = host.waitForStableRender()
+        let trailing = try #require(state.itemFrames[0])
+        #expect(rightToLeft ? trailing.midX < 150 : trailing.midX > 150)
     }
 
     @Test(
@@ -295,9 +367,24 @@ struct ExpandableFloatingActionButtonTests {
     @Test(
         "rendered custom layouts mirror exactly once", arguments: FloatingActionButtonDirection.allCases, [false, true])
     func renderedPlacement(direction: FloatingActionButtonDirection, rightToLeft: Bool) {
+        assertRenderedPlacement(direction: direction, rightToLeft: rightToLeft, edge: .trailing)
+    }
+
+    @Test(
+        "rendered leading-edge layouts mirror exactly once",
+        arguments: [FloatingActionButtonDirection.up, .down], [false, true])
+    func renderedLeadingPlacement(direction: FloatingActionButtonDirection, rightToLeft: Bool) {
+        assertRenderedPlacement(direction: direction, rightToLeft: rightToLeft, edge: .leading)
+    }
+
+    private func assertRenderedPlacement(
+        direction: FloatingActionButtonDirection, rightToLeft: Bool, edge: HorizontalEdge
+    ) {
         let state = FloatingActionTestState()
         let layoutDirection: LayoutDirection = rightToLeft ? .rightToLeft : .leftToRight
-        let view = FloatingActionButtonLayout(direction: direction, layoutDirection: layoutDirection, gap: 8) {
+        let view = FloatingActionButtonLayout(
+            direction: direction, layoutDirection: layoutDirection, gap: 8, edge: edge
+        ) {
             Color.clear
                 .frame(width: 48, height: 48)
                 .onGeometryChange(for: CGRect.self) { geometry in
@@ -314,7 +401,7 @@ struct ExpandableFloatingActionButtonTests {
         _ = host.waitForStableRender()
         let expected = FloatingActionButtonLayoutMath.frames(
             container: CGSize(width: 300, height: 240), trigger: CGSize(width: 48, height: 48),
-            direction: direction, layoutDirection: layoutDirection, gap: 8
+            direction: direction, layoutDirection: layoutDirection, gap: 8, edge: edge
         )
         #expect(state.triggerFrame == expected.trigger)
     }
@@ -450,6 +537,8 @@ private struct FloatingActionTestItem: Identifiable {
 private final class FloatingActionTestState {
     var expanded = false
     var direction = FloatingActionButtonDirection.up
+    var edge = HorizontalEdge.trailing
+    var selectedIDs: Set<Int> = []
     var disabled = false
     var firstItemDisabled = false
     var showsTitle = false
@@ -475,9 +564,11 @@ private struct FloatingActionTestView: View {
             items: state.items,
             isExpanded: $state.expanded,
             direction: state.direction,
+            edge: state.edge,
             showsTitle: state.showsTitle,
             showsItemTitles: state.showsItemTitles,
             isItemDisabled: { state.firstItemDisabled && $0.id == 0 },
+            isItemSelected: { state.selectedIDs.contains($0.id) },
             onSelect: { state.selections.append($0.id) }
         ) { expanded in
             Label(expanded ? "Actions" : "More actions", systemImage: expanded ? "xmark" : "plus")
@@ -490,9 +581,47 @@ private struct FloatingActionTestView: View {
                 }
                 .onAppear { state.itemAppearances[item.id, default: 0] += 1 }
         }
+        .triggerAccessibilityIdentifier("fab.trigger")
+        .itemAccessibilityIdentifier { "fab.item.\($0.id)" }
         .contentMargins(.horizontal, state.scrollContentMargin, for: .scrollContent)
         .coordinateSpace(name: "fabActions")
         .environment(\.layoutDirection, state.rightToLeft ? .rightToLeft : .leftToRight)
         .disabled(state.disabled)
+    }
+}
+
+@MainActor
+@Suite("Expandable floating action accessibility identifiers")
+struct ExpandableFloatingActionIdentifierTests {
+    @Test("identifiers default to nil")
+    func defaults() {
+        let button = makeButton()
+        #expect(button.triggerIdentifier == nil)
+        #expect(button.itemIdentifier(FloatingActionTestItem(id: 0, title: "First action")) == nil)
+    }
+
+    @Test("builder methods set and clear the trigger and item identifiers")
+    func buildersSetAndClear() {
+        let item = FloatingActionTestItem(id: 3, title: "Fourth action")
+        let identified = makeButton()
+            .triggerAccessibilityIdentifier("fab.trigger")
+            .itemAccessibilityIdentifier { "fab.item.\($0.id)" }
+        #expect(identified.triggerIdentifier == "fab.trigger")
+        #expect(identified.itemIdentifier(item) == "fab.item.3")
+        let cleared = identified.triggerAccessibilityIdentifier(nil).itemAccessibilityIdentifier { _ in nil }
+        #expect(cleared.triggerIdentifier == nil)
+        #expect(cleared.itemIdentifier(item) == nil)
+    }
+
+    private func makeButton() -> ExpandableFloatingActionButton<FloatingActionTestItem, Text, Text> {
+        ExpandableFloatingActionButton(
+            items: [FloatingActionTestItem(id: 0, title: "First action")],
+            isExpanded: .constant(true),
+            onSelect: { _ in }
+        ) { _ in
+            Text("Actions")
+        } itemLabel: { item in
+            Text(item.title)
+        }
     }
 }

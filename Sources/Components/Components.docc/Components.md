@@ -16,6 +16,7 @@ open Package.swift   # Opens in Xcode
 
 Use `showsItemTitles: false` on ``ExpandableFloatingActionButton`` for an icon-only
 expanded menu. Supply each action as a SwiftUI `Label` to retain its accessible title.
+Pass `edge: .leading` to pin an upward or downward menu to the leading edge.
 
 ### Questionnaires
 
