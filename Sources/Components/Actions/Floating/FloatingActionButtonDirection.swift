@@ -15,10 +15,10 @@ public enum FloatingActionButtonDirection: Sendable, Hashable, CaseIterable {
 
     var reversesItems: Bool { self == .up || self == .leading }
 
-    var scrollAnchor: UnitPoint {
+    func scrollAnchor(edge: HorizontalEdge = .trailing) -> UnitPoint {
         switch self {
-        case .up: .bottomTrailing
-        case .down: .topTrailing
+        case .up: edge == .leading ? .bottomLeading : .bottomTrailing
+        case .down: edge == .leading ? .topLeading : .topTrailing
         case .leading: .trailing
         case .trailing: .leading
         }
