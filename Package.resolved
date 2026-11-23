@@ -1,5 +1,5 @@
 {
-  "originHash" : "fafa0789db1e9efa3601a7682c6d6a6f33503fdd1ccc94cb5a5d63f97bf6634f",
+  "originHash" : "7797318c4ed9249a74c338b8afc7217c469b3fb7ebca136ca7a6cf4296237df3",
   "pins" : [
     {
       "identity" : "swift-custom-dump",
@@ -60,8 +60,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/maniramezan/SwiftTestCommons.git",
       "state" : {
-        "revision" : "3420590635e3c3bf869116679177051406d3b3a8",
-        "version" : "0.4.2"
+        "revision" : "efe30d0f3a5165e2906d435bbcc5748852a62c25",
+        "version" : "0.5.0"
       }
     }
   ],
