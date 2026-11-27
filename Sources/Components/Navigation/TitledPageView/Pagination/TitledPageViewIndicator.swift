@@ -126,11 +126,6 @@ private struct TitledPageViewBarIndicator: View {
 
     @Environment(\.designTheme) private var theme
 
-    // No spacing/stroke token matches 3pt exactly (`stroke.regular` is 2pt,
-    // `stroke.thick` is 4pt); changing this to the nearest token would
-    // visibly thicken or thin the bar, so it stays a documented literal.
-    private var barThickness: CGFloat { theme.stroke.regular }
-
     var body: some View {
         GeometryReader { proxy in
             let totalWidth = proxy.size.width
@@ -141,11 +136,11 @@ private struct TitledPageViewBarIndicator: View {
             ZStack(alignment: .leading) {
                 Capsule()
                     .fill(resolved.indicatorInactiveColor)
-                    .frame(height: barThickness)
+                    .frame(height: theme.stroke.regular)
 
                 Capsule()
                     .fill(resolved.indicatorActiveColor)
-                    .frame(width: max(segmentWidth, theme.spacing.threeUnits), height: barThickness)
+                    .frame(width: max(segmentWidth, theme.spacing.threeUnits), height: theme.stroke.regular)
                     .offset(x: thumbX)
             }
             .frame(height: minimumHitTarget, alignment: .center)

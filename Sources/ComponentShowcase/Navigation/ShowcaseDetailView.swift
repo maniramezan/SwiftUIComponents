@@ -72,6 +72,7 @@ private struct ShowcaseDetailContent: View {
         case .emptyState: EmptyStateDetailView()
         case .toast: ToastDetailView()
         case .progress: ProgressDetailView()
+        case .divider: DividerDetailView()
         case .asyncContent: AsyncContentDetailView()
         case .pagedView: PagedViewDetailView()
         case .chat: ChatPlaygroundDetailView()

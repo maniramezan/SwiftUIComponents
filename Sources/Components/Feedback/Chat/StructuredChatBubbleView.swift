@@ -112,7 +112,7 @@ private struct StructuredChatBubbleContent: View {
                 .padding(.vertical, theme.spacing.oneUnit)
 
                 if section.id != sections.last?.id {
-                    Divider().padding(.vertical, theme.spacing.halfUnit)
+                    ThemedDivider().padding(.vertical, theme.spacing.halfUnit)
                 }
             }
         }

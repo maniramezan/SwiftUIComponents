@@ -1,3 +1,4 @@
+import DesignSystem
 import Foundation
 import SwiftUI
 import Testing
@@ -27,6 +28,21 @@ struct ThemeProgressViewStyleTests {
         let phase = ThemeProgressMetrics.phase(at: Date(timeIntervalSinceReferenceDate: 12_345.6))
         #expect(phase >= 0)
         #expect(phase < 1)
+    }
+
+    @Test(arguments: [ColorScheme.light, ColorScheme.dark])
+    func progressTrackUsesTheThickStrokeInsteadOfSpacing(colorScheme: ColorScheme) {
+        let stroke = DefaultStroke(thick: 7)
+        let progress = ProgressView(value: 0.5)
+            .progressViewStyle(ThemeProgressViewStyle())
+            .designTheme(DefaultTheme(spacing: DefaultSpacing(halfUnit: 12), stroke: stroke))
+            .environment(\.colorScheme, colorScheme)
+        let renderer = ImageRenderer(content: progress)
+        renderer.proposedSize = ProposedViewSize(width: 160, height: nil)
+
+        var height: CGFloat?
+        renderer.render { size, _ in height = size.height }
+        #expect(height == stroke.thick)
     }
 
     @Test("renders determinate, labelled, and indeterminate progress")

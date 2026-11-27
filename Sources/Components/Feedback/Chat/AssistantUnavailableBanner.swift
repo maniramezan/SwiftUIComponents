@@ -52,7 +52,7 @@ public struct AssistantUnavailableBanner: View {
             .frame(maxWidth: .infinity)
             .padding(theme.spacing.twoUnits)
             .background(theme.colors.containerSecondary)
-            Divider()
+            ThemedDivider()
         }
     }
 

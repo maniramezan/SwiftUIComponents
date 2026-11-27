@@ -140,15 +140,15 @@ private struct ListRowText: View {
             ListRow("Storage", subtitle: "12 items", systemImage: "internaldrive") {
                 Text("1.2 GB")
             }
-            Divider()
+            ThemedDivider()
             ListRow("Notifications", systemImage: "bell") {
                 Toggle("Notifications", isOn: $isOn).labelsHidden()
             }
-            Divider()
+            ThemedDivider()
             ListRow("About", systemImage: "info.circle") {
                 Image(systemName: "chevron.forward")
             }
-            Divider()
+            ThemedDivider()
             ListRow("Plain row")
         }
         .padding(theme.spacing.twoUnits)
