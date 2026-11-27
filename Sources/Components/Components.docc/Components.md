@@ -135,6 +135,7 @@ Disappearing pauses elapsed time; reappearing resumes accumulated motion while t
 
 ### Layout
 
+- ``ThemeDivider``
 - ``Container``
 - ``ContainerStyle``
 - ``FlowLayout``

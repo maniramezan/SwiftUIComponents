@@ -27,7 +27,7 @@ public struct AssistantDisclaimerFooter: View {
 
     public var body: some View {
         VStack(spacing: 0) {
-            Divider()
+            ThemeDivider()
             Text(text)
                 .font(theme.typography.caption)
                 .foregroundStyle(theme.colors.textSecondary)

@@ -5,8 +5,9 @@ import SwiftUI
 /// `containerSecondary` with a fill in `primary` (or a caller-supplied tint).
 ///
 /// Determinate progress fills proportionally and animates between values with the
-/// theme's motion tokens. Indeterminate progress (`fractionCompleted == nil`) sweeps a
-/// short segment across the track, and holds it still under Reduce Motion. A
+/// theme's motion tokens. The track uses the theme's thick stroke width.
+/// Indeterminate progress (`fractionCompleted == nil`) sweeps a short segment across
+/// the track and holds it still under Reduce Motion. A
 /// `ProgressView` label is shown above the track and a current-value label below it.
 ///
 /// ```swift
@@ -130,7 +131,7 @@ private struct ThemeProgressTrack: View {
             }
             .clipShape(Capsule(style: .continuous))
         }
-        .frame(height: theme.spacing.halfUnit)
+        .frame(height: theme.stroke.thick)
     }
 }
 

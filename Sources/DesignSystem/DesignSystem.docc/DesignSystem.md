@@ -30,6 +30,10 @@ on AppKit in addition to SwiftUI fonts. These requirements dispatch through the 
 
 ### Layout
 
+Use ``Theme/stroke`` for line widths. ``DefaultStroke`` supplies hairline, thin,
+regular, and thick weights of 0.5, 1, 2, and 4 points. Supply a custom stroke scale
+to ``DefaultTheme`` to override these weights independently of spacing.
+
 - ``Spacing``
 - ``DefaultSpacing``
 - ``Radius``
