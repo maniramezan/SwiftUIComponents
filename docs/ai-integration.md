@@ -138,7 +138,7 @@ The stroke scale is independent of layout spacing. Shared separators use
 `stroke.hairline` and linear progress tracks use `stroke.thick`. Set a custom
 scale with `DefaultTheme(stroke: DefaultStroke(thick: 6))`.
 
-Place `ThemedDivider()` between sections in a vertical stack. It fills the
+Place `ThemeDivider()` between sections in a vertical stack. It fills the
 available horizontal space with the current theme's separator color and
 hairline width.
 

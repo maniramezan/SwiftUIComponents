@@ -7,11 +7,11 @@ import SwiftUI
 /// ```swift
 /// VStack {
 ///     Text("First section")
-///     ThemedDivider()
+///     ThemeDivider()
 ///     Text("Second section")
 /// }
 /// ```
-public struct ThemedDivider: View {
+public struct ThemeDivider: View {
     @Environment(\.designTheme) private var theme
 
     /// Creates a horizontal separator.
@@ -30,7 +30,7 @@ public struct ThemedDivider: View {
     PreviewContent { theme in
         VStack(spacing: theme.spacing.oneUnit) {
             Text("First section")
-            ThemedDivider()
+            ThemeDivider()
             Text("Second section")
         }
         .foregroundStyle(theme.colors.textPrimary)

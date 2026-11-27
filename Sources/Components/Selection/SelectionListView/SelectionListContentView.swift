@@ -246,7 +246,7 @@ private struct SelectionListChildRows<ID: Hashable>: View {
     var body: some View {
         VStack(spacing: 0) {
             ForEach(node.children) { child in
-                ThemedDivider()
+                ThemeDivider()
                     .padding(.leading, theme.spacing.twoUnits)
                 SelectionRow(
                     title: child.title,

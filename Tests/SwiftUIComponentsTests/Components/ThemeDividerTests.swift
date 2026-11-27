@@ -5,11 +5,11 @@ import Testing
 @testable import Components
 
 @MainActor
-struct ThemedDividerTests {
+struct ThemeDividerTests {
     @Test(arguments: [ColorScheme.light, ColorScheme.dark])
     func dividerUsesTheHairlineStroke(colorScheme: ColorScheme) {
         let stroke = DefaultStroke(hairline: 3, thin: 5)
-        let divider = ThemedDivider()
+        let divider = ThemeDivider()
             .designTheme(DefaultTheme(stroke: stroke))
             .environment(\.colorScheme, colorScheme)
         let renderer = ImageRenderer(content: divider)

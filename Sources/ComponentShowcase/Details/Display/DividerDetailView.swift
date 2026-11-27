@@ -11,7 +11,7 @@ struct DividerDetailView: View {
             ShowcaseSection("Divider") {
                 VStack(alignment: .leading, spacing: theme.spacing.oneUnit) {
                     Text("First section")
-                    ThemedDivider()
+                    ThemeDivider()
                         .designTheme(
                             DefaultTheme(
                                 stroke: DefaultStroke(
